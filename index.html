@@ -76,7 +76,14 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,11,7,.96);backdrop-f
 .hadis-pg-meta{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
 .meta-pill{display:flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 11px;font-size:10px;color:var(--text-dim);transition:border-color .2s,color .2s}.meta-pill:hover{border-color:var(--gold-dark);color:var(--gold)}
 .meta-pill .dot{width:4px;height:4px;border-radius:50%;background:var(--gold-dark)}
-.hadis-text{padding:16px 8px;border-radius:6px;margin:0 -8px 16px;line-height:1.85;color:var(--text);font-size:16px}
+.hadis-text{padding:16px 8px;border-radius:6px;margin:0 -8px 16px;line-height:1.85;color:var(--text);font-size:var(--hadis-fs,16px)}
+.hadis-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:10px}
+.hadis-tb-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);height:32px;min-width:32px;padding:0 10px;border-radius:7px;cursor:pointer;font-size:13px;font-family:'Roboto',sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:5px;-webkit-tap-highlight-color:transparent;transition:border-color .2s,color .2s}
+.hadis-tb-btn:hover,.hadis-tb-btn:active{border-color:var(--gold-dark);color:var(--gold)}
+.hadis-tb-btn.copied{border-color:var(--gold-dark);color:var(--gold)}
+.hadis-tb-group{display:inline-flex;border:1px solid var(--border);border-radius:7px;overflow:hidden}
+.hadis-tb-group .hadis-tb-btn{border:none;border-radius:0;border-right:1px solid var(--border)}
+.hadis-tb-group .hadis-tb-btn:last-child{border-right:none}
 .hadis-narrator{margin-top:20px;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--gold-dark);border-radius:0 8px 8px 0;font-size:12px;line-height:1.7;color:var(--text-dim)}
 .hadis-source{margin-top:10px;padding:10px 14px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--text-muted);letter-spacing:.05em}
 .muallaqot-block{margin-bottom:20px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--gold-dark);border-radius:0 8px 8px 0}
@@ -174,6 +181,13 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,11,7,.96);backdrop-f
       <div class="hadis-pg-num" id="hadisOrnament"></div>
       <h2 class="hadis-pg-title" id="hadisTitle"></h2>
       <div class="hadis-pg-meta" id="hadisMeta"></div>
+    </div>
+    <div class="hadis-toolbar">
+      <div class="hadis-tb-group" role="group" aria-label="Шрифт ўлчами">
+        <button class="hadis-tb-btn" onclick="App.adjustFontSize(-1)" aria-label="Шрифтни кичрайтириш">A−</button>
+        <button class="hadis-tb-btn" onclick="App.adjustFontSize(1)" aria-label="Шрифтни катталаштириш">A+</button>
+      </div>
+      <button class="hadis-tb-btn" id="copyBtn" onclick="App.copyHadis()" aria-label="Ҳадисни нусхалаш">⧉ Нусха</button>
     </div>
     <div class="hadis-text" id="hadisText"></div>
     <div id="hadisIzoh" class="hadis-izoh" style="display:none"></div>
@@ -9548,6 +9562,8 @@ const DB = [
 let ST = { page:'home', kid:null, bid:null, hid:null };
 const scrollPos = {};
 let th = localStorage.getItem('th') || 'dark';
+let fs = parseInt(localStorage.getItem('fs'),10) || 16;
+document.documentElement.style.setProperty('--hadis-fs',fs+'px');
 
 function apTh(){ document.documentElement.className=th; localStorage.setItem('th',th); }
 
@@ -9708,6 +9724,27 @@ const App = {
     else App.goHome();
   },
   toggleTheme(){ th=th==='dark'?'light':'dark'; apTh(); },
+  adjustFontSize(delta){
+    const min=13,max=24;
+    fs=Math.max(min,Math.min(max,fs+delta));
+    document.documentElement.style.setProperty('--hadis-fs',fs+'px');
+    localStorage.setItem('fs',fs);
+  },
+  copyHadis(){
+    const h=getH(ST.kid,ST.bid,ST.hid); if(!h) return;
+    const text=`${h.sarlavha||''}\n\n${h.matn}\n\nРивояти: ${h.rowi||'—'}\nМанба: ${h.manba||'Саҳиҳ Бухорий'}`;
+    const btn=document.getElementById('copyBtn');
+    const orig=btn.textContent;
+    const done=()=>{btn.textContent='✓ Нусхаланди';btn.classList.add('copied');setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied');},1500);};
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(()=>{});
+    }else{
+      const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+      document.body.appendChild(ta);ta.select();
+      try{document.execCommand('copy');done();}catch(e){}
+      document.body.removeChild(ta);
+    }
+  },
   doSearch(v){
     if(!v.trim()){ App.goHome(); return; }
     const q=v.toLowerCase();

@@ -9586,6 +9586,7 @@ function showPage(id, scrollToId){
   const el=document.getElementById(id);
   el.style.display='block';
   el.classList.add('visible');
+  document.querySelector('header').style.display = id==='hadisPage' ? 'none' : 'flex';
   if(scrollToId){
     setTimeout(()=>{
       const target = document.getElementById(scrollToId);

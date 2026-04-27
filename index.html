@@ -75,7 +75,7 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
 .meta-pill{display:flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 11px;font-size:10px;color:var(--text-dim);transition:border-color .2s,color .2s}.meta-pill:hover{border-color:var(--gold-dark);color:var(--gold)}
 .meta-pill .dot{width:4px;height:4px;border-radius:50%;background:var(--gold-dark)}
 .hadis-text{padding:16px 8px;border-radius:6px;margin:0 -8px 16px;line-height:1.85;color:var(--text);font-size:var(--hadis-fs,16px)}
-.hadis-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:10px}
+.hadis-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:20px}
 .hadis-tb-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);height:32px;min-width:32px;padding:0 10px;border-radius:7px;cursor:pointer;font-size:13px;font-family:'Roboto',sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:5px;-webkit-tap-highlight-color:transparent;transition:border-color .2s,color .2s}
 .hadis-tb-btn:hover,.hadis-tb-btn:active{border-color:var(--gold-dark);color:var(--gold)}
 .hadis-tb-btn.copied{border-color:var(--gold-dark);color:var(--gold)}
@@ -173,6 +173,10 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
       <h2 class="hadis-pg-title" id="hadisTitle"></h2>
       <div class="hadis-pg-meta" id="hadisMeta"></div>
     </div>
+    <div class="hadis-text" id="hadisText"></div>
+    <div id="hadisIzoh" class="hadis-izoh" style="display:none"></div>
+    <div class="hadis-narrator" id="hadisNarrator"></div>
+    <div class="hadis-source" id="hadisSource"></div>
     <div class="hadis-toolbar">
       <div class="hadis-tb-group" role="group" aria-label="Шрифт ўлчами">
         <button class="hadis-tb-btn" onclick="App.adjustFontSize(-1)" aria-label="Шрифтни кичрайтириш">A−</button>
@@ -180,10 +184,6 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
       </div>
       <button class="hadis-tb-btn" id="copyBtn" onclick="App.copyHadis()" aria-label="Ҳадисни нусхалаш">⧉ Нусха</button>
     </div>
-    <div class="hadis-text" id="hadisText"></div>
-    <div id="hadisIzoh" class="hadis-izoh" style="display:none"></div>
-    <div class="hadis-narrator" id="hadisNarrator"></div>
-    <div class="hadis-source" id="hadisSource"></div>
   </div>
 </div>
 

@@ -15,7 +15,8 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
 .search-input:focus{border-color:var(--gold-dark);background:var(--surface2)}
 .search-input::placeholder{color:var(--text-muted)}
 .search-icon{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none}
-.breadcrumb{padding:18px 16px 16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--surface2) 0%,var(--bg) 100%)}
+.breadcrumb{position:sticky;top:0;z-index:50;padding:14px 16px 12px;border-bottom:1px solid var(--border);background:rgba(13,11,7,.96);backdrop-filter:blur(16px)}
+.light .breadcrumb{background:rgba(245,240,232,.96)}
 .breadcrumb .bc-trail{display:flex;align-items:center;gap:5px;margin-bottom:8px}
 .breadcrumb .bc-link{cursor:pointer;color:var(--gold-dark);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;transition:color .2s}
 .breadcrumb .bc-link:hover{color:var(--gold)}
@@ -61,7 +62,8 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
 .hadis-item-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;font-family:'Merriweather',serif}
 .hadis-item-preview{font-size:13px;color:var(--text-dim);line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .hadis-item-narrator{font-size:10px;color:var(--text-muted);margin-top:7px}
-.hadis-nav{display:flex;gap:8px;margin-bottom:16px}
+.hadis-nav{position:sticky;top:0;z-index:50;display:flex;gap:8px;padding:14px 0;margin-bottom:16px;background:rgba(13,11,7,.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.light .hadis-nav{background:rgba(245,240,232,.96)}
 .nav-btn{display:flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);color:var(--text-dim);font-size:11px;padding:7px 10px;border-radius:7px;cursor:pointer;flex:1;justify-content:center;-webkit-tap-highlight-color:transparent;transition:border-color .2s}
 .nav-btn:active,.nav-btn:hover{border-color:var(--gold-dark);color:var(--gold)}
 .nav-btn.disabled{opacity:.3;pointer-events:none}
@@ -106,7 +108,7 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
 .scroll-top:active{transform:scale(.92)}
 .fab-theme{position:fixed;bottom:20px;left:20px;width:44px;height:44px;background:var(--surface);border:1px solid var(--border);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:transform .2s,border-color .2s;z-index:50;-webkit-tap-highlight-color:transparent}
 .fab-theme:hover,.fab-theme:active{border-color:var(--gold-dark);transform:scale(.95)}
-.page{display:none;opacity:0;transition:opacity .3s;background:var(--bg);height:100vh;overflow-y:auto;position:fixed;top:0;left:0;right:0;bottom:0;padding-top:58px}
+.page{display:none;opacity:0;transition:opacity .3s;background:var(--bg);height:100vh;overflow-y:auto;position:fixed;top:0;left:0;right:0;bottom:0}
 .page.visible{display:block;opacity:1}
 </style>
 </head>
@@ -160,8 +162,8 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
 
 <!-- 4. HADIS TO'LIQ -->
 <div id="hadisPage" class="page">
-  <div style="max-width:720px;margin:0 auto;padding:20px 14px 100px">
-    <div class="hadis-nav" style="margin-bottom:12px">
+  <div style="max-width:720px;margin:0 auto;padding:0 14px 100px">
+    <div class="hadis-nav">
       <button class="nav-btn" onclick="App.goHome()">⌂ Бош саҳифа</button>
       <button class="nav-btn" id="prevBtn" onclick="App.prevHadis()">← Олдинги</button>
       <button class="nav-btn" id="nextBtn" onclick="App.nextHadis()">Кейинги →</button>

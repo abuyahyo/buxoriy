@@ -31,6 +31,9 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,11,7,.96);backdrop-f
 .bismillah-hero{font-family:'Scheherazade New',serif;font-size:40px;color:var(--gold);margin-bottom:14px;direction:rtl;line-height:1.5}
 .home-title{font-size:24px;color:var(--text);margin-bottom:6px;font-family:'Merriweather',serif;font-weight:700;line-height:1.4}
 .home-sub{font-size:13px;color:var(--gold-dark);font-family:'Merriweather',serif;font-style:italic;letter-spacing:.03em}
+.home-search{max-width:720px;margin:0 auto;padding:18px 14px 0}
+.home-search .search-input{font-size:15px;padding:11px 38px 11px 14px;border-radius:10px}
+.home-search .search-icon{right:12px}
 .grid-wrap{padding:20px 12px 80px;max-width:1200px;margin:0 auto;background:var(--bg)}
 .grid-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .grid-label{font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-muted)}
@@ -121,10 +124,6 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,11,7,.96);backdrop-f
     <div class="logo-icon">📚</div>
     <div class="logo-text">Саҳиҳ Бухорий</div>
   </div>
-  <div class="search-wrap">
-    <input type="text" class="search-input" id="searchInput" placeholder="Ҳадис қидириш...">
-    <div class="search-icon">🔍</div>
-  </div>
 </header>
 
 <!-- 1. KITOBLAR -->
@@ -133,6 +132,12 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,11,7,.96);backdrop-f
     <div class="bismillah-hero">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
     <h1 class="home-title">Имом Бухорийнинг «Саҳиҳ» тўплами</h1>
     <p class="home-sub">Ал-Жомиъ ас-Саҳиҳ — энг ишончли ҳадис китоби</p>
+  </div>
+  <div class="home-search">
+    <div class="search-wrap">
+      <input type="text" class="search-input" id="searchInput" placeholder="Ҳадис қидириш...">
+      <div class="search-icon">🔍</div>
+    </div>
   </div>
   <div class="grid-wrap">
     <div class="grid-header">

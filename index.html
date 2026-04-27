@@ -20,7 +20,6 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,11,7,.96);backdrop-f
 .search-input:focus{border-color:var(--gold-dark);background:var(--surface2)}
 .search-input::placeholder{color:var(--text-muted)}
 .search-icon{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none}
-.header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .icon-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);width:32px;height:32px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;-webkit-tap-highlight-color:transparent}
 .breadcrumb{padding:18px 16px 16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--surface2) 0%,var(--bg) 100%)}
 .breadcrumb .bc-trail{display:flex;align-items:center;gap:5px;margin-bottom:8px}
@@ -108,6 +107,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,11,7,.96);backdrop-f
 .scroll-top{position:fixed;bottom:20px;right:20px;width:40px;height:40px;background:var(--gold-dark);border:1px solid var(--gold);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .3s,transform .2s;z-index:50}
 .scroll-top.visible{opacity:1;pointer-events:auto}
 .scroll-top:active{transform:scale(.92)}
+.fab-theme{position:fixed;bottom:20px;left:20px;width:44px;height:44px;background:var(--surface);border:1px solid var(--border);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:transform .2s,border-color .2s;z-index:50;-webkit-tap-highlight-color:transparent}
+.fab-theme:hover,.fab-theme:active{border-color:var(--gold-dark);transform:scale(.95)}
 .page{display:none;opacity:0;transition:opacity .3s;background:var(--bg);height:100vh;overflow-y:auto;position:fixed;top:0;left:0;right:0;bottom:0;padding-top:58px}
 .page.visible{display:block;opacity:1}
 </style>
@@ -123,9 +124,6 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,11,7,.96);backdrop-f
   <div class="search-wrap">
     <input type="text" class="search-input" id="searchInput" placeholder="Ҳадис қидириш...">
     <div class="search-icon">🔍</div>
-  </div>
-  <div class="header-actions">
-    <button class="icon-btn" onclick="App.toggleTheme()">🌙</button>
   </div>
 </header>
 
@@ -209,6 +207,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,11,7,.96);backdrop-f
 
 <div class="reading-progress"><div class="reading-progress-bar" id="progressBar"></div></div>
 <div class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
+<button class="fab-theme" id="fabTheme" onclick="App.toggleTheme()" aria-label="Темани ўзгартириш">🌙</button>
 
 <script>
 // ================================================================
@@ -9565,7 +9564,12 @@ let th = localStorage.getItem('th') || 'dark';
 let fs = parseInt(localStorage.getItem('fs'),10) || 16;
 document.documentElement.style.setProperty('--hadis-fs',fs+'px');
 
-function apTh(){ document.documentElement.className=th; localStorage.setItem('th',th); }
+function apTh(){
+  document.documentElement.className=th;
+  localStorage.setItem('th',th);
+  const fab=document.getElementById('fabTheme');
+  if(fab) fab.textContent = th==='dark' ? '☀️' : '🌙';
+}
 
 function getK(kid){ return DB.find(k=>k.id===kid); }
 function getB(kid,bid){ const k=getK(kid); return k&&k.boblar.find(b=>b.id===bid); }

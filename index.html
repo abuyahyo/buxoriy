@@ -10,17 +10,11 @@
 .light{--bg:#f5f0e8;--surface:#ede6d6;--surface2:#e0d8c4;--surface3:#d8cfba;--border:#c8bea8;--text:#2a2218;--text-dim:#5a5040;--text-muted:#8a8070;--gold:#8b6914;--gold-light:#6b5010;--gold-dark:#5a4010}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-height:100vh;transition:background .3s,color .3s}
-header{position:sticky;top:0;z-index:100;background:rgba(13,11,7,.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 14px;height:58px;display:flex;align-items:center;gap:10px;transition:background .3s}
-.light header{background:rgba(245,240,232,.96)}
-.logo{display:flex;align-items:center;gap:9px;cursor:pointer;flex-shrink:0}
-.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--gold-dark),var(--gold));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px}
-.logo-text{font-size:14px;font-weight:600;color:var(--gold);line-height:1.2}
-.search-wrap{flex:1;min-width:0;position:relative}
+.search-wrap{position:relative}
 .search-input{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Roboto',sans-serif;font-size:16px;padding:7px 32px 7px 11px;border-radius:6px;outline:none;transition:border-color .2s}
 .search-input:focus{border-color:var(--gold-dark);background:var(--surface2)}
 .search-input::placeholder{color:var(--text-muted)}
 .search-icon{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none}
-.icon-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);width:32px;height:32px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;-webkit-tap-highlight-color:transparent}
 .breadcrumb{padding:18px 16px 16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--surface2) 0%,var(--bg) 100%)}
 .breadcrumb .bc-trail{display:flex;align-items:center;gap:5px;margin-bottom:8px}
 .breadcrumb .bc-link{cursor:pointer;color:var(--gold-dark);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;transition:color .2s}
@@ -117,14 +111,6 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,11,7,.96);backdrop-f
 </style>
 </head>
 <body>
-
-<header>
-  <button class="icon-btn" id="backBtn" onclick="App.goBack()" style="display:none;flex-shrink:0">←</button>
-  <div class="logo" onclick="App.goHome()">
-    <div class="logo-icon">📚</div>
-    <div class="logo-text">Саҳиҳ Бухорий</div>
-  </div>
-</header>
 
 <!-- 1. KITOBLAR -->
 <div id="pgHome" class="page">
@@ -9595,7 +9581,6 @@ function showPage(id, scrollToId){
   const el=document.getElementById(id);
   el.style.display='block';
   el.classList.add('visible');
-  document.querySelector('header').style.display = id==='pgHome' ? 'flex' : 'none';
   if(scrollToId){
     setTimeout(()=>{
       const target = document.getElementById(scrollToId);
@@ -9604,7 +9589,6 @@ function showPage(id, scrollToId){
   } else {
     el.scrollTop = 0;
   }
-  document.getElementById('backBtn').style.display = id==='pgHome' ? 'none' : 'flex';
 }
 
 function bobNomi(nomi){

@@ -285,18 +285,11 @@ function applyHash(){
   if(!DB.length) return;
   const h = location.hash.slice(1);
   const m = h.match(/^k\/(\d+)(?:\/b\/(\d+)(?:\/h\/(\d+))?)?$/);
-  if(!m){
-    if(ST.page!=='home') App.goHome();
-    return;
-  }
+  if(!m){ App.goHome(); return; }
   const kid=+m[1], bid=m[2]?+m[2]:null, hid=m[3]?+m[3]:null;
-  if(hid){
-    if(!(ST.page==='hadis'&&ST.kid===kid&&ST.bid===bid&&ST.hid===hid)) App.openHadis(kid,bid,hid);
-  } else if(bid){
-    if(!(ST.page==='hadisList'&&ST.kid===kid&&ST.bid===bid)) App.openBob(kid,bid);
-  } else {
-    if(!(ST.page==='bob'&&ST.kid===kid)) App.openKitob(kid);
-  }
+  if(hid) App.openHadis(kid,bid,hid);
+  else if(bid) App.openBob(kid,bid);
+  else App.openKitob(kid);
 }
 
 const App = {

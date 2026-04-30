@@ -305,7 +305,7 @@ const App = {
     ST={page:'bob',kid,bid:null,hid:null};
     const hC=k.boblar.reduce((s,b)=>s+b.hadislar.length,0);
     bc('bcBob',[{t:'Бош саҳифа',fn:'App.goHome()'},{t:k.nomi}]);
-    document.getElementById('bcBob').innerHTML+=`<div style="margin-top:10px;display:flex;gap:14px"><span style="font-size:11px;color:var(--gold-dark)">${k.boblar.length} та боб</span><span style="font-size:11px;color:var(--text-muted)">${hC} та ҳадис</span></div>`;
+    document.getElementById('bcBob').innerHTML+=`<div style="margin-top:10px;display:flex;gap:14px;font-size:11px;color:var(--text-muted)"><span>${k.boblar.length} та боб</span><span>${hC} та ҳадис</span></div>`;
     document.getElementById('bobPageLabel').textContent='';
     document.getElementById('bobCount').textContent='';
     const g=document.getElementById('bobGrid');
@@ -326,7 +326,7 @@ const App = {
     if(!k||!b) return;
     ST={page:'hadisList',kid,bid,hid:null};
     bc('bcHadisList',[{t:'Бош саҳифа',fn:'App.goHome()'},{t:k.nomi,fn:`App.openKitob(${kid})`},{t:bobNomi(b.nomi)}]);
-    document.getElementById('bcHadisList').innerHTML+=`${b.izoh?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.6">${b.izoh}</div>`:''}<div style="margin-top:10px"><span style="font-size:11px;color:var(--gold-dark)">${b.hadislar.length} та ҳадис</span></div>`;
+    document.getElementById('bcHadisList').innerHTML+=`${b.izoh?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.6">${b.izoh}</div>`:''}<div style="margin-top:10px;font-size:11px;color:var(--text-muted)">${b.hadislar.length} та ҳадис</div>`;
     document.getElementById('hadisListLabel').textContent='';
     document.getElementById('hadisListCount').textContent='';
     const g=document.getElementById('hadisListGrid');

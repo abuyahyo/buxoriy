@@ -446,7 +446,7 @@ document.getElementById('scrollTop').onclick=()=>{
 };
 
 apTh();
-fetch('data.json')
+fetch('data.json', { cache: 'no-cache' })
   .then(r => { if (!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
   .then(d => { DB = d; App.goHome(); })
   .catch(e => {

@@ -82,7 +82,7 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
 .hadis-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:20px}
 .hadis-tb-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);height:32px;min-width:32px;padding:0 10px;border-radius:7px;cursor:pointer;font-size:13px;font-family:'Roboto',sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:5px;-webkit-tap-highlight-color:transparent;transition:border-color .2s,color .2s}
 .hadis-tb-btn:hover,.hadis-tb-btn:active{border-color:var(--gold-dark);color:var(--gold)}
-.hadis-tb-btn.copied{border-color:var(--gold-dark);color:var(--gold)}
+.hadis-tb-btn.copied,.hadis-tb-btn.active{border-color:var(--gold-dark);color:var(--gold)}
 .hadis-tb-group{display:inline-flex;border:1px solid var(--border);border-radius:7px;overflow:hidden}
 .hadis-tb-group .hadis-tb-btn{border:none;border-radius:0;border-right:1px solid var(--border)}
 .hadis-tb-group .hadis-tb-btn:last-child{border-right:none}
@@ -188,6 +188,7 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
         <button class="hadis-tb-btn" onclick="App.adjustFontSize(-1)" aria-label="Шрифтни кичрайтириш">A−</button>
         <button class="hadis-tb-btn" onclick="App.adjustFontSize(1)" aria-label="Шрифтни катталаштириш">A+</button>
       </div>
+      <button class="hadis-tb-btn" id="izohBtn" onclick="App.toggleIzoh()" aria-label="Изоҳни кўрсатиш" style="display:none">ⓘ Изоҳ</button>
       <button class="hadis-tb-btn" id="copyBtn" onclick="App.copyHadis()" aria-label="Ҳадисни нусхалаш">⧉ Нусха</button>
     </div>
   </div>
@@ -361,7 +362,11 @@ const App = {
     document.getElementById('hadisNarrator').innerHTML='<strong>Ривояти:</strong> '+(h.rowi||'—');
     document.getElementById('hadisSource').innerHTML='<strong>Манба:</strong> '+(h.manba||'Саҳиҳ Бухорий');
     const izohEl=document.getElementById('hadisIzoh');
-    if(izohEl){if(h.izoh){izohEl.style.display='block';izohEl.innerHTML='<strong>Изоҳ:</strong> '+h.izoh;}else{izohEl.style.display='none';}}
+    const izohBtn=document.getElementById('izohBtn');
+    izohEl.style.display='none';
+    izohBtn.classList.remove('active');
+    if(h.izoh){izohEl.innerHTML='<strong>Изоҳ:</strong> '+h.izoh;izohBtn.style.display='';}
+    else{izohBtn.style.display='none';}
     const all=allH();
     const idx=all.findIndex(x=>x.kid===kid&&x.bid===bid&&x.h.id===hid);
     document.getElementById('fabPrev').classList.toggle('disabled', idx<=0);
@@ -386,6 +391,13 @@ const App = {
     else App.goHome();
   },
   toggleTheme(){ th=th==='dark'?'light':'dark'; apTh(); },
+  toggleIzoh(){
+    const el=document.getElementById('hadisIzoh');
+    const btn=document.getElementById('izohBtn');
+    const show=el.style.display==='none';
+    el.style.display=show?'block':'none';
+    btn.classList.toggle('active', show);
+  },
   adjustFontSize(delta){
     const min=13,max=24;
     fs=Math.max(min,Math.min(max,fs+delta));

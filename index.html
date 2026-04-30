@@ -180,17 +180,17 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
       <div class="hadis-pg-meta" id="hadisMeta"></div>
     </div>
     <div class="hadis-text" id="hadisText"></div>
-    <button class="hadis-tb-btn" id="izohBtn" onclick="App.toggleIzoh()" aria-label="Изоҳни кўрсатиш" style="display:none;margin-bottom:12px">ⓘ Изоҳ</button>
-    <div id="hadisIzoh" class="hadis-izoh" style="display:none"></div>
-    <div class="hadis-narrator" id="hadisNarrator"></div>
-    <div class="hadis-source" id="hadisSource"></div>
     <div class="hadis-toolbar">
+      <button class="hadis-tb-btn" id="izohBtn" onclick="App.toggleIzoh()" aria-label="Изоҳни кўрсатиш" style="display:none">ⓘ Изоҳ</button>
       <div class="hadis-tb-group" role="group" aria-label="Шрифт ўлчами">
         <button class="hadis-tb-btn" onclick="App.adjustFontSize(-1)" aria-label="Шрифтни кичрайтириш">A−</button>
         <button class="hadis-tb-btn" onclick="App.adjustFontSize(1)" aria-label="Шрифтни катталаштириш">A+</button>
       </div>
       <button class="hadis-tb-btn" id="copyBtn" onclick="App.copyHadis()" aria-label="Ҳадисни нусхалаш">⧉ Нусха</button>
     </div>
+    <div id="hadisIzoh" class="hadis-izoh" style="display:none"></div>
+    <div class="hadis-narrator" id="hadisNarrator"></div>
+    <div class="hadis-source" id="hadisSource"></div>
   </div>
 </div>
 

@@ -431,7 +431,7 @@ const App = {
     }
   },
   doSearch(v){
-    if(!v.trim()){ App.goHome(); return; }
+    if(v.trim().length<2){ App.goHome(); return; }
     const q=v.toLowerCase();
     const res=[];
     const isNum = /^\d+$/.test(q.trim());

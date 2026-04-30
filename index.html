@@ -261,10 +261,16 @@ function bobNomi(nomi){
 
 function bc(containerId, items){
   const el=document.getElementById(containerId);
-  const trail = items.slice(0,-1);
-  const cur = items[items.length-1];
-  const trailHtml = trail.map(it=>`<span class="bc-link" onclick="${it.fn}">${it.t}</span><span class="bc-sep">›</span>`).join('');
-  el.innerHTML=`<div class="bc-trail">${trailHtml}</div><span class="bc-cur">${cur.t}</span>`;
+  const last = items[items.length-1];
+  const lastIsTrail = !!last.fn;
+  const trail = lastIsTrail ? items : items.slice(0,-1);
+  const cur = lastIsTrail ? null : last;
+  const trailHtml = trail.map((it, i) => {
+    const sepAfter = (i < trail.length - 1 || cur) ? '<span class="bc-sep">›</span>' : '';
+    return `<span class="bc-link" onclick="${it.fn}">${it.t}</span>${sepAfter}`;
+  }).join('');
+  const curHtml = cur ? `<span class="bc-cur">${cur.t}</span>` : '';
+  el.innerHTML=`<div class="bc-trail">${trailHtml}</div>${curHtml}`;
 }
 
 function setHash(h){
@@ -361,7 +367,7 @@ const App = {
     const k=getK(kid); const b=getB(kid,bid); const h=getH(kid,bid,hid);
     if(!k||!b||!h) return;
     ST={page:'hadis',kid,bid,hid};
-    bc('bcHadis',[{t:'Бош саҳифа',fn:'App.goHome()'},{t:k.nomi,fn:`App.openKitob(${k.id})`},{t:`${b.id}-боб`,fn:`App.openBob(${k.id},${b.id})`},{t:`${h.id}-ҳадис`}]);
+    bc('bcHadis',[{t:'Бош саҳифа',fn:'App.goHome()'},{t:k.nomi,fn:`App.openKitob(${k.id})`},{t:`${b.id}-боб`,fn:`App.openBob(${k.id},${b.id})`}]);
     document.getElementById('hadisText').innerHTML=`<span class="hadis-num-inline">${h.id}-ҲАДИС</span> `+h.matn.replace(/\n\n/g,'<br>').replace(/\n/g,'<br>');
     document.getElementById('hadisNarrator').innerHTML='<strong>Ривояти:</strong> '+(h.rowi||'—');
     document.getElementById('hadisSource').innerHTML='<strong>Манба:</strong> '+(h.manba||'Саҳиҳ Бухорий');

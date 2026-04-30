@@ -313,7 +313,7 @@ const App = {
       const el=document.createElement('div');
       el.className='bob-card';
       el.id=`bob-card-${k.id}-${b.id}`;
-      el.innerHTML=`<div class="bob-num">${k.id}-китоб · ${b.id}-боб</div><div class="bob-name">${bobNomi(b.nomi)}</div>${b.izoh?`<div class="bob-izoh">${b.izoh}</div>`:''}<div class="bob-count" style="${b.izoh?'margin-top:8px':''}"><b>${b.hadislar.length}</b> та ҳадис${b.muallaqot?'<span class="bob-muallaqot-badge">⚑ муаллақот</span>':''}</div>`;
+      el.innerHTML=`<div class="bob-name">${bobNomi(b.nomi)}</div>${b.izoh?`<div class="bob-izoh">${b.izoh}</div>`:''}<div class="bob-count" style="${b.izoh?'margin-top:8px':''}"><b>${b.hadislar.length}</b> та ҳадис${b.muallaqot?'<span class="bob-muallaqot-badge">⚑ муаллақот</span>':''}</div>`;
       el.onclick=()=>App.openBob(kid,b.id);
       g.appendChild(el);
     });

@@ -276,6 +276,29 @@ function bc(containerId, items){
   el.innerHTML=`<div class="bc-trail">${trailHtml}</div><span class="bc-cur">${cur.t}</span>`;
 }
 
+function setHash(h){
+  const target = h ? '#'+h : location.pathname+location.search;
+  if(location.hash !== (h?'#'+h:'') ) history.pushState(null, '', target);
+}
+
+function applyHash(){
+  if(!DB.length) return;
+  const h = location.hash.slice(1);
+  const m = h.match(/^k\/(\d+)(?:\/b\/(\d+)(?:\/h\/(\d+))?)?$/);
+  if(!m){
+    if(ST.page!=='home') App.goHome();
+    return;
+  }
+  const kid=+m[1], bid=m[2]?+m[2]:null, hid=m[3]?+m[3]:null;
+  if(hid){
+    if(!(ST.page==='hadis'&&ST.kid===kid&&ST.bid===bid&&ST.hid===hid)) App.openHadis(kid,bid,hid);
+  } else if(bid){
+    if(!(ST.page==='hadisList'&&ST.kid===kid&&ST.bid===bid)) App.openBob(kid,bid);
+  } else {
+    if(!(ST.page==='bob'&&ST.kid===kid)) App.openKitob(kid);
+  }
+}
+
 const App = {
   goHome(){
     ST={page:'home',kid:null,bid:null,hid:null};
@@ -296,6 +319,7 @@ const App = {
       });
     }
     showPage('pgHome');
+    setHash('');
   },
 
   openKitob(kid, scrollToBid=false){
@@ -318,6 +342,7 @@ const App = {
       g.appendChild(el);
     });
     showPage('pgBob', scrollToBid ? `bob-card-${kid}-${scrollToBid}` : null);
+    setHash('k/'+kid);
   },
 
   openBob(kid,bid,scrollToHid=false){
@@ -345,6 +370,7 @@ const App = {
       g.appendChild(el);
     });
     showPage('pgHadisList', scrollToHid ? `hadis-card-${kid}-${bid}-${scrollToHid}` : null);
+    setHash('k/'+kid+'/b/'+bid);
   },
 
   openHadis(kid,bid,hid){
@@ -369,6 +395,7 @@ const App = {
     document.getElementById('fabPrev').classList.toggle('disabled', idx<=0);
     document.getElementById('fabNext').classList.toggle('disabled', idx>=all.length-1);
     showPage('hadisPage');
+    setHash('k/'+kid+'/b/'+bid+'/h/'+hid);
   },
 
   prevHadis(){
@@ -451,9 +478,11 @@ document.getElementById('scrollTop').onclick=()=>{
 };
 
 apTh();
+window.addEventListener('popstate', applyHash);
+window.addEventListener('hashchange', applyHash);
 fetch('data.json', { cache: 'no-cache' })
   .then(r => { if (!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-  .then(d => { DB = d; App.goHome(); })
+  .then(d => { DB = d; applyHash(); })
   .catch(e => {
     document.getElementById('kitobGrid').innerHTML =
       '<div style="padding:20px;color:var(--text-dim);text-align:center">Маълумотлар юкланмади: '+e.message+'</div>';

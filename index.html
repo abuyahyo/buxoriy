@@ -326,7 +326,7 @@ const App = {
       const el=document.createElement('div');
       el.className='bob-card';
       el.id=`bob-card-${k.id}-${b.id}`;
-      el.innerHTML=`<div class="bob-name">${bobNomi(b.nomi)}</div>${b.izoh?`<div class="bob-izoh">${b.izoh}</div>`:''}<div class="bob-count" style="${b.izoh?'margin-top:8px':''}"><b>${b.hadislar.length}</b> та ҳадис${b.muallaqot?'<span class="bob-muallaqot-badge">⚑ муаллақот</span>':''}</div>`;
+      el.innerHTML=`<div class="bob-name">${bobNomi(b.nomi)}</div>${b.izoh?`<div class="bob-izoh">${b.izoh.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')}</div>`:''}<div class="bob-count" style="${b.izoh?'margin-top:8px':''}"><b>${b.hadislar.length}</b> та ҳадис${b.muallaqot?'<span class="bob-muallaqot-badge">⚑ муаллақот</span>':''}</div>`;
       el.onclick=()=>App.openBob(kid,b.id);
       g.appendChild(el);
     });
@@ -339,7 +339,7 @@ const App = {
     if(!k||!b) return;
     ST={page:'hadisList',kid,bid,hid:null};
     bc('bcHadisList',[{t:'Бош саҳифа',fn:'App.goHome()'},{t:k.nomi,fn:`App.openKitob(${kid})`},{t:bobNomi(b.nomi)}]);
-    document.getElementById('bcHadisList').innerHTML+=`${b.izoh?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.6">${b.izoh}</div>`:''}<div style="margin-top:10px;font-size:11px;color:var(--text-muted)">${b.hadislar.length} та ҳадис</div>`;
+    document.getElementById('bcHadisList').innerHTML+=`${b.izoh?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.6">${b.izoh.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')}</div>`:''}<div style="margin-top:10px;font-size:11px;color:var(--text-muted)">${b.hadislar.length} та ҳадис</div>`;
     document.getElementById('hadisListLabel').textContent='';
     document.getElementById('hadisListCount').textContent='';
     const g=document.getElementById('hadisListGrid');

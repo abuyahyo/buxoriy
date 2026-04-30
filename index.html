@@ -181,7 +181,7 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
     </div>
     <div class="hadis-pg-header">
       <div class="hadis-pg-num" id="hadisOrnament"></div>
-      <h2 class="hadis-pg-title" id="hadisTitle"></h2>
+      <h2 class="hadis-pg-title" id="hadisTitle" style="display:none"></h2>
       <div class="hadis-pg-meta" id="hadisMeta"></div>
     </div>
     <div class="hadis-text" id="hadisText"></div>
@@ -341,7 +341,7 @@ const App = {
       const el=document.createElement('div');
       el.className='hadis-item';
       el.id=`hadis-card-${kid}-${bid}-${h.id}`;
-      el.innerHTML=`<div class="hadis-item-num">${h.id}-ҳадис</div><div class="hadis-item-title">${h.sarlavha||''}</div><div class="hadis-item-preview">${h.matn.replace(/\n/g,' ')}</div><div class="hadis-item-narrator">${h.rowi||''}</div>`;
+      el.innerHTML=`<div class="hadis-item-num">${h.id}-ҳадис</div><div class="hadis-item-preview">${h.matn.replace(/\n/g,' ')}</div><div class="hadis-item-narrator">${h.rowi||''}</div>`;
       el.onclick=()=>App.openHadis(kid,bid,h.id);
       g.appendChild(el);
     });
@@ -354,7 +354,8 @@ const App = {
     ST={page:'hadis',kid,bid,hid};
     // breadcrumb hadis sahifasida yo'q
     document.getElementById('hadisOrnament').textContent=h.id+'-ҳадис';
-    document.getElementById('hadisTitle').textContent=h.sarlavha||'';
+    const titleEl=document.getElementById('hadisTitle');
+    if(h.sarlavha){titleEl.textContent=h.sarlavha;titleEl.style.display='';}else{titleEl.style.display='none';}
     document.getElementById('hadisMeta').innerHTML=`<span class="meta-pill" style="cursor:pointer" onclick="App.openKitob(${k.id})"><span class="dot"></span>${k.nomi}</span><span class="meta-pill" style="cursor:pointer" onclick="App.openBob(${k.id},${b.id})"><span class="dot"></span>${bobNomi(b.nomi)}</span>`;
     document.getElementById('hadisText').innerHTML=h.matn.replace(/\n\n/g,'<br>').replace(/\n/g,'<br>');
     document.getElementById('hadisNarrator').innerHTML='<strong>Ривояти:</strong> '+(h.rowi||'—');
@@ -393,7 +394,7 @@ const App = {
   },
   copyHadis(){
     const h=getH(ST.kid,ST.bid,ST.hid); if(!h) return;
-    const text=`${h.sarlavha||''}\n\n${h.matn}\n\nРивояти: ${h.rowi||'—'}\nМанба: ${h.manba||'Саҳиҳ Бухорий'}`;
+    const text=`${h.matn}\n\nРивояти: ${h.rowi||'—'}\nМанба: ${h.manba||'Саҳиҳ Бухорий'}`;
     const btn=document.getElementById('copyBtn');
     const orig=btn.textContent;
     const done=()=>{btn.textContent='✓ Нусхаланди';btn.classList.add('copied');setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied');},1500);};
@@ -412,7 +413,7 @@ const App = {
     const res=[];
     const isNum = /^\d+$/.test(q.trim());
     DB.forEach(k=>k.boblar.forEach(b=>b.hadislar.forEach(h=>{
-      if(isNum ? String(h.id)===q.trim() : (h.matn.toLowerCase().includes(q)||(h.rowi||'').toLowerCase().includes(q)||(h.sarlavha||'').toLowerCase().includes(q)))
+      if(isNum ? String(h.id)===q.trim() : (h.matn.toLowerCase().includes(q)||(h.rowi||'').toLowerCase().includes(q)))
         res.push({k,b,h});
     })));
     const hl=t=>t.replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),m=>`<mark>${m}</mark>`);

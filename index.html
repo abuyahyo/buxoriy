@@ -22,12 +22,13 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
 .search-input:focus{border-color:var(--gold-dark);background:var(--surface2)}
 .search-input::placeholder{color:var(--text-muted)}
 .search-icon{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none}
-.breadcrumb{position:sticky;top:0;z-index:50;padding:14px 16px 12px;border-bottom:1px solid var(--border);background:rgba(13,11,7,.96);backdrop-filter:blur(16px);font-size:13px;line-height:1.6}
+.breadcrumb{position:sticky;top:0;z-index:50;padding:14px 16px 12px;border-bottom:1px solid var(--border);background:rgba(13,11,7,.96);backdrop-filter:blur(16px)}
 .light .breadcrumb{background:rgba(245,240,232,.96)}
-.breadcrumb .bc-link{cursor:pointer;color:var(--gold-dark);transition:color .2s;-webkit-tap-highlight-color:transparent}
-.breadcrumb .bc-link:hover,.breadcrumb .bc-link:active{color:var(--gold)}
-.breadcrumb .bc-cur{color:var(--text)}
-.breadcrumb .bc-sep{color:var(--text-muted);margin:0 4px}
+.breadcrumb .bc-trail{display:flex;align-items:center;gap:5px;margin-bottom:8px}
+.breadcrumb .bc-link{display:inline-block;cursor:pointer;color:var(--gold-dark);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;padding:4px 11px;border:1px solid var(--border);border-radius:14px;transition:color .2s,border-color .2s,background .2s;-webkit-tap-highlight-color:transparent}
+.breadcrumb .bc-link:hover,.breadcrumb .bc-link:active{color:var(--gold);border-color:var(--gold-dark);background:var(--surface)}
+.breadcrumb .bc-sep{color:var(--text-muted);font-size:10px;margin:0 3px}
+.breadcrumb .bc-cur{font-size:18px;font-weight:700;color:var(--text);line-height:1.35;font-family:'Merriweather',serif;display:block;margin-top:2px}
 .home-hero{text-align:center;padding:36px 14px 32px;border-bottom:1px solid var(--border);background:var(--bg)}
 .bismillah-hero{font-family:'Scheherazade New',serif;font-size:40px;color:var(--gold);margin-bottom:14px;direction:rtl;line-height:1.5}
 .home-title{font-size:24px;color:var(--text);margin-bottom:6px;font-family:'Merriweather',serif;font-weight:700;line-height:1.4}
@@ -270,12 +271,10 @@ function bobNomi(nomi){
 
 function bc(containerId, items){
   const el=document.getElementById(containerId);
-  el.innerHTML = items.map((it, i) => {
-    const sep = i > 0 ? '<span class="bc-sep">›</span>' : '';
-    const isLast = i === items.length - 1;
-    if(isLast || !it.fn) return sep + `<span class="bc-cur">${it.t}</span>`;
-    return sep + `<span class="bc-link" onclick="${it.fn}">${it.t}</span>`;
-  }).join('');
+  const trail = items.slice(0,-1);
+  const cur = items[items.length-1];
+  const trailHtml = trail.map(it=>`<span class="bc-link" onclick="${it.fn}">${it.t}</span><span class="bc-sep">›</span>`).join('');
+  el.innerHTML=`<div class="bc-trail">${trailHtml}</div><span class="bc-cur">${cur.t}</span>`;
 }
 
 function setHash(h){

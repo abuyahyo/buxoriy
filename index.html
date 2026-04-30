@@ -70,13 +70,6 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
 .hadis-item-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px;font-family:'Merriweather',serif}
 .hadis-item-preview{font-size:13px;color:var(--text);line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .hadis-item-narrator{font-size:10px;color:var(--text-muted);margin-top:7px}
-.hadis-pg-header{text-align:center;margin-bottom:28px;padding-bottom:22px;border-bottom:1px solid var(--border);position:relative}
-.hadis-pg-header::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);width:60px;height:2px;background:var(--gold-dark)}
-.hadis-pg-title{font-size:22px;color:var(--gold);font-style:italic;margin-bottom:14px;font-family:'Merriweather',serif}
-.hadis-pg-meta{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px}
-.hadis-pg-meta-link{cursor:pointer;color:var(--gold-dark);transition:color .2s;-webkit-tap-highlight-color:transparent}
-.hadis-pg-meta-link:hover,.hadis-pg-meta-link:active{color:var(--gold)}
-.hadis-pg-meta-sep{color:var(--text-muted)}
 .hadis-text{padding:16px 8px;border-radius:6px;margin:0 -8px 16px;line-height:1.85;color:var(--text);font-size:var(--hadis-fs,16px)}
 .hadis-izoh{padding:0 8px;line-height:1.7;color:var(--text-dim);font-size:var(--hadis-fs,16px)}
 .hadis-num-inline{display:block;text-align:center;font-weight:700;color:var(--gold-dark);letter-spacing:.08em;margin-bottom:10px;font-family:'Merriweather',serif;font-size:14px}
@@ -173,11 +166,8 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
 
 <!-- 4. HADIS TO'LIQ -->
 <div id="hadisPage" class="page">
+  <div id="bcHadis" class="breadcrumb"></div>
   <div style="max-width:720px;margin:0 auto;padding:24px 14px 100px">
-    <div class="hadis-pg-header">
-      <h2 class="hadis-pg-title" id="hadisTitle" style="display:none"></h2>
-      <div class="hadis-pg-meta" id="hadisMeta"></div>
-    </div>
     <div class="hadis-text" id="hadisText"></div>
     <div class="hadis-toolbar">
       <button class="hadis-tb-btn" id="izohBtn" onclick="App.toggleIzoh()" aria-label="Изоҳни кўрсатиш" style="display:none">ⓘ Изоҳ</button>
@@ -371,10 +361,7 @@ const App = {
     const k=getK(kid); const b=getB(kid,bid); const h=getH(kid,bid,hid);
     if(!k||!b||!h) return;
     ST={page:'hadis',kid,bid,hid};
-    // breadcrumb hadis sahifasida yo'q
-    const titleEl=document.getElementById('hadisTitle');
-    if(h.sarlavha){titleEl.textContent=h.sarlavha;titleEl.style.display='';}else{titleEl.style.display='none';}
-    document.getElementById('hadisMeta').innerHTML=`<span class="hadis-pg-meta-link" onclick="App.openKitob(${k.id})">${k.nomi}</span><span class="hadis-pg-meta-sep">›</span><span class="hadis-pg-meta-link" onclick="App.openBob(${k.id},${b.id})">${b.id}-боб</span>`;
+    bc('bcHadis',[{t:'Бош саҳифа',fn:'App.goHome()'},{t:k.nomi,fn:`App.openKitob(${k.id})`},{t:`${b.id}-боб`,fn:`App.openBob(${k.id},${b.id})`},{t:`${h.id}-ҳадис`}]);
     document.getElementById('hadisText').innerHTML=`<span class="hadis-num-inline">${h.id}-ҲАДИС</span> `+h.matn.replace(/\n\n/g,'<br>').replace(/\n/g,'<br>');
     document.getElementById('hadisNarrator').innerHTML='<strong>Ривояти:</strong> '+(h.rowi||'—');
     document.getElementById('hadisSource').innerHTML='<strong>Манба:</strong> '+(h.manba||'Саҳиҳ Бухорий');

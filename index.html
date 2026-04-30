@@ -325,7 +325,7 @@ const App = {
     if(!k||!b) return;
     ST={page:'hadisList',kid,bid,hid:null};
     bc('bcHadisList',[{t:'Бош саҳифа',fn:'App.goHome()'},{t:k.nomi,fn:`App.openKitob(${kid})`},{t:bobNomi(b.nomi)}]);
-    document.getElementById('bcHadisList').innerHTML+=`${b.izoh?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.6">${b.izoh}</div>`:''}<div style="margin-top:10px"><span style="font-size:11px;color:var(--gold-dark);background:rgba(139,105,20,0.12);border:1px solid rgba(139,105,20,0.25);border-radius:20px;padding:3px 10px">${b.hadislar.length} та ҳадис</span></div>`;
+    document.getElementById('bcHadisList').innerHTML+=`${b.izoh?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.6">${b.izoh}</div>`:''}<div style="margin-top:10px"><span style="font-size:11px;color:var(--gold-dark)">${b.hadislar.length} та ҳадис</span></div>`;
     document.getElementById('hadisListLabel').textContent='';
     document.getElementById('hadisListCount').textContent='';
     const g=document.getElementById('hadisListGrid');

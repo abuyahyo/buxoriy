@@ -87,8 +87,6 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
 .muallaqot-label::before{content:"⚑";font-size:12px}
 .muallaqot-text{font-size:13px;line-height:1.9;color:var(--text-dim)}
 .bob-muallaqot-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;color:var(--gold-dark);margin-left:8px}
-#searchPage{display:none;opacity:0;transition:opacity .3s}
-#searchPage.visible{display:block;opacity:1}
 .search-pg-header{margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
 .search-pg-title{font-size:16px;color:var(--text);margin-bottom:4px}
 .search-pg-meta{font-size:10px;color:var(--text-muted)}
@@ -129,11 +127,20 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
     </div>
   </div>
   <div class="grid-wrap">
-    <div class="grid-header">
-      <span class="grid-label">Барча китоблар</span>
-      <span class="grid-count" id="kitobCount"></span>
+    <div id="kitoblarView">
+      <div class="grid-header">
+        <span class="grid-label">Барча китоблар</span>
+        <span class="grid-count" id="kitobCount"></span>
+      </div>
+      <div class="kitob-grid" id="kitobGrid"></div>
     </div>
-    <div class="kitob-grid" id="kitobGrid"></div>
+    <div id="searchView" style="display:none">
+      <div class="search-pg-header">
+        <h2 class="search-pg-title">Қидириш натижалари</h2>
+        <p class="search-pg-meta" id="searchMeta"></p>
+      </div>
+      <div id="searchResults"></div>
+    </div>
   </div>
   <footer class="home-footer">
     Тайёрлади: Исмоил Дилмурод ўғли
@@ -183,17 +190,6 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
   </div>
 </div>
 
-<!-- 5. QIDIRUV -->
-<div id="searchPage">
-  <div class="grid-wrap">
-    <div class="search-pg-header">
-      <h2 class="search-pg-title">Қидириш натижалари</h2>
-      <p class="search-pg-meta" id="searchMeta"></p>
-    </div>
-    <div id="searchResults"></div>
-  </div>
-</div>
-
 <div class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
 <button class="fab-theme" id="fabTheme" onclick="App.toggleTheme()" aria-label="Темани ўзгартириш">🌙</button>
 <div class="fab-nav" id="fabNav" style="display:none">
@@ -229,7 +225,7 @@ function allH(){
 }
 
 function showPage(id, scrollToId){
-  ['pgHome','pgBob','pgHadisList','hadisPage','searchPage'].forEach(p=>{
+  ['pgHome','pgBob','pgHadisList','hadisPage'].forEach(p=>{
     const el=document.getElementById(p);
     el.style.display='none';
     el.classList.remove('visible');
@@ -308,6 +304,9 @@ const App = {
         g.appendChild(el);
       });
     }
+    document.getElementById('searchInput').value='';
+    document.getElementById('searchView').style.display='none';
+    document.getElementById('kitoblarView').style.display='';
     showPage('pgHome');
     setHash('');
   },
@@ -431,12 +430,15 @@ const App = {
     }
   },
   doSearch(v){
-    if(!v.trim()){ App.goHome(); return; }
-    const q=v.toLowerCase();
+    const trimmed=v.trim();
+    const kView=document.getElementById('kitoblarView');
+    const sView=document.getElementById('searchView');
+    if(!trimmed){ sView.style.display='none'; kView.style.display=''; return; }
+    const q=trimmed.toLowerCase();
     const res=[];
-    const isNum = /^\d+$/.test(q.trim());
+    const isNum = /^\d+$/.test(trimmed);
     DB.forEach(k=>k.boblar.forEach(b=>b.hadislar.forEach(h=>{
-      if(isNum ? String(h.id)===q.trim() : (h.matn.toLowerCase().includes(q)||(h.rowi||'').toLowerCase().includes(q)))
+      if(isNum ? String(h.id)===trimmed : (h.matn.toLowerCase().includes(q)||(h.rowi||'').toLowerCase().includes(q)))
         res.push({k,b,h});
     })));
     const hl=t=>t.replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),m=>`<mark>${m}</mark>`);
@@ -444,7 +446,8 @@ const App = {
       ? res.map(({k,b,h})=>`<div class="result-item" onclick="App.openHadis(${k.id},${b.id},${h.id})"><div class="result-label">${k.nomi} › ${b.nomi} › ${h.id}-ҳадис</div><div class="result-text">${hl(h.matn.replace(/\n/g,' ').substring(0,220))}...</div></div>`).join('')
       : '<div class="no-results"><div class="no-results-icon">🔍</div><p>Натижа топилмади</p></div>';
     document.getElementById('searchMeta').textContent=res.length+' та натижа';
-    showPage('searchPage');
+    kView.style.display='none';
+    sView.style.display='';
   }
 };
 
@@ -452,7 +455,7 @@ let sT;
 document.getElementById('searchInput').addEventListener('input',e=>{
   clearTimeout(sT); sT=setTimeout(()=>App.doSearch(e.target.value),300);
 });
-['pgHome','pgBob','pgHadisList','hadisPage','searchPage'].forEach(pageId=>{
+['pgHome','pgBob','pgHadisList','hadisPage'].forEach(pageId=>{
   const el = document.getElementById(pageId);
   el.addEventListener('scroll',()=>{
     document.getElementById('scrollTop').className='scroll-top'+(el.scrollTop>400?' visible':'');

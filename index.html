@@ -339,7 +339,7 @@ const App = {
     if(!k||!b) return;
     ST={page:'hadisList',kid,bid,hid:null};
     bc('bcHadisList',[{t:'Бош саҳифа',fn:'App.goHome()'},{t:k.nomi,fn:`App.openKitob(${kid})`},{t:bobNomi(b.nomi)}]);
-    document.getElementById('bcHadisList').innerHTML+=`${b.izoh?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.6">${b.izoh.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')}</div>`:''}<div style="margin-top:10px;font-size:11px;color:var(--text-muted)">${b.hadislar.length} та ҳадис</div>`;
+    document.getElementById('bcHadisList').innerHTML+=`${b.izoh?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.6">${b.izoh.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')}</div>`:''}${b.hadislar.length?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted)">${b.hadislar.length} та ҳадис</div>`:''}`;
     document.getElementById('hadisListLabel').textContent='';
     document.getElementById('hadisListCount').textContent='';
     const g=document.getElementById('hadisListGrid');
@@ -358,6 +358,12 @@ const App = {
       el.onclick=()=>App.openHadis(kid,bid,h.id);
       g.appendChild(el);
     });
+    if(!b.hadislar.length){
+      const empty=document.createElement('div');
+      empty.style.cssText='text-align:center;padding:40px 20px;color:var(--text-muted);font-size:13px';
+      empty.textContent='Ушбу бобда ҳадис келтирилмаган.';
+      g.appendChild(empty);
+    }
     showPage('pgHadisList', scrollToHid ? `hadis-card-${kid}-${bid}-${scrollToHid}` : null);
     setHash('k/'+kid+'/b/'+bid);
   },

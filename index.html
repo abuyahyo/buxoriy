@@ -304,7 +304,7 @@ const App = {
     ST={page:'bob',kid,bid:null,hid:null};
     const hC=k.boblar.reduce((s,b)=>s+b.hadislar.length,0);
     bc('bcBob',[{t:'Бош саҳифа',fn:'App.goHome()'},{t:k.nomi}]);
-    document.getElementById('bcBob').innerHTML+=`<div style="margin-top:10px;display:flex;gap:12px"><span style="font-size:11px;color:var(--gold-dark);background:rgba(139,105,20,0.12);border:1px solid rgba(139,105,20,0.25);border-radius:20px;padding:3px 10px">${k.boblar.length} та боб</span><span style="font-size:11px;color:var(--text-muted);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px">${hC} та ҳадис</span></div>`;
+    document.getElementById('bcBob').innerHTML+=`<div style="margin-top:10px;display:flex;gap:14px"><span style="font-size:11px;color:var(--gold-dark)">${k.boblar.length} та боб</span><span style="font-size:11px;color:var(--text-muted)">${hC} та ҳадис</span></div>`;
     document.getElementById('bobPageLabel').textContent='';
     document.getElementById('bobCount').textContent='';
     const g=document.getElementById('bobGrid');

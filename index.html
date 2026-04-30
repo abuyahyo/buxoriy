@@ -374,7 +374,7 @@ const App = {
     const izohBtn=document.getElementById('izohBtn');
     izohEl.style.display='none';
     izohBtn.classList.remove('active');
-    if(h.izoh){izohEl.innerHTML='<strong>Изоҳ:</strong> '+h.izoh;izohBtn.style.display='';}
+    if(h.izoh){izohEl.innerHTML='<strong>Изоҳ:</strong> '+h.izoh.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');izohBtn.style.display='';}
     else{izohBtn.style.display='none';}
     const all=allH();
     const idx=all.findIndex(x=>x.kid===kid&&x.bid===bid&&x.h.id===hid);

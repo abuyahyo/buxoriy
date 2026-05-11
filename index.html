@@ -48,12 +48,10 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
 .kitob-card:hover::before,.kitob-card:active::before{opacity:1}
 .kitob-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
 .kitob-num{font-size:10px;color:var(--gold-dark);letter-spacing:.15em;text-transform:uppercase}
-.kitob-name{font-size:15px;font-weight:600;color:var(--text);line-height:1.4;font-family:'Merriweather',serif;flex:1}
-.kitob-meta{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.kitob-name{font-size:15px;font-weight:600;color:var(--text);line-height:1.4;font-family:'Merriweather',serif}
 .kitob-stats{display:flex;gap:12px}
 .kitob-stat{font-size:10px;color:var(--text-muted)}
 .kitob-stat b{color:var(--gold-dark);font-weight:600}
-.kitob-arrow{color:var(--gold-dark);font-size:14px;flex-shrink:0}
 .bob-grid{display:grid;grid-template-columns:1fr;gap:9px}
 .bob-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 13px;cursor:pointer;transition:border-color .2s,background .2s;position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent}
 .bob-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold-dark),transparent);opacity:0;transition:opacity .2s}
@@ -354,7 +352,7 @@ const App = {
         const hC=k.boblar.reduce((s,b)=>s+b.hadislar.length,0);
         const el=document.createElement('div');
         el.className='kitob-card';
-        el.innerHTML=`<div class="kitob-top"><div class="kitob-num">${k.id}-КИТОБ</div><div class="kitob-stats"><div class="kitob-stat"><b>${bC}</b> боб</div><div class="kitob-stat"><b>${hC}</b> ҳадис</div></div></div><div class="kitob-meta"><div class="kitob-name">${k.nomi}</div><div class="kitob-arrow">→</div></div>`;
+        el.innerHTML=`<div class="kitob-top"><div class="kitob-num">${k.id}-КИТОБ</div><div class="kitob-stats"><div class="kitob-stat"><b>${bC}</b> боб</div><div class="kitob-stat"><b>${hC}</b> ҳадис</div></div></div><div class="kitob-name">${k.nomi}</div>`;
         el.onclick=()=>App.openKitob(k.id);
         g.appendChild(el);
       });

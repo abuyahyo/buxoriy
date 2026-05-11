@@ -97,6 +97,11 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
 .result-text mark{background:rgba(201,168,76,.25);color:var(--gold-light);border-radius:2px;padding:0 2px}
 .no-results{text-align:center;padding:40px 20px;color:var(--text-muted)}
 .no-results-icon{font-size:48px;margin-bottom:16px;opacity:.5}
+.result-section{margin-bottom:22px}
+.result-section-header{font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:var(--gold-dark);margin-bottom:8px;padding:0 2px 6px;border-bottom:1px solid var(--border)}
+.result-where{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-left:6px;padding:1px 5px;border:1px solid var(--border);border-radius:6px}
+.result-more-btn{display:block;width:100%;background:var(--surface);border:1px solid var(--border);color:var(--gold-dark);padding:11px;border-radius:8px;cursor:pointer;font-family:'Roboto',sans-serif;font-size:12px;margin-top:6px;-webkit-tap-highlight-color:transparent;transition:border-color .2s,background .2s}
+.result-more-btn:hover,.result-more-btn:active{border-color:var(--gold-dark);background:var(--surface2)}
 .scroll-top{position:fixed;bottom:20px;right:20px;width:40px;height:40px;background:var(--gold-dark);border:1px solid var(--gold);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:16px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .3s,transform .2s;z-index:50}
 .scroll-top.visible{opacity:1;pointer-events:auto}
 .scroll-top:active{transform:scale(.92)}
@@ -277,6 +282,13 @@ function setHash(h){
 function applyHash(){
   if(!DB.length) return;
   const h = location.hash.slice(1);
+  if(h.startsWith('q=')){
+    const q = decodeURIComponent(h.slice(2));
+    document.getElementById('searchInput').value = q;
+    App.goHome(true);
+    App.doSearch(q, true);
+    return;
+  }
   const m = h.match(/^k\/(\d+)(?:\/b\/(\d+)(?:\/h\/(\d+))?)?$/);
   if(!m){ App.goHome(); return; }
   const kid=+m[1], bid=m[2]?+m[2]:null, hid=m[3]?+m[3]:null;
@@ -285,8 +297,50 @@ function applyHash(){
   else App.openKitob(kid);
 }
 
+function escHtml(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function escRegex(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+function snippet(text, query, maxLen){
+  if(!text) return '';
+  maxLen = maxLen || 200;
+  const t = text.replace(/\n+/g, ' ').trim();
+  if(t.length <= maxLen) return t;
+  const idx = t.toLowerCase().indexOf(query.toLowerCase());
+  if(idx === -1) return t.substring(0, maxLen) + '…';
+  const before = Math.floor((maxLen - query.length) / 2);
+  let start = Math.max(0, idx - before);
+  let end = Math.min(t.length, start + maxLen);
+  if(end - start < maxLen && start > 0) start = Math.max(0, end - maxLen);
+  let result = t.substring(start, end);
+  if(start > 0) result = '…' + result;
+  if(end < t.length) result = result + '…';
+  return result;
+}
+
+function syncSearchToHash(q){
+  const newHash = q ? '#q=' + encodeURIComponent(q) : '';
+  const cur = location.hash;
+  if(cur === newHash) return;
+  const newUrl = newHash ? newHash : location.pathname + location.search;
+  if(cur.startsWith('#q=')) history.replaceState(null, '', newUrl);
+  else history.pushState(null, '', newUrl);
+}
+
+let _searchState = { query:'', kitob:[], bob:[], hadis:[], hadisShown:0 };
+const SEARCH_HADIS_PAGE = 100;
+
+function homeBcItems(){
+  const items = [{t:'Бош саҳифа', fn:'App.goHome()'}];
+  if(_searchState.query){
+    const q = _searchState.query;
+    const short = q.length > 14 ? q.substring(0,14)+'…' : q;
+    items.push({t:`«${escHtml(short)}» қидирув`, fn:'App.restoreSearch()'});
+  }
+  return items;
+}
+
 const App = {
-  goHome(){
+  goHome(_keepSearch){
     ST={page:'home',kid:null,bid:null,hid:null};
     document.getElementById('kitobCount').textContent=DB.length+' та китоб';
     const g=document.getElementById('kitobGrid');
@@ -304,11 +358,14 @@ const App = {
         g.appendChild(el);
       });
     }
-    document.getElementById('searchInput').value='';
-    document.getElementById('searchView').style.display='none';
-    document.getElementById('kitoblarView').style.display='';
+    if(!_keepSearch){
+      document.getElementById('searchInput').value='';
+      document.getElementById('searchView').style.display='none';
+      document.getElementById('kitoblarView').style.display='';
+      _searchState = { query:'', kitob:[], bob:[], hadis:[], hadisShown:0 };
+      setHash('');
+    }
     showPage('pgHome');
-    setHash('');
   },
 
   openKitob(kid, scrollToBid=false){
@@ -316,7 +373,7 @@ const App = {
     if(!k) return;
     ST={page:'bob',kid,bid:null,hid:null};
     const hC=k.boblar.reduce((s,b)=>s+b.hadislar.length,0);
-    bc('bcBob',[{t:'Бош саҳифа',fn:'App.goHome()'},{t:k.nomi}]);
+    bc('bcBob',[...homeBcItems(),{t:k.nomi}]);
     document.getElementById('bcBob').innerHTML+=`<div style="margin-top:10px;display:flex;gap:14px;font-size:11px;color:var(--text-muted)"><span>${k.boblar.length} та боб</span><span>${hC} та ҳадис</span></div>`;
     document.getElementById('bobPageLabel').textContent='';
     document.getElementById('bobCount').textContent='';
@@ -338,7 +395,7 @@ const App = {
     const k=getK(kid); const b=getB(kid,bid);
     if(!k||!b) return;
     ST={page:'hadisList',kid,bid,hid:null};
-    bc('bcHadisList',[{t:'Бош саҳифа',fn:'App.goHome()'},{t:k.nomi,fn:`App.openKitob(${kid})`},{t:bobNomi(b.nomi)}]);
+    bc('bcHadisList',[...homeBcItems(),{t:k.nomi,fn:`App.openKitob(${kid})`},{t:bobNomi(b.nomi)}]);
     document.getElementById('bcHadisList').innerHTML+=`${b.izoh?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.6">${b.izoh.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')}</div>`:''}${b.hadislar.length?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted)">${b.hadislar.length} та ҳадис</div>`:''}`;
     document.getElementById('hadisListLabel').textContent='';
     document.getElementById('hadisListCount').textContent='';
@@ -372,7 +429,7 @@ const App = {
     const k=getK(kid); const b=getB(kid,bid); const h=getH(kid,bid,hid);
     if(!k||!b||!h) return;
     ST={page:'hadis',kid,bid,hid};
-    bc('bcHadis',[{t:'Бош саҳифа',fn:'App.goHome()'},{t:k.nomi,fn:`App.openKitob(${k.id})`},{t:`${b.id}-боб`,fn:`App.openBob(${k.id},${b.id})`}]);
+    bc('bcHadis',[...homeBcItems(),{t:k.nomi,fn:`App.openKitob(${k.id})`},{t:`${b.id}-боб`,fn:`App.openBob(${k.id},${b.id})`}]);
     document.getElementById('hadisText').innerHTML=`<span class="hadis-num-inline">${h.id}-ҲАДИС</span> `+h.matn.replace(/\n\n/g,'<br>').replace(/\n/g,'<br>');
     document.getElementById('hadisNarrator').innerHTML='<strong>Ривояти:</strong> '+(h.rowi||'—');
     document.getElementById('hadisSource').innerHTML='<strong>Манба:</strong> '+(h.manba||'Саҳиҳ Бухорий');
@@ -435,25 +492,112 @@ const App = {
       document.body.removeChild(ta);
     }
   },
-  doSearch(v){
-    const trimmed=v.trim();
-    const kView=document.getElementById('kitoblarView');
-    const sView=document.getElementById('searchView');
-    if(!trimmed){ sView.style.display='none'; kView.style.display=''; return; }
-    const q=trimmed.toLowerCase();
-    const res=[];
+  doSearch(v, fromHash){
+    const trimmed = v.trim();
+    const kView = document.getElementById('kitoblarView');
+    const sView = document.getElementById('searchView');
+
+    if(!fromHash) syncSearchToHash(trimmed);
+
+    if(!trimmed){
+      sView.style.display='none';
+      kView.style.display='';
+      _searchState = { query:'', kitob:[], bob:[], hadis:[], hadisShown:0 };
+      return;
+    }
+
+    const q = trimmed.toLowerCase();
     const isNum = /^\d+$/.test(trimmed);
-    DB.forEach(k=>k.boblar.forEach(b=>b.hadislar.forEach(h=>{
-      if(isNum ? String(h.id)===trimmed : (h.matn.toLowerCase().includes(q)||(h.rowi||'').toLowerCase().includes(q)))
-        res.push({k,b,h});
-    })));
-    const hl=t=>t.replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),m=>`<mark>${m}</mark>`);
-    document.getElementById('searchResults').innerHTML=res.length
-      ? res.map(({k,b,h})=>`<div class="result-item" onclick="App.openHadis(${k.id},${b.id},${h.id})"><div class="result-label">${k.nomi} › ${b.nomi} › ${h.id}-ҳадис</div><div class="result-text">${hl(h.matn.replace(/\n/g,' ').substring(0,220))}...</div></div>`).join('')
-      : '<div class="no-results"><div class="no-results-icon">🔍</div><p>Натижа топилмади</p></div>';
-    document.getElementById('searchMeta').textContent=res.length+' та натижа';
+    const kitob=[], bob=[], hadis=[];
+
+    DB.forEach(k=>{
+      if(!isNum && k.nomi.toLowerCase().includes(q)) kitob.push({k});
+      k.boblar.forEach(b=>{
+        if(!isNum){
+          const inN = b.nomi.toLowerCase().includes(q);
+          const inI = b.izoh && b.izoh.toLowerCase().includes(q);
+          const inM = b.muallaqot && b.muallaqot.toLowerCase().includes(q);
+          if(inN||inI||inM) bob.push({k, b, where: inN?'nomi':inI?'izoh':'muallaqot'});
+        }
+        b.hadislar.forEach(h=>{
+          if(isNum){
+            if(String(h.id)===trimmed) hadis.push({k, b, h, where:'matn'});
+            return;
+          }
+          const inM = h.matn.toLowerCase().includes(q);
+          const inR = h.rowi && h.rowi.toLowerCase().includes(q);
+          const inI = h.izoh && h.izoh.toLowerCase().includes(q);
+          if(inM||inR||inI) hadis.push({k, b, h, where: inM?'matn':inR?'rowi':'izoh'});
+        });
+      });
+    });
+
+    _searchState = { query:trimmed, kitob, bob, hadis, hadisShown: Math.min(SEARCH_HADIS_PAGE, hadis.length) };
+    this._renderSearch();
     kView.style.display='none';
     sView.style.display='';
+  },
+
+  _renderSearch(){
+    const s = _searchState;
+    const total = s.kitob.length + s.bob.length + s.hadis.length;
+    document.getElementById('searchMeta').textContent = total ? total+' та натижа' : '';
+    const container = document.getElementById('searchResults');
+    if(!total){
+      container.innerHTML='<div class="no-results"><div class="no-results-icon">🔍</div><p>Натижа топилмади</p></div>';
+      return;
+    }
+    const re = new RegExp(escRegex(s.query), 'gi');
+    const hl = t => escHtml(t).replace(re, m=>`<mark>${m}</mark>`);
+    let html='';
+
+    if(s.kitob.length){
+      html += `<div class="result-section"><div class="result-section-header">Китоблар (${s.kitob.length})</div>`;
+      html += s.kitob.map(({k})=>`<div class="result-item" onclick="App.openKitob(${k.id})"><div class="result-label">${k.id}-китоб</div><div class="result-text">${hl(k.nomi)}</div></div>`).join('');
+      html += '</div>';
+    }
+
+    if(s.bob.length){
+      html += `<div class="result-section"><div class="result-section-header">Боблар (${s.bob.length})</div>`;
+      html += s.bob.map(({k,b,where})=>{
+        const txt = where==='nomi' ? b.nomi : where==='izoh' ? b.izoh : b.muallaqot;
+        const lbl = where==='izoh' ? 'Изоҳда' : where==='muallaqot' ? 'Муаллақотда' : '';
+        return `<div class="result-item" onclick="App.openBob(${k.id},${b.id})"><div class="result-label">${escHtml(k.nomi)} › ${b.id}-боб${lbl?' <span class="result-where">'+lbl+'</span>':''}</div><div class="result-text">${hl(snippet(txt, s.query))}</div></div>`;
+      }).join('');
+      html += '</div>';
+    }
+
+    if(s.hadis.length){
+      const shown = s.hadis.slice(0, s.hadisShown);
+      html += `<div class="result-section"><div class="result-section-header">Ҳадислар (${s.hadis.length})</div>`;
+      html += shown.map(({k,b,h,where})=>{
+        const txt = where==='matn' ? h.matn : where==='rowi' ? h.rowi : h.izoh;
+        const lbl = where==='rowi' ? 'Ровийда' : where==='izoh' ? 'Изоҳда' : '';
+        return `<div class="result-item" onclick="App.openHadis(${k.id},${b.id},${h.id})"><div class="result-label">${escHtml(k.nomi)} › ${b.id}-боб › ${h.id}-ҳадис${lbl?' <span class="result-where">'+lbl+'</span>':''}</div><div class="result-text">${hl(snippet(txt, s.query))}</div></div>`;
+      }).join('');
+      if(s.hadisShown < s.hadis.length){
+        html += `<button class="result-more-btn" onclick="App.showMoreHadis()">Яна кўрсатиш (${s.hadis.length - s.hadisShown} та қолди)</button>`;
+      }
+      html += '</div>';
+    }
+
+    container.innerHTML = html;
+  },
+
+  showMoreHadis(){
+    _searchState.hadisShown = Math.min(_searchState.hadisShown + SEARCH_HADIS_PAGE, _searchState.hadis.length);
+    this._renderSearch();
+  },
+
+  restoreSearch(){
+    if(!_searchState.query){ this.goHome(); return; }
+    ST = {page:'home',kid:null,bid:null,hid:null};
+    document.getElementById('searchInput').value = _searchState.query;
+    syncSearchToHash(_searchState.query);
+    this._renderSearch();
+    document.getElementById('kitoblarView').style.display='none';
+    document.getElementById('searchView').style.display='';
+    showPage('pgHome');
   }
 };
 

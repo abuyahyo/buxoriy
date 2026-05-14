@@ -207,6 +207,7 @@ let DB = []; // data.json дан юкланади
 
 let ST = { page:'home', kid:null, bid:null, hid:null };
 const scrollPos = {};
+let lastHash = '';
 let th = localStorage.getItem('th') || 'dark';
 let fs = parseInt(localStorage.getItem('fs'),10) || 16;
 document.documentElement.style.setProperty('--hadis-fs',fs+'px');
@@ -229,6 +230,8 @@ function allH(){
 }
 
 function showPage(id, scrollToId){
+  const cur = document.querySelector('.page.visible');
+  if(cur) scrollPos[lastHash] = cur.scrollTop;
   ['pgHome','pgBob','pgHadisList','hadisPage'].forEach(p=>{
     const el=document.getElementById(p);
     el.style.display='none';
@@ -242,9 +245,14 @@ function showPage(id, scrollToId){
     setTimeout(()=>{
       const target = document.getElementById(scrollToId);
       if(target) target.scrollIntoView({block:'center'});
+      lastHash = location.hash;
     }, 50);
   } else {
-    el.scrollTop = 0;
+    setTimeout(()=>{
+      const saved = scrollPos[location.hash];
+      el.scrollTop = (saved != null) ? saved : 0;
+      lastHash = location.hash;
+    }, 0);
   }
 }
 

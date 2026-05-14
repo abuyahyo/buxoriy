@@ -96,6 +96,79 @@ with open('data.json', 'w', encoding='utf-8') as f:
 
 `indent=2` ИШЛАТИЛМАСИН — у бутун файлни форматлаб юборади ва диff жуда катта бўлади.
 
+## Код тузилмаси (`index.html`)
+
+Битта файл: `<head>` + inline CSS → 4 та `<div class="page">` блок → `<script>` JS.
+
+### Саҳифалар (4 та)
+
+Ҳамма саҳифа DOM'да доимий туради, бирваракай битта кўриниб туради — `showPage(id)` бошқаради.
+
+- `pgHome` — китоблар грид + қидирув инпут + қидирув натижалари
+- `pgBob` — танланган китобнинг боблари
+- `pgHadisList` — танланган бобнинг ҳадислари
+- `hadisPage` — битта ҳадис тўлиқ матн билан
+
+### Glob state
+
+```js
+let DB = [];                  // data.json — массив
+let ST = { page, kid, bid, hid };   // жорий навигация
+let _searchState = { query, kitob[], bob[], hadis[], hadisShown };
+let fs, th;                   // localStorage: фонт ўлчами, тема
+```
+
+### Hash routing
+
+URL hash'и саҳифа ҳолатини сақлайди. Browser back/forward `applyHash()` орқали қайта тиклайди.
+
+- `#k/1` — китоб
+- `#k/1/b/2` — боб
+- `#k/1/b/2/h/3` — ҳадис
+- `#q=сўз` — қидирув натижалари (encodeURIComponent)
+
+### App объекти асосий методлари
+
+| Метод | Вазифаси |
+|-------|----------|
+| `goHome(_keepSearch)` | Бош саҳифа. Флаг билан қидирувни сақлаш мумкин |
+| `openKitob(kid, scrollToBid?)` | Китоб бобларини кўрсатиш |
+| `openBob(kid, bid, scrollToHid?)` | Бобнинг ҳадисларини кўрсатиш |
+| `openHadis(kid, bid, hid)` | Ҳадис тўлиқ кўриниш |
+| `doSearch(v, fromHash?)` | Қидирув: 3 та секцияда натижа (китоб/боб/ҳадис) |
+| `_renderSearch()` | `_searchState`'дан DOM яратиш |
+| `showMoreHadis()` | Кейинги 100 та ҳадисни кўрсатиш |
+| `restoreSearch()` | Натижаларга қайтиш |
+| `prevHadis()` / `nextHadis()` | Ҳадислар ўртасида ўтиш |
+| `toggleTheme()` / `adjustFontSize()` / `copyHadis()` / `toggleIzoh()` | UI |
+
+### Helper функциялар
+
+- `getK(kid)`, `getB(kid,bid)`, `getH(kid,bid,hid)` — массивдан топиш
+- `allH()` — ҳамма ҳадислар flat массиви (prev/next учун)
+- `bobNomi(s)` — боб номини форматлаш (катта/кичик ҳарф, "Аллоҳ", "Набий" автоматик)
+- `snippet(text, query)` — қидирувда сўз атрофида ~200 ҳарф
+- `escHtml(s)`, `escRegex(s)` — XSS / regex ҳимояси
+- `syncSearchToHash(q)` — қидирувни URL'га чиқариш (push/replace)
+- `homeBcItems()` — breadcrumb'нинг бошланиши («Бош саҳифа» + ихтиёрий «"X" қидирув» линки)
+- `bc(containerId, items)` — breadcrumb HTML қуриш
+
+### CSS наименование
+
+- `.kitob-*` — китоб карталари (top, num, name, stats)
+- `.bob-*` — боб карталари (card, name, izoh, count, muallaqot-badge)
+- `.hadis-*` — ҳадислар (item, text, izoh, narrator, source, tb-btn)
+- `.result-*` — қидирув натижалари (section, item, label, text, where, more-btn)
+- `.bc-*` — breadcrumb (trail, link, sep, cur)
+- `.fab-*` — флоат тугмалари (nav, theme)
+- CSS variables `:root` ва `.light` — тема рангларини бошқаради
+
+### Янги функция қўшиш йўриғи
+
+- Янги саҳифа: HTML'да янги `<div id="pgXxx" class="page">` қўшиш, `showPage()`'нинг массивига киритиш, App.openXxx() метод яратиш, `applyHash()`'да URL pattern қўшиш.
+- Янги қидирув майдони: `doSearch()` ичида `inX = ...includes(q)` қўшиш, `_renderSearch()`'да label ўзгартириш.
+- Янги breadcrumb элементи: керакли open* методда `bc(...)` чақирувида item қўшиш.
+
 ## Workflow
 
 1. Фойдаланувчи бир неча боб/ҳадис учун манба расмларини юборади (одатда 2-3 боб бирга).

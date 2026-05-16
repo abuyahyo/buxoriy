@@ -122,6 +122,8 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 .hadis-tb-group .hadis-tb-btn{border:none;border-radius:0;background:transparent;height:36px;min-width:38px;border-right:1px solid var(--border)}
 .hadis-tb-group .hadis-tb-btn:last-child{border-right:none}
 .hadis-tb-group .hadis-tb-btn:hover,.hadis-tb-group .hadis-tb-btn:active{background:var(--sage-glow);color:var(--sage-deep)}
+.hadis-ref{color:var(--sage-deep);text-decoration:none;border-bottom:1px dashed var(--sage);cursor:pointer;transition:color .25s,border-color .25s,background .25s;padding:0 3px;border-radius:3px;font-style:italic}
+.hadis-ref:hover,.hadis-ref:active{color:var(--text);border-bottom-color:var(--sage-deep);background:var(--sage-glow)}
 .hadis-narrator,.hadis-source{margin-top:14px;padding:16px 18px;background:var(--surface);border-radius:var(--radius);font-size:13px;line-height:1.75;color:var(--text-dim);font-family:'Merriweather',serif;font-style:italic;font-weight:300;position:relative}
 .hadis-narrator{border-left:3px solid var(--sage)}
 .hadis-source{border-left:3px solid var(--rose-soft)}
@@ -294,6 +296,27 @@ function allH(){
   const a=[];
   DB.forEach(k=>k.boblar.forEach(b=>b.hadislar.forEach(h=>a.push({kid:k.id,bid:b.id,h}))));
   return a;
+}
+
+// Ҳадис рақамлари → {kid, bid} (cross-reference линклар учун)
+let HADIS_MAP = null;
+function buildHadisMap(){
+  if(HADIS_MAP || !isFullDB) return;
+  HADIS_MAP = new Map();
+  DB.forEach(k=>k.boblar.forEach(b=>b.hadislar.forEach(h=>{
+    HADIS_MAP.set(h.id, {kid:k.id, bid:b.id});
+  })));
+}
+
+// Матндаги "N-ҳадис", "N ҳадисга" каби ҳаволаларни босиладиган линкка айлантириш
+function linkifyRefs(html){
+  if(!isFullDB) return html;
+  buildHadisMap();
+  return html.replace(/(\d+)([\s-]+)(ҳадис|Ҳадис|ҲАДИС)([\u0400-\u04ff]*)/g, (match, num, sep, word, suffix)=>{
+    const target = HADIS_MAP.get(parseInt(num, 10));
+    if(!target) return match;
+    return `<a class="hadis-ref" href="#k/${target.kid}/b/${target.bid}/h/${num}" onclick="event.stopPropagation()">${num}${sep}${word}${suffix}</a>`;
+  });
 }
 
 function showPage(id, scrollToId){
@@ -491,7 +514,7 @@ const App = {
     }
     const bhC = b.hC ?? (b.hadislar ? b.hadislar.length : 0);
     bc('bcHadisList',[...homeBcItems(),{t:k.nomi,fn:`App.openKitob(${kid})`},{t:bobNomi(b.nomi)}]);
-    document.getElementById('bcHadisList').innerHTML+=`${b.izoh?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.6">${b.izoh.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')}</div>`:''}${bhC?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted)">${bhC} та ҳадис</div>`:''}`;
+    document.getElementById('bcHadisList').innerHTML+=`${b.izoh?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.6">${linkifyRefs(b.izoh.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>'))}</div>`:''}${bhC?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted)">${bhC} та ҳадис</div>`:''}`;
     document.getElementById('hadisListLabel').textContent='';
     document.getElementById('hadisListCount').textContent='';
     const g=document.getElementById('hadisListGrid');
@@ -499,7 +522,7 @@ const App = {
     if(b.muallaqot){
       const mel=document.createElement('div');
       mel.className='muallaqot-block';
-      mel.innerHTML=`<div class="muallaqot-label">Муаллақот</div><div class="muallaqot-text">${b.muallaqot.replace(/\n/g,'<br>')}</div>`;
+      mel.innerHTML=`<div class="muallaqot-label">Муаллақот</div><div class="muallaqot-text">${linkifyRefs(b.muallaqot.replace(/\n/g,'<br>'))}</div>`;
       g.appendChild(mel);
     }
     if(!isFullDB){
@@ -566,14 +589,14 @@ const App = {
     }
     const h=getH(kid,bid,hid);
     if(!h) return;
-    document.getElementById('hadisText').innerHTML=`<span class="hadis-num-inline">${h.id}-ҲАДИС</span> `+h.matn.replace(/\n\n/g,'<br>').replace(/\n/g,'<br>');
+    document.getElementById('hadisText').innerHTML=`<span class="hadis-num-inline">${h.id}-ҲАДИС</span> `+linkifyRefs(h.matn.replace(/\n\n/g,'<br>').replace(/\n/g,'<br>'));
     document.getElementById('hadisNarrator').innerHTML='<strong>Ривояти:</strong> '+(h.rowi||'—');
     document.getElementById('hadisSource').innerHTML='<strong>Манба:</strong> '+(h.manba||'Саҳиҳ Бухорий');
     const izohEl=document.getElementById('hadisIzoh');
     const izohBtn=document.getElementById('izohBtn');
     izohEl.style.display='none';
     izohBtn.classList.remove('active');
-    if(h.izoh){izohEl.innerHTML='<strong>Изоҳ:</strong> '+h.izoh.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');izohBtn.style.display='';}
+    if(h.izoh){izohEl.innerHTML='<strong>Изоҳ:</strong> '+linkifyRefs(h.izoh.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>'));izohBtn.style.display='';}
     else{izohBtn.style.display='none';}
     const all=allH();
     const idx=all.findIndex(x=>x.kid===kid&&x.bid===bid&&x.h.id===hid);

@@ -11,6 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=4">
+<link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2064%2064%22%3E%3Crect%20width=%2264%22%20height=%2264%22%20rx=%2214%22%20fill=%22%23f5f0e8%22/%3E%3Ctext%20x=%2232%22%20y=%2229%22%20font-family=%22Georgia,serif%22%20font-size=%2213%22%20font-weight=%22bold%22%20fill=%22%238b6914%22%20text-anchor=%22middle%22%3E%D0%A1%D0%B0%D2%B3%D0%B8%D2%B3%3C/text%3E%3Ctext%20x=%2232%22%20y=%2246%22%20font-family=%22Georgia,serif%22%20font-size=%2210%22%20font-weight=%22bold%22%20fill=%22%238b6914%22%20text-anchor=%22middle%22%3E%D0%91%D1%83%D1%85%D0%BE%D1%80%D0%B8%D0%B9%3C/text%3E%3C/svg%3E">
 <link rel="preload" href="index.json" as="fetch" crossorigin="anonymous">
 <link rel="prefetch" href="data.json" as="fetch" crossorigin="anonymous">
@@ -170,6 +171,17 @@ body.fabs-hidden .fab-nav{transform:translateX(-50%) translateY(90px);opacity:0;
 .page.visible{display:block;opacity:1}
 #pgHome{display:block;opacity:1}
 
+/* Update banner */
+.update-banner{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--sage);border-radius:99px;padding:8px 8px 8px 18px;box-shadow:var(--shadow-lg);z-index:60;max-width:calc(100vw - 32px);animation:slideUpBanner .35s var(--ease)}
+.update-banner.visible{display:flex}
+.update-banner span{font-size:13px;color:var(--text);font-weight:500;white-space:nowrap}
+.update-banner button.update-btn{background:var(--sage);color:#fff;border:none;padding:7px 14px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Roboto',sans-serif;letter-spacing:.02em;transition:background .25s}
+.update-banner button.update-btn:hover,.update-banner button.update-btn:active{background:var(--sage-deep)}
+.update-banner button.update-dismiss{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:0 6px;line-height:1;transition:color .25s}
+.update-banner button.update-dismiss:hover{color:var(--text)}
+@keyframes slideUpBanner{from{opacity:0;transform:translate(-50%,30px)}to{opacity:1;transform:translateX(-50%)}}
+body.fabs-hidden .update-banner{transform:translate(-50%,90px);opacity:0;pointer-events:none;transition:transform .35s var(--ease),opacity .35s}
+
 /* Loading state */
 .loading-state{text-align:center;padding:50px 20px;color:var(--text-muted);font-size:13px;letter-spacing:.06em;font-weight:300}
 .loading-state::before{content:"";display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--sage);border-radius:50%;animation:spin .9s linear infinite;vertical-align:middle;margin-right:12px}
@@ -268,6 +280,11 @@ body.fabs-hidden .fab-nav{transform:translateX(-50%) translateY(90px);opacity:0;
   <button id="fabPrev" onclick="App.prevHadis()" aria-label="Олдинги">←</button>
   <button onclick="App.goHome()" aria-label="Бош саҳифа">⌂</button>
   <button id="fabNext" onclick="App.nextHadis()" aria-label="Кейинги">→</button>
+</div>
+<div class="update-banner" id="updateBanner" role="status" aria-live="polite">
+  <span>🔄 Янги версия мавжуд</span>
+  <button class="update-btn" onclick="applySwUpdate()">Янгилаш</button>
+  <button class="update-dismiss" onclick="dismissSwUpdate()" aria-label="Ёпиш">✕</button>
 </div>
 
 <script>
@@ -841,6 +858,57 @@ fullDataPromise.catch(e => {
   });
 });
 indexPromise.catch(() => {/* data.json орқали тиклаш мумкин */});
+
+// Service Worker — PWA, офлайн, янгилаш огоҳлантириши
+let _swRegistration = null;
+let _swWaiting = null;
+function showSwBanner(){
+  if(localStorage.getItem('sw-dismissed-this-update') === _swCurrentBuild()) return;
+  document.getElementById('updateBanner').classList.add('visible');
+}
+function _swCurrentBuild(){
+  return _swWaiting ? _swWaiting.scriptURL : '';
+}
+function applySwUpdate(){
+  document.getElementById('updateBanner').classList.remove('visible');
+  if(_swWaiting){
+    _swWaiting.postMessage('skip-waiting');
+    navigator.serviceWorker.addEventListener('controllerchange', ()=>location.reload(), {once:true});
+  } else {
+    location.reload();
+  }
+}
+function dismissSwUpdate(){
+  document.getElementById('updateBanner').classList.remove('visible');
+  // Бу версия учун қайта кўрсатмаслик
+  if(_swWaiting) localStorage.setItem('sw-dismissed-this-update', _swCurrentBuild());
+}
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      _swRegistration = reg;
+      // Already waiting (deploy happened while previous tab was open)
+      if(reg.waiting && navigator.serviceWorker.controller){
+        _swWaiting = reg.waiting;
+        showSwBanner();
+      }
+      reg.addEventListener('updatefound', ()=>{
+        const newWorker = reg.installing;
+        if(!newWorker) return;
+        newWorker.addEventListener('statechange', ()=>{
+          if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
+            _swWaiting = newWorker;
+            showSwBanner();
+          }
+        });
+      });
+    }).catch(()=>{/* SW ишламаса ҳам сайт ишлайди */});
+    // Фойдаланувчи табга қайтганда янги версия текширилади
+    document.addEventListener('visibilitychange', ()=>{
+      if(!document.hidden && _swRegistration) _swRegistration.update().catch(()=>{});
+    });
+  });
+}
 </script>
 </body>
 </html>

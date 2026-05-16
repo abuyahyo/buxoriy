@@ -153,13 +153,17 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 .scroll-top{position:fixed;bottom:24px;right:24px;width:44px;height:44px;background:var(--surface);border:1px solid var(--border);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:18px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .35s,transform .25s,background .25s,color .25s;z-index:50;box-shadow:var(--shadow)}
 .scroll-top.visible{opacity:1;pointer-events:auto}
 .scroll-top:hover,.scroll-top:active{background:var(--sage);color:#fff;transform:scale(.95)}
-.fab-theme{position:fixed;bottom:24px;left:24px;width:46px;height:46px;background:var(--surface);border:1px solid var(--border);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:transform .25s,background .25s;z-index:50;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow)}
+.fab-theme{position:fixed;bottom:24px;left:24px;width:46px;height:46px;background:var(--surface);border:1px solid var(--border);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:transform .35s var(--ease),opacity .35s,background .25s;z-index:50;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow)}
 .fab-theme:hover,.fab-theme:active{background:var(--surface2);transform:scale(.95) rotate(15deg)}
-.fab-nav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;background:var(--surface);border:1px solid var(--border);border-radius:99px;overflow:hidden;z-index:50;box-shadow:var(--shadow)}
+.fab-nav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;background:var(--surface);border:1px solid var(--border);border-radius:99px;overflow:hidden;z-index:50;box-shadow:var(--shadow);transition:transform .35s var(--ease),opacity .35s}
 .fab-nav button{background:transparent;border:none;color:var(--text-dim);width:58px;height:46px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:color .25s,background .25s;-webkit-tap-highlight-color:transparent}
 .fab-nav button:hover,.fab-nav button:active{color:var(--sage-deep);background:var(--sage-glow)}
 .fab-nav button.disabled{opacity:.3;pointer-events:none}
 .fab-nav button + button{border-left:1px solid var(--border)}
+
+/* FAB ларни автоматик яшириш (пастга скролл қилганда) */
+body.fabs-hidden .fab-theme,body.fabs-hidden .scroll-top{transform:translateY(90px) !important;opacity:0;pointer-events:none}
+body.fabs-hidden .fab-nav{transform:translateX(-50%) translateY(90px);opacity:0;pointer-events:none}
 
 /* Page transitions */
 .page{display:none;opacity:0;transition:opacity .35s var(--ease);background:var(--bg);height:100vh;overflow-y:auto;position:fixed;top:0;left:0;right:0;bottom:0;overscroll-behavior:contain}
@@ -242,7 +246,7 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 <!-- 4. HADIS TO'LIQ -->
 <div id="hadisPage" class="page">
   <div id="bcHadis" class="breadcrumb"></div>
-  <div style="max-width:720px;margin:0 auto;padding:24px 14px 100px">
+  <div style="max-width:720px;margin:0 auto;padding:24px 14px 160px">
     <div class="hadis-text" id="hadisText"></div>
     <div class="hadis-toolbar">
       <button class="hadis-tb-btn" id="izohBtn" onclick="App.toggleIzoh()" aria-label="Изоҳни кўрсатиш" style="display:none">ⓘ Изоҳ</button>
@@ -331,6 +335,9 @@ function showPage(id, scrollToId){
   el.style.display='block';
   el.classList.add('visible');
   document.getElementById('fabNav').style.display = id==='hadisPage' ? 'flex' : 'none';
+  // Янги саҳифа — FAB ҳолатини тиклаш
+  document.body.classList.remove('fabs-hidden');
+  if(typeof _lastScrollY !== 'undefined') _lastScrollY = 0;
   if(scrollToId){
     setTimeout(()=>{
       const target = document.getElementById(scrollToId);
@@ -785,10 +792,24 @@ document.getElementById('searchClear').addEventListener('click',()=>{
   App.doSearch('');
   searchInput.focus();
 });
+let _lastScrollY = 0, _scrollTicking = false;
+function _handleFabVisibility(scrollTop){
+  if(_scrollTicking) return;
+  _scrollTicking = true;
+  requestAnimationFrame(()=>{
+    const delta = scrollTop - _lastScrollY;
+    if(scrollTop < 60) document.body.classList.remove('fabs-hidden');
+    else if(delta > 12) document.body.classList.add('fabs-hidden');
+    else if(delta < -6) document.body.classList.remove('fabs-hidden');
+    _lastScrollY = scrollTop;
+    _scrollTicking = false;
+  });
+}
 ['pgHome','pgBob','pgHadisList','hadisPage'].forEach(pageId=>{
   const el = document.getElementById(pageId);
   el.addEventListener('scroll',()=>{
     document.getElementById('scrollTop').className='scroll-top'+(el.scrollTop>400?' visible':'');
+    _handleFabVisibility(el.scrollTop);
   });
 });
 document.getElementById('scrollTop').onclick=()=>{

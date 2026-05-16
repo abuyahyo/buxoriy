@@ -24,6 +24,10 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
 .search-input:focus{border-color:var(--gold-dark);background:var(--surface2)}
 .search-input::placeholder{color:var(--text-muted)}
 .search-icon{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none}
+.search-clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--text-muted);font-size:14px;width:26px;height:26px;border-radius:50%;cursor:pointer;display:none;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:color .2s,background .2s}
+.search-clear:hover,.search-clear:active{color:var(--gold);background:var(--surface)}
+.search-wrap.has-text .search-clear{display:flex}
+.search-wrap.has-text .search-icon{display:none}
 .breadcrumb{position:sticky;top:0;z-index:50;padding:14px 16px 12px;border-bottom:1px solid var(--border);background:rgba(13,11,7,.96);backdrop-filter:blur(16px)}
 .light .breadcrumb{background:rgba(245,240,232,.96)}
 .breadcrumb .bc-trail{display:flex;align-items:center;gap:5px;margin-bottom:8px}
@@ -135,7 +139,8 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
   <div class="home-search">
     <div class="search-wrap">
       <input type="text" class="search-input" id="searchInput" placeholder="Ҳадис қидириш...">
-      <div class="search-icon">🔍</div>
+      <button type="button" class="search-clear" id="searchClear" aria-label="Тозалаш">✕</button>
+      <div class="search-icon" id="searchIcon">🔍</div>
     </div>
   </div>
   <div class="grid-wrap">
@@ -301,6 +306,7 @@ function applyHash(){
   if(h.startsWith('q=')){
     const q = decodeURIComponent(h.slice(2));
     document.getElementById('searchInput').value = q;
+    updateSearchUI();
     App.goHome(true);
     App.doSearch(q, true);
     return;
@@ -371,6 +377,7 @@ const App = {
     });
     if(!_keepSearch){
       document.getElementById('searchInput').value='';
+      updateSearchUI();
       document.getElementById('searchView').style.display='none';
       document.getElementById('kitoblarView').style.display='';
       _searchState = { query:'', kitob:[], bob:[], hadis:[], hadisShown:0 };
@@ -679,6 +686,7 @@ const App = {
     if(!_searchState.query){ this.goHome(); return; }
     ST = {page:'home',kid:null,bid:null,hid:null};
     document.getElementById('searchInput').value = _searchState.query;
+    updateSearchUI();
     syncSearchToHash(_searchState.query);
     this._renderSearch();
     document.getElementById('kitoblarView').style.display='none';
@@ -688,8 +696,19 @@ const App = {
 };
 
 let sT;
-document.getElementById('searchInput').addEventListener('input',e=>{
+const searchInput = document.getElementById('searchInput');
+const searchWrap = document.querySelector('.home-search .search-wrap');
+function updateSearchUI(){ searchWrap.classList.toggle('has-text', !!searchInput.value); }
+searchInput.addEventListener('input',e=>{
+  updateSearchUI();
   clearTimeout(sT); sT=setTimeout(()=>App.doSearch(e.target.value),300);
+});
+document.getElementById('searchClear').addEventListener('click',()=>{
+  searchInput.value='';
+  updateSearchUI();
+  clearTimeout(sT);
+  App.doSearch('');
+  searchInput.focus();
 });
 ['pgHome','pgBob','pgHadisList','hadisPage'].forEach(pageId=>{
   const el = document.getElementById(pageId);

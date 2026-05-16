@@ -55,8 +55,20 @@ if count != 1:
 with open('index.html', 'w', encoding='utf-8') as f:
     f.write(new_html)
 
-# Sizes
+# Bump sw.js cache version so browsers see a new SW and trigger the
+# "Update available" flow. Use data.json mtime as a stable build id.
 import os
+sw_path = 'sw.js'
+if os.path.exists(sw_path):
+    build_id = int(os.path.getmtime('data.json'))
+    with open(sw_path, 'r', encoding='utf-8') as f:
+        sw = f.read()
+    sw_new, n = re.subn(r"const CACHE = '[^']*';", f"const CACHE = 'buxoriy-v{build_id}';", sw, count=1)
+    if n == 1 and sw_new != sw:
+        with open(sw_path, 'w', encoding='utf-8') as f:
+            f.write(sw_new)
+        print(f'sw.js: CACHE → buxoriy-v{build_id}')
+
 print(f'data.json:    {os.path.getsize("data.json"):>10,} bytes ({os.path.getsize("data.json")/1024/1024:.2f} MB)')
 print(f'index.json:   {os.path.getsize("index.json"):>10,} bytes ({os.path.getsize("index.json")/1024:.1f} KB)')
 print(f'BOOKS inline: {len(home_json):>10,} bytes ({len(home_json)/1024:.1f} KB)')

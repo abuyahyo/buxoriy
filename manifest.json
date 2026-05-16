@@ -1,0 +1,20 @@
+{
+  "name": "Имом Бухорийнинг «Саҳиҳ» тўплами",
+  "short_name": "Саҳиҳ Бухорий",
+  "description": "Ал-Жомиъ ас-Саҳиҳ — энг ишончли ҳадис китоби",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf3e7",
+  "theme_color": "#faf3e7",
+  "lang": "uz-Cyrl",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "apple-touch-icon.png?v=4",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

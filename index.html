@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=4">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2064%2064%22%3E%3Crect%20width=%2264%22%20height=%2264%22%20rx=%2214%22%20fill=%22%23f5f0e8%22/%3E%3Ctext%20x=%2232%22%20y=%2229%22%20font-family=%22Georgia,serif%22%20font-size=%2213%22%20font-weight=%22bold%22%20fill=%22%238b6914%22%20text-anchor=%22middle%22%3E%D0%A1%D0%B0%D2%B3%D0%B8%D2%B3%3C/text%3E%3Ctext%20x=%2232%22%20y=%2246%22%20font-family=%22Georgia,serif%22%20font-size=%2210%22%20font-weight=%22bold%22%20fill=%22%238b6914%22%20text-anchor=%22middle%22%3E%D0%91%D1%83%D1%85%D0%BE%D1%80%D0%B8%D0%B9%3C/text%3E%3C/svg%3E">
 <link rel="preload" href="index.json" as="fetch" crossorigin="anonymous">
-<link rel="preload" href="data.json" as="fetch" crossorigin="anonymous">
+<link rel="prefetch" href="data.json" as="fetch" crossorigin="anonymous">
 <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{--gold:#c9a84c;--gold-light:#e8d08a;--gold-dark:#8b6914;--bg:#0d0b07;--surface:#1c1710;--surface2:#2d2718;--surface3:#221d11;--border:#3a3020;--text:#e8dcc8;--text-dim:#9a8f78;--text-muted:#5a5040}
@@ -115,6 +115,7 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
 .fab-nav button + button{border-left:1px solid var(--border)}
 .page{display:none;opacity:0;transition:opacity .3s;background:var(--bg);height:100vh;overflow-y:auto;position:fixed;top:0;left:0;right:0;bottom:0}
 .page.visible{display:block;opacity:1}
+#pgHome{display:block;opacity:1}
 .loading-state{text-align:center;padding:40px 20px;color:var(--text-muted);font-size:13px;letter-spacing:.05em}
 .loading-state::before{content:"";display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--gold-dark);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:10px}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -122,8 +123,10 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
 </head>
 <body>
 
+<script type="application/json" id="books-data">[{"id":1,"nomi":"Ваҳийнинг бошланиши китоби","bC":4,"hC":7},{"id":2,"nomi":"Иймон китоби","bC":45,"hC":50},{"id":3,"nomi":"Илм китоби","bC":61,"hC":76},{"id":4,"nomi":"Таҳорат китоби","bC":95,"hC":113},{"id":5,"nomi":"Ғусл китоби","bC":29,"hC":45},{"id":6,"nomi":"Ҳайз китоби","bC":30,"hC":33},{"id":7,"nomi":"Таяммум китоби","bC":9,"hC":13},{"id":8,"nomi":"Намоз китоби","bC":109,"hC":152},{"id":9,"nomi":"Намоз вақтлари китоби","bC":42,"hC":74},{"id":10,"nomi":"Азон китоби","bC":168,"hC":268},{"id":11,"nomi":"Жума китоби","bC":41,"hC":64},{"id":12,"nomi":"Хавф намози китоби","bC":6,"hC":6},{"id":13,"nomi":"Икки ҳайит китоби","bC":26,"hC":40},{"id":14,"nomi":"Витр китоби","bC":7,"hC":15},{"id":15,"nomi":"Истисқо китоби","bC":29,"hC":35},{"id":16,"nomi":"Кусуф китоби","bC":19,"hC":23},{"id":17,"nomi":"Қуръон саждалари китоби","bC":12,"hC":13},{"id":18,"nomi":"Қаср қилиш китоби","bC":20,"hC":39},{"id":19,"nomi":"Таҳажжуд китоби","bC":37,"hC":59},{"id":20,"nomi":"Макка ва Мадина масжидидаги намознинг фазли китоби","bC":6,"hC":10},{"id":21,"nomi":"Намоздаги ҳаракат китоби","bC":18,"hC":25},{"id":22,"nomi":"Саҳв китоби","bC":9,"hC":12},{"id":23,"nomi":"Жанозалар китоби","bC":98,"hC":152},{"id":24,"nomi":"Закот китоби","bC":79,"hC":101},{"id":25,"nomi":"Ҳаж китоби","bC":151,"hC":238},{"id":26,"nomi":"Умра китоби","bC":20,"hC":29},{"id":27,"nomi":"Муҳсар китоби","bC":11,"hC":16},{"id":28,"nomi":"(Ҳарамдаги) овнинг жазоси китоби","bC":27,"hC":46},{"id":29,"nomi":"Мадинанинг фазилатлари китоби","bC":13,"hC":24},{"id":30,"nomi":"Рўза китоби","bC":49,"hC":100},{"id":31,"nomi":"Таровеҳ намози китоби","bC":1,"hC":6},{"id":32,"nomi":"Қадр кечасининг фазли китоби","bC":5,"hC":11},{"id":33,"nomi":"Эътикоф китоби","bC":19,"hC":20},{"id":34,"nomi":"Савдо китоби","bC":113,"hC":171},{"id":35,"nomi":"Салам савдоси китоби","bC":8,"hC":12},{"id":36,"nomi":"Шуфъа китоби","bC":4,"hC":3},{"id":37,"nomi":"Ижара китоби","bC":24,"hC":23},{"id":38,"nomi":"Ҳаволалар китоби","bC":3,"hC":3},{"id":39,"nomi":"Кафолат китоби","bC":5,"hC":9},{"id":40,"nomi":"Ваколат китоби","bC":16,"hC":14},{"id":41,"nomi":"Музораъа китоби","bC":22,"hC":26},{"id":42,"nomi":"Мусоқот китоби","bC":20,"hC":29},{"id":43,"nomi":"Қарз сўраш (олиш) китоби","bC":20,"hC":25},{"id":44,"nomi":"Хусуматлар китоби","bC":9,"hC":15},{"id":45,"nomi":"Топилмалар ҳақидаги китоб","bC":12,"hC":14},{"id":46,"nomi":"Зулмлар китоби","bC":34,"hC":42},{"id":47,"nomi":"Шерикчилик китоби","bC":15,"hC":21},{"id":48,"nomi":"Гаров китоби","bC":7,"hC":8},{"id":49,"nomi":"Қул озод қилиш китоби","bC":22,"hC":38},{"id":50,"nomi":"Мукотаб китоби","bC":5,"hC":6},{"id":51,"nomi":"Ҳиба, унинг фазли ва унга ундаш китоби","bC":38,"hC":63},{"id":52,"nomi":"Гувоҳликлар китоби","bC":31,"hC":53},{"id":53,"nomi":"Сулҳ китоби","bC":14,"hC":19},{"id":54,"nomi":"Шартлар китоби","bC":19,"hC":22},{"id":55,"nomi":"Васиятлар китоби","bC":39,"hC":43},{"id":56,"nomi":"Жиҳод ва юришлар китоби","bC":180,"hC":280},{"id":57,"nomi":"Хумус китоби","bC":20,"hC":60},{"id":58,"nomi":"Жизя китоби","bC":21,"hC":27},{"id":59,"nomi":"Яратишнинг ибтидоси китоби","bC":12,"hC":122},{"id":60,"nomi":"Анбиёлар салавотуллоҳи алайҳим китоби","bC":49,"hC":148},{"id":61,"nomi":"Маноқиблар китоби","bC":26,"hC":150},{"id":62,"nomi":"Саҳобаларнинг фазилатлари китоби","bC":31,"hC":111},{"id":63,"nomi":"Ансорларнинг маноқиблари китоби","bC":53,"hC":167},{"id":64,"nomi":"Ғазотлар китоби","bC":87,"hC":429},{"id":65,"nomi":"Тафсир китоби","bC":424,"hC":395},{"id":66,"nomi":"Қуръон фазилатлари китоби","bC":39,"hC":71},{"id":67,"nomi":"Никоҳ китоби","bC":134,"hC":175},{"id":68,"nomi":"Талоқ китоби","bC":54,"hC":79},{"id":69,"nomi":"Нафақалар китоби","bC":16,"hC":19},{"id":70,"nomi":"Егуликлар китоби","bC":59,"hC":72},{"id":71,"nomi":"Ақийқа китоби","bC":4,"hC":7},{"id":72,"nomi":"Сўйилмишлар ва ов китоби","bC":38,"hC":55},{"id":73,"nomi":"Қурбонликлар китоби","bC":16,"hC":30},{"id":74,"nomi":"Ичимликлар китоби","bC":31,"hC":57},{"id":75,"nomi":"Беморлар китоби","bC":22,"hC":36},{"id":76,"nomi":"Тиб китоби","bC":59,"hC":82},{"id":77,"nomi":"Либос китоби","bC":103,"hC":169},{"id":78,"nomi":"Адаб китоби","bC":128,"hC":242},{"id":79,"nomi":"Изн сўраш китоби","bC":53,"hC":72},{"id":80,"nomi":"Дуолар китоби","bC":70,"hC":103},{"id":81,"nomi":"Риқоқ китоби","bC":27,"hC":101},{"id":82,"nomi":"Қадар китоби","bC":16,"hC":26},{"id":83,"nomi":"Қасам ва назрлар китоби","bC":33,"hC":13},{"id":84,"nomi":"Қасамларнинг каффорати китоби","bC":10,"hC":0},{"id":85,"nomi":"Фароиз китоби","bC":33,"hC":48},{"id":86,"nomi":"Ҳаддлар китоби","bC":14,"hC":26},{"id":87,"nomi":"Диялар китоби","bC":31,"hC":55},{"id":88,"nomi":"Муртад ва саркашларни тавба қилдириш ҳамда уларга уруш очиш китоби","bC":8,"hC":20},{"id":89,"nomi":"Мажбурлаш китоби","bC":8,"hC":13},{"id":90,"nomi":"Ҳийлалар китоби","bC":65,"hC":67},{"id":91,"nomi":"Таъбир китоби","bC":11,"hC":19},{"id":92,"nomi":"Фитналар китоби","bC":27,"hC":82},{"id":93,"nomi":"Ҳукмлар китоби","bC":53,"hC":83},{"id":94,"nomi":"Орзу қилиш китоби","bC":9,"hC":20},{"id":95,"nomi":"Оҳод хабарлар китоби","bC":6,"hC":26},{"id":96,"nomi":"Китоб ва Суннатни маҳкам тутиш китоби","bC":28,"hC":26},{"id":97,"nomi":"Тавҳид китоби","bC":59,"hC":177}]</script>
+
 <!-- 1. KITOBLAR -->
-<div id="pgHome" class="page">
+<div id="pgHome" class="page visible">
   <div class="home-hero">
     <div class="bismillah-hero">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
     <h1 class="home-title">Имом Бухорийнинг «Саҳиҳ» тўплами</h1>
@@ -205,8 +208,11 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-
 </div>
 
 <script>
+// Енгил китоб метамаълумоти HTML га инлайн қилинган — бош саҳифа дарҳол кўрсатилади
+const BOOKS = JSON.parse(document.getElementById('books-data').textContent);
 let DB = []; // дастлаб index.json (метамаълумот), сўнг data.json (тўлиқ)
 let isFullDB = false;
+let indexPromise = null;
 let fullDataPromise = null;
 
 let ST = { page:'home', kid:null, bid:null, hid:null };
@@ -291,7 +297,6 @@ function setHash(h){
 }
 
 function applyHash(){
-  if(!DB.length) return;
   const h = location.hash.slice(1);
   if(h.startsWith('q=')){
     const q = decodeURIComponent(h.slice(2));
@@ -353,22 +358,17 @@ function homeBcItems(){
 const App = {
   goHome(_keepSearch){
     ST={page:'home',kid:null,bid:null,hid:null};
-    document.getElementById('kitobCount').textContent=DB.length+' та китоб';
+    // BOOKS — HTML га инлайн қилинган, ҳар доим мавжуд
+    document.getElementById('kitobCount').textContent=BOOKS.length+' та китоб';
     const g=document.getElementById('kitobGrid');
     g.innerHTML='';
-    if(!DB.length){
-      g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted)">Ҳали маълумот йўқ</div>';
-    } else {
-      DB.forEach(k=>{
-        const bC=k.boblar.length;
-        const hC=k.boblar.reduce((s,b)=>s+(b.hC ?? b.hadislar.length),0);
-        const el=document.createElement('div');
-        el.className='kitob-card';
-        el.innerHTML=`<div class="kitob-top"><div class="kitob-num">${k.id}-КИТОБ</div><div class="kitob-stats"><div class="kitob-stat"><b>${bC}</b> боб</div><div class="kitob-stat"><b>${hC}</b> ҳадис</div></div></div><div class="kitob-name">${k.nomi}</div>`;
-        el.onclick=()=>App.openKitob(k.id);
-        g.appendChild(el);
-      });
-    }
+    BOOKS.forEach(k=>{
+      const el=document.createElement('div');
+      el.className='kitob-card';
+      el.innerHTML=`<div class="kitob-top"><div class="kitob-num">${k.id}-КИТОБ</div><div class="kitob-stats"><div class="kitob-stat"><b>${k.bC}</b> боб</div><div class="kitob-stat"><b>${k.hC}</b> ҳадис</div></div></div><div class="kitob-name">${k.nomi}</div>`;
+      el.onclick=()=>App.openKitob(k.id);
+      g.appendChild(el);
+    });
     if(!_keepSearch){
       document.getElementById('searchInput').value='';
       document.getElementById('searchView').style.display='none';
@@ -381,8 +381,21 @@ const App = {
 
   openKitob(kid, scrollToBid=false){
     const k=getK(kid);
-    if(!k) return;
     ST={page:'bob',kid,bid:null,hid:null};
+    if(!k){
+      // DB юкланган бўлса-да топилмаган бўлса — бош саҳифага
+      if(DB.length){ App.goHome(); return; }
+      // DB ҳали юкланмаган. Инлайн BOOKS дан китоб номини олиб, юкланиш индикаторини кўрсатамиз.
+      const ki = BOOKS.find(b=>b.id===kid);
+      if(!ki){ App.goHome(); return; }
+      bc('bcBob',[...homeBcItems(),{t:ki.nomi}]);
+      document.getElementById('bcBob').innerHTML+=`<div style="margin-top:10px;display:flex;gap:14px;font-size:11px;color:var(--text-muted)"><span>${ki.bC} та боб</span><span>${ki.hC} та ҳадис</span></div>`;
+      document.getElementById('bobGrid').innerHTML='<div class="loading-state">Юкланмоқда…</div>';
+      showPage('pgBob');
+      setHash('k/'+kid);
+      indexPromise.then(()=>App.openKitob(kid,scrollToBid)).catch(()=>{});
+      return;
+    }
     const hC=k.boblar.reduce((s,b)=>s+(b.hC ?? b.hadislar.length),0);
     bc('bcBob',[...homeBcItems(),{t:k.nomi}]);
     document.getElementById('bcBob').innerHTML+=`<div style="margin-top:10px;display:flex;gap:14px;font-size:11px;color:var(--text-muted)"><span>${k.boblar.length} та боб</span><span>${hC} та ҳадис</span></div>`;
@@ -405,8 +418,18 @@ const App = {
 
   openBob(kid,bid,scrollToHid=false){
     const k=getK(kid); const b=getB(kid,bid);
-    if(!k||!b) return;
     ST={page:'hadisList',kid,bid,hid:null};
+    if(!k||!b){
+      if(DB.length){ App.goHome(); return; }
+      // DB ҳали юкланмаган
+      const ki = BOOKS.find(x=>x.id===kid);
+      bc('bcHadisList',[...homeBcItems(),{t:ki?ki.nomi:'',fn:`App.openKitob(${kid})`},{t:`${bid}-боб`}]);
+      document.getElementById('hadisListGrid').innerHTML='<div class="loading-state">Юкланмоқда…</div>';
+      showPage('pgHadisList');
+      setHash('k/'+kid+'/b/'+bid);
+      indexPromise.then(()=>App.openBob(kid,bid,scrollToHid)).catch(()=>{});
+      return;
+    }
     const bhC = b.hC ?? (b.hadislar ? b.hadislar.length : 0);
     bc('bcHadisList',[...homeBcItems(),{t:k.nomi,fn:`App.openKitob(${kid})`},{t:bobNomi(b.nomi)}]);
     document.getElementById('bcHadisList').innerHTML+=`${b.izoh?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted);line-height:1.6">${b.izoh.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')}</div>`:''}${bhC?`<div style="margin-top:10px;font-size:11px;color:var(--text-muted)">${bhC} та ҳадис</div>`:''}`;
@@ -450,8 +473,24 @@ const App = {
 
   openHadis(kid,bid,hid){
     const k=getK(kid); const b=getB(kid,bid);
-    if(!k||!b) return;
     ST={page:'hadis',kid,bid,hid};
+    if(!k||!b){
+      if(isFullDB){ App.goHome(); return; }
+      // DB ҳали юкланмаган
+      const ki = BOOKS.find(x=>x.id===kid);
+      bc('bcHadis',[...homeBcItems(),{t:ki?ki.nomi:'',fn:`App.openKitob(${kid})`},{t:`${bid}-боб`,fn:`App.openBob(${kid},${bid})`}]);
+      document.getElementById('hadisText').innerHTML='<div class="loading-state">Юкланмоқда…</div>';
+      document.getElementById('hadisNarrator').innerHTML='';
+      document.getElementById('hadisSource').innerHTML='';
+      document.getElementById('hadisIzoh').style.display='none';
+      document.getElementById('izohBtn').style.display='none';
+      document.getElementById('fabPrev').classList.add('disabled');
+      document.getElementById('fabNext').classList.add('disabled');
+      showPage('hadisPage');
+      setHash('k/'+kid+'/b/'+bid+'/h/'+hid);
+      fullDataPromise.then(()=>App.openHadis(kid,bid,hid)).catch(()=>{});
+      return;
+    }
     bc('bcHadis',[...homeBcItems(),{t:k.nomi,fn:`App.openKitob(${k.id})`},{t:`${b.id}-боб`,fn:`App.openBob(${k.id},${b.id})`}]);
     if(!isFullDB){
       document.getElementById('hadisText').innerHTML='<div class="loading-state">Юкланмоқда…</div>';
@@ -668,38 +707,25 @@ apTh();
 window.addEventListener('popstate', applyHash);
 window.addEventListener('hashchange', applyHash);
 
-// Тўлиқ маълумотни (data.json) орқа фонда юклашни дарҳол бошлаймиз — preload билан
-// биргаликда HTML парсингидан бошлаб юклана бошлайди.
-fullDataPromise = fetch('data.json', { cache: 'no-cache' })
+// Аввал орқа фонда юклашни бошлаймиз — preload билан биргаликда HTML парсингидан
+// бошлаб юклана бошлайди. Promise лар applyHash() ичидаги юкланиш индикаторлари учун керак.
+fullDataPromise = fetch('data.json')
   .then(r => { if (!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
   .then(d => { DB = d; isFullDB = true; return d; });
 
-// Енгил index.json ни биринчи юклаб, бош/китоб саҳифасини зудлик билан кўрсатамиз.
-fetch('index.json', { cache: 'no-cache' })
+indexPromise = fetch('index.json')
   .then(r => { if (!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-  .then(d => { if(!isFullDB){ DB = d; } applyHash(); })
-  .catch(() => {
-    // index.json мавжуд бўлмаса (масалан, эски кэш), data.json кутамиз.
-    fullDataPromise
-      .then(() => applyHash())
-      .catch(e => {
-        document.getElementById('kitobGrid').innerHTML =
-          '<div style="padding:20px;color:var(--text-dim);text-align:center">Маълумотлар юкланмади: '+e.message+'</div>';
-        App.goHome();
-      });
-  });
+  .then(d => { if(!isFullDB){ DB = d; } return d; });
+
+// Бош саҳифани дарҳол кўрсатамиз (BOOKS HTML га инлайн қилинган).
+applyHash();
 
 fullDataPromise.catch(e => {
-  if(!DB.length){
-    document.getElementById('kitobGrid').innerHTML =
-      '<div style="padding:20px;color:var(--text-dim);text-align:center">Маълумотлар юкланмади: '+e.message+'</div>';
-    App.goHome();
-  } else {
-    document.querySelectorAll('.loading-state').forEach(el => {
-      el.textContent = 'Маълумот юкланмади: '+e.message;
-    });
-  }
+  document.querySelectorAll('.loading-state').forEach(el => {
+    el.textContent = 'Маълумот юкланмади: '+e.message;
+  });
 });
+indexPromise.catch(() => {/* data.json орқали тиклаш мумкин */});
 </script>
 </body>
 </html>

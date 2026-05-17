@@ -1,3 +1,4 @@
 __pycache__/
 *.pyc
 *.bak
+data_issues.csv

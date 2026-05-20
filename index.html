@@ -685,12 +685,13 @@ const App = {
   },
   async shareHadis(){
     const h=getH(ST.kid,ST.bid,ST.hid); if(!h) return;
+    const k=getK(ST.kid); const b=getB(ST.kid,ST.bid);
     const btn=document.getElementById('shareBtn');
     const orig=btn.textContent;
     btn.textContent='⏳ Тайёрланмоқда…'; btn.disabled=true;
     try{
       if(document.fonts&&document.fonts.ready) await document.fonts.ready;
-      const files=await this._buildShareImages(h);
+      const files=await this._buildShareImages(h,k,b);
       if(navigator.canShare&&navigator.canShare({files})){
         await navigator.share({files,title:`${h.id}-ҳадис`});
         btn.textContent='✓ Юборилди'; btn.classList.add('copied');
@@ -711,7 +712,7 @@ const App = {
       setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied');btn.disabled=false;},1800);
     }
   },
-  async _buildShareImages(h){
+  async _buildShareImages(h,k,b){
     const isLight=document.documentElement.classList.contains('light');
     const C=isLight?{
       bgFrom:'#faf3e7',bgTo:'#efe5cb',
@@ -727,31 +728,53 @@ const App = {
     const uiFont="'Roboto', system-ui, sans-serif";
     const bodyFs=34, bodyLh=Math.round(bodyFs*1.7);
     const maxBodyW=W-PAD*2;
+    const ctxLabel=k&&b?`${k.nomi} · ${b.id}-боб`:'';
     const m=document.createElement('canvas'); m.width=W; m.height=H;
     const mctx=m.getContext('2d');
     mctx.font=`300 ${bodyFs}px ${bodyFont}`;
     const lines=this._wrapShareText(mctx,h.matn,maxBodyW);
-    const headerBottom=PAD+70;
+    const headerBottom=PAD+(ctxLabel?92:70);
     const footerHeight=h.rowi?180:70;
     const bodyTop=headerBottom+20;
     const bodyBottom=H-PAD-footerHeight;
     const linesPerSlide=Math.max(1,Math.floor((bodyBottom-bodyTop)/bodyLh));
-    const slides=[];
-    for(let i=0;i<lines.length;i+=linesPerSlide){
-      slides.push(lines.slice(i,i+linesPerSlide));
-    }
+    const slides=this._splitShareSlides(lines,linesPerSlide);
     if(!slides.length) slides.push(['']);
     const total=slides.length;
     const files=[];
     for(let i=0;i<total;i++){
       const blob=await this._renderShareSlide({
-        lines:slides[i],idx:i+1,total,h,C,W,H,PAD,
+        lines:slides[i],idx:i+1,total,h,ctxLabel,C,W,H,PAD,
         bodyFont,uiFont,bodyFs,bodyLh,bodyTop
       });
       const suffix=total>1?`-${i+1}`:'';
       files.push(new File([blob],`hadis-${h.id}${suffix}.png`,{type:'image/png'}));
     }
     return files;
+  },
+  _splitShareSlides(lines,capacity){
+    if(lines.length<=capacity) return [lines];
+    const slides=[];
+    let i=0;
+    while(i<lines.length){
+      const remaining=lines.length-i;
+      if(remaining<=capacity){ slides.push(lines.slice(i)); break; }
+      const minSplit=Math.max(1,Math.floor(capacity*0.65));
+      let cut=capacity;
+      for(let j=capacity;j>=minSplit;j--){
+        if(lines[i+j]===''){ cut=j; break; }
+      }
+      if(cut===capacity){
+        for(let j=capacity;j>=minSplit;j--){
+          const ln=lines[i+j-1]||'';
+          if(/[.!?»][\s)]*$/.test(ln)){ cut=j; break; }
+        }
+      }
+      slides.push(lines.slice(i,i+cut));
+      i+=cut;
+      while(i<lines.length&&lines[i]==='') i++;
+    }
+    return slides;
   },
   _wrapShareText(ctx,text,maxWidth){
     const lines=[];
@@ -773,7 +796,7 @@ const App = {
     return lines;
   },
   _renderShareSlide(opt){
-    const {lines,idx,total,h,C,W,H,PAD,bodyFont,uiFont,bodyFs,bodyLh,bodyTop}=opt;
+    const {lines,idx,total,h,ctxLabel,C,W,H,PAD,bodyFont,uiFont,bodyFs,bodyLh,bodyTop}=opt;
     const self=this;
     return new Promise(resolve=>{
       const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
@@ -782,15 +805,28 @@ const App = {
       grad.addColorStop(0,C.bgFrom); grad.addColorStop(1,C.bgTo);
       ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
       ctx.fillStyle=C.accent; ctx.fillRect(PAD,PAD,50,3);
+      let headY=PAD+16;
+      if(ctxLabel){
+        ctx.fillStyle=C.textMuted;
+        ctx.font=`500 15px ${uiFont}`;
+        ctx.textAlign='left'; ctx.textBaseline='top';
+        let label=ctxLabel;
+        while(ctx.measureText(label).width>W-PAD*2&&label.length>4){
+          label=label.slice(0,-2);
+          if(!label.endsWith('…')) label=label.slice(0,-1)+'…';
+        }
+        ctx.fillText(label,PAD,headY);
+        headY=PAD+42;
+      }
       ctx.fillStyle=C.accent;
       ctx.font=`600 22px ${uiFont}`;
       ctx.textAlign='left'; ctx.textBaseline='top';
-      ctx.fillText(`${h.id}-ҲАДИС`,PAD,PAD+16);
+      ctx.fillText(`${h.id}-ҲАДИС`,PAD,headY);
       if(total>1){
         ctx.fillStyle=C.textMuted;
         ctx.font=`500 18px ${uiFont}`;
         ctx.textAlign='right';
-        ctx.fillText(`${idx} / ${total}`,W-PAD,PAD+18);
+        ctx.fillText(`${idx} / ${total}`,W-PAD,headY+2);
       }
       ctx.fillStyle=C.text;
       ctx.font=`300 ${bodyFs}px ${bodyFont}`;

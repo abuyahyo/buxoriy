@@ -119,6 +119,7 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 .hadis-tb-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);height:38px;min-width:38px;padding:0 14px;border-radius:99px;cursor:pointer;font-size:13px;font-family:'Roboto',sans-serif;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent;transition:all .25s}
 .hadis-tb-btn:hover,.hadis-tb-btn:active{border-color:var(--sage);color:var(--sage-deep);background:var(--surface2)}
 .hadis-tb-btn.copied,.hadis-tb-btn.active{border-color:var(--sage);color:var(--sage-deep);background:var(--sage-glow)}
+.hadis-tb-btn:disabled{opacity:.55;cursor:wait}
 .hadis-tb-group{display:inline-flex;border:1px solid var(--border);border-radius:99px;overflow:hidden;background:var(--surface)}
 .hadis-tb-group .hadis-tb-btn{border:none;border-radius:0;background:transparent;height:36px;min-width:38px;border-right:1px solid var(--border)}
 .hadis-tb-group .hadis-tb-btn:last-child{border-right:none}
@@ -267,6 +268,7 @@ body.fabs-hidden .update-banner{transform:translate(-50%,90px);opacity:0;pointer
         <button class="hadis-tb-btn" onclick="App.adjustFontSize(1)" aria-label="Шрифтни катталаштириш">A+</button>
       </div>
       <button class="hadis-tb-btn" id="copyBtn" onclick="App.copyHadis()" aria-label="Ҳадисни нусхалаш">⧉ Нусха</button>
+      <button class="hadis-tb-btn" id="shareBtn" onclick="App.shareHadis()" aria-label="Ҳадисни улашиш">↗ Улашиш</button>
     </div>
     <div id="hadisIzoh" class="hadis-izoh" style="display:none"></div>
     <div class="hadis-narrator" id="hadisNarrator"></div>
@@ -680,6 +682,152 @@ const App = {
       try{document.execCommand('copy');done();}catch(e){}
       document.body.removeChild(ta);
     }
+  },
+  async shareHadis(){
+    const h=getH(ST.kid,ST.bid,ST.hid); if(!h) return;
+    const btn=document.getElementById('shareBtn');
+    const orig=btn.textContent;
+    btn.textContent='⏳ Тайёрланмоқда…'; btn.disabled=true;
+    try{
+      if(document.fonts&&document.fonts.ready) await document.fonts.ready;
+      const files=await this._buildShareImages(h);
+      if(navigator.canShare&&navigator.canShare({files})){
+        await navigator.share({files,title:`${h.id}-ҳадис`});
+        btn.textContent='✓ Юборилди'; btn.classList.add('copied');
+      }else{
+        for(let i=0;i<files.length;i++){
+          const url=URL.createObjectURL(files[i]);
+          const a=document.createElement('a');
+          a.href=url; a.download=files[i].name;
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+        btn.textContent='✓ Юкланди'; btn.classList.add('copied');
+      }
+    }catch(e){
+      if(e&&e.name==='AbortError'){ btn.textContent=orig; }
+      else{ console.error(e); btn.textContent='✗ Хато'; }
+    }finally{
+      setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied');btn.disabled=false;},1800);
+    }
+  },
+  async _buildShareImages(h){
+    const isLight=document.body.classList.contains('light');
+    const C=isLight?{
+      bgFrom:'#faf3e7',bgTo:'#efe5cb',
+      text:'#2a2218',textDim:'#5a4d3e',textMuted:'#8a7d68',
+      accent:'#a87a2c',divider:'rgba(168,122,44,.3)'
+    }:{
+      bgFrom:'#1f1a16',bgTo:'#342c26',
+      text:'#f5ecdb',textDim:'#b8a890',textMuted:'#8a7c68',
+      accent:'#d9b870',divider:'rgba(217,184,112,.25)'
+    };
+    const W=1080,H=1080,PAD=80;
+    const bodyFont="'Merriweather', Georgia, serif";
+    const uiFont="'Roboto', system-ui, sans-serif";
+    const bodyFs=34, bodyLh=Math.round(bodyFs*1.7);
+    const maxBodyW=W-PAD*2;
+    const m=document.createElement('canvas'); m.width=W; m.height=H;
+    const mctx=m.getContext('2d');
+    mctx.font=`300 ${bodyFs}px ${bodyFont}`;
+    const lines=this._wrapShareText(mctx,h.matn,maxBodyW);
+    const headerBottom=PAD+70;
+    const footerHeight=h.rowi?180:70;
+    const bodyTop=headerBottom+20;
+    const bodyBottom=H-PAD-footerHeight;
+    const linesPerSlide=Math.max(1,Math.floor((bodyBottom-bodyTop)/bodyLh));
+    const slides=[];
+    for(let i=0;i<lines.length;i+=linesPerSlide){
+      slides.push(lines.slice(i,i+linesPerSlide));
+    }
+    if(!slides.length) slides.push(['']);
+    const total=slides.length;
+    const files=[];
+    for(let i=0;i<total;i++){
+      const blob=await this._renderShareSlide({
+        lines:slides[i],idx:i+1,total,h,C,W,H,PAD,
+        bodyFont,uiFont,bodyFs,bodyLh,bodyTop
+      });
+      const suffix=total>1?`-${i+1}`:'';
+      files.push(new File([blob],`hadis-${h.id}${suffix}.png`,{type:'image/png'}));
+    }
+    return files;
+  },
+  _wrapShareText(ctx,text,maxWidth){
+    const lines=[];
+    const segments=String(text||'').split('\n');
+    segments.forEach(seg=>{
+      if(!seg.trim()){ lines.push(''); return; }
+      const words=seg.split(/\s+/);
+      let cur='';
+      for(const w of words){
+        const test=cur?cur+' '+w:w;
+        if(ctx.measureText(test).width>maxWidth&&cur){
+          lines.push(cur); cur=w;
+        }else{
+          cur=test;
+        }
+      }
+      if(cur) lines.push(cur);
+    });
+    return lines;
+  },
+  _renderShareSlide(opt){
+    const {lines,idx,total,h,C,W,H,PAD,bodyFont,uiFont,bodyFs,bodyLh,bodyTop}=opt;
+    const self=this;
+    return new Promise(resolve=>{
+      const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+      const ctx=cv.getContext('2d');
+      const grad=ctx.createLinearGradient(0,0,0,H);
+      grad.addColorStop(0,C.bgFrom); grad.addColorStop(1,C.bgTo);
+      ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle=C.accent; ctx.fillRect(PAD,PAD,50,3);
+      ctx.fillStyle=C.accent;
+      ctx.font=`600 22px ${uiFont}`;
+      ctx.textAlign='left'; ctx.textBaseline='top';
+      ctx.fillText(`${h.id}-ҲАДИС`,PAD,PAD+16);
+      if(total>1){
+        ctx.fillStyle=C.textMuted;
+        ctx.font=`500 18px ${uiFont}`;
+        ctx.textAlign='right';
+        ctx.fillText(`${idx} / ${total}`,W-PAD,PAD+18);
+      }
+      ctx.fillStyle=C.text;
+      ctx.font=`300 ${bodyFs}px ${bodyFont}`;
+      ctx.textAlign='left'; ctx.textBaseline='top';
+      const bodyBottom=H-PAD-(h.rowi?180:70);
+      const bodyAvail=bodyBottom-bodyTop;
+      const bodyUsed=lines.length*bodyLh;
+      let y=bodyTop+Math.max(0,(bodyAvail-bodyUsed)/2);
+      for(const line of lines){
+        ctx.fillText(line,PAD,y);
+        y+=bodyLh;
+      }
+      if(h.rowi){
+        const fy=H-PAD-160;
+        ctx.fillStyle=C.divider;
+        ctx.fillRect(PAD,fy,60,1);
+        ctx.fillStyle=C.textMuted;
+        ctx.font=`600 11px ${uiFont}`;
+        ctx.textAlign='left';
+        ctx.fillText('РИВОЯТИ',PAD,fy+14);
+        ctx.fillStyle=C.textDim;
+        ctx.font=`italic 300 22px ${bodyFont}`;
+        const rowiLines=self._wrapShareText(ctx,h.rowi,W-PAD*2);
+        const maxRowiLines=3;
+        const show=rowiLines.slice(0,maxRowiLines);
+        if(rowiLines.length>maxRowiLines&&show.length){
+          show[show.length-1]=show[show.length-1].replace(/.{3}$/,'…');
+        }
+        let ry=fy+40;
+        for(const rl of show){ ctx.fillText(rl,PAD,ry); ry+=32; }
+      }
+      ctx.fillStyle=C.textMuted;
+      ctx.font=`600 13px ${uiFont}`;
+      ctx.textAlign='center';
+      ctx.fillText('САҲИҲ БУХОРИЙ',W/2,H-PAD-6);
+      cv.toBlob(b=>resolve(b),'image/png');
+    });
   },
   doSearch(v, fromHash){
     const trimmed = v.trim();

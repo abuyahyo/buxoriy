@@ -712,7 +712,7 @@ const App = {
     }
   },
   async _buildShareImages(h){
-    const isLight=document.body.classList.contains('light');
+    const isLight=document.documentElement.classList.contains('light');
     const C=isLight?{
       bgFrom:'#faf3e7',bgTo:'#efe5cb',
       text:'#2a2218',textDim:'#5a4d3e',textMuted:'#8a7d68',

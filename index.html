@@ -614,8 +614,12 @@ const App = {
     const h=getH(kid,bid,hid);
     if(!h) return;
     document.getElementById('hadisText').innerHTML=`<span class="hadis-num-inline">${h.id}-ҲАДИС</span> `+linkifyRefs(h.matn.replace(/\n\n/g,'<br>').replace(/\n/g,'<br>'));
-    document.getElementById('hadisNarrator').innerHTML='<strong>Ривояти:</strong> '+(h.rowi||'—');
-    document.getElementById('hadisSource').innerHTML='<strong>Манба:</strong> '+(h.manba||'Саҳиҳ Бухорий');
+    const narratorEl=document.getElementById('hadisNarrator');
+    if(h.rowi){narratorEl.innerHTML='<strong>Ривояти:</strong> '+h.rowi;narratorEl.style.display='';}
+    else{narratorEl.style.display='none';}
+    const sourceEl=document.getElementById('hadisSource');
+    if(h.manba){sourceEl.innerHTML='<strong>Манба:</strong> '+h.manba;sourceEl.style.display='';}
+    else{sourceEl.style.display='none';}
     const izohEl=document.getElementById('hadisIzoh');
     const izohBtn=document.getElementById('izohBtn');
     izohEl.style.display='none';
@@ -662,7 +666,9 @@ const App = {
   },
   copyHadis(){
     const h=getH(ST.kid,ST.bid,ST.hid); if(!h) return;
-    const text=`${h.matn}\n\nРивояти: ${h.rowi||'—'}\nМанба: ${h.manba||'Саҳиҳ Бухорий'}`;
+    let text=h.matn;
+    if(h.rowi) text+=`\n\nРивояти: ${h.rowi}`;
+    if(h.manba) text+=`\nМанба: ${h.manba}`;
     const btn=document.getElementById('copyBtn');
     const orig=btn.textContent;
     const done=()=>{btn.textContent='✓ Нусхаланди';btn.classList.add('copied');setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied');},1500);};

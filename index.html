@@ -182,6 +182,25 @@ body.fabs-hidden .fab-nav{transform:translateX(-50%) translateY(90px);opacity:0;
 .update-banner button.update-dismiss:hover{color:var(--text)}
 @keyframes slideUpBanner{from{opacity:0;transform:translate(-50%,30px)}to{opacity:1;transform:translateX(-50%)}}
 body.fabs-hidden .update-banner{transform:translate(-50%,90px);opacity:0;pointer-events:none;transition:transform .35s var(--ease),opacity .35s}
+.install-banner{position:fixed;left:16px;right:16px;bottom:16px;max-width:480px;margin:0 auto;display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px 12px 12px 14px;box-shadow:var(--shadow-lg);z-index:65;animation:installSlideUp .4s var(--ease)}
+.install-banner[hidden]{display:none}
+.install-banner-icon{width:44px;height:44px;border-radius:10px;flex-shrink:0;object-fit:cover}
+.install-banner-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.install-banner-text strong{font-size:14px;font-weight:600;color:var(--text);font-family:'Roboto',sans-serif;letter-spacing:.005em}
+.install-banner-text p{font-size:12px;color:var(--text-dim);margin:0;line-height:1.4;font-weight:400}
+#install-banner-action{background:var(--sage);color:#fff;border:none;padding:9px 16px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Roboto',sans-serif;letter-spacing:.02em;transition:background .25s,transform .15s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+#install-banner-action:hover,#install-banner-action:active{background:var(--sage-deep);transform:translateY(-1px)}
+#install-banner-close{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:6px;line-height:1;transition:color .25s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+#install-banner-close:hover,#install-banner-close:active{color:var(--text)}
+body.fabs-hidden .install-banner{transform:translateY(120%);opacity:0;pointer-events:none;transition:transform .35s var(--ease),opacity .35s}
+@keyframes installSlideUp{from{transform:translateY(120%);opacity:0}to{transform:translateY(0);opacity:1}}
+@media(max-width:480px){
+  .install-banner{padding:10px 10px 10px 12px;gap:10px;bottom:12px;left:12px;right:12px}
+  .install-banner-icon{width:40px;height:40px}
+  .install-banner-text strong{font-size:13px}
+  .install-banner-text p{font-size:11px}
+  #install-banner-action{padding:8px 13px;font-size:12px}
+}
 
 /* Loading state */
 .loading-state{text-align:center;padding:50px 20px;color:var(--text-muted);font-size:13px;letter-spacing:.06em;font-weight:300}
@@ -287,6 +306,15 @@ body.fabs-hidden .update-banner{transform:translate(-50%,90px);opacity:0;pointer
   <span>🔄 Янги версия мавжуд</span>
   <button class="update-btn" onclick="applySwUpdate()">Янгилаш</button>
   <button class="update-dismiss" onclick="dismissSwUpdate()" aria-label="Ёпиш">✕</button>
+</div>
+<div class="install-banner" id="install-banner" hidden role="dialog" aria-labelledby="install-banner-title">
+  <img src="icon-192.png" alt="" class="install-banner-icon">
+  <div class="install-banner-text">
+    <strong id="install-banner-title">Иловани ўрнатиш</strong>
+    <p>Телефонга ўрнатиб, офлайн ҳам ўқинг.</p>
+  </div>
+  <button id="install-banner-action" type="button">Ўрнатиш</button>
+  <button id="install-banner-close" type="button" aria-label="Ёпиш">✕</button>
 </div>
 
 <script>
@@ -1073,6 +1101,49 @@ function dismissSwUpdate(){
   // Бу версия учун қайта кўрсатмаслик
   if(_swWaiting) localStorage.setItem('sw-dismissed-this-update', _swCurrentBuild());
 }
+// PWA install banner
+const INSTALL_DISMISS_KEY = 'buxoriy_install_dismissed_at';
+const INSTALL_DISMISS_TTL = 14 * 24 * 60 * 60 * 1000;
+let deferredInstallPrompt = null;
+const installBanner = document.getElementById('install-banner');
+const installAction = document.getElementById('install-banner-action');
+const installClose = document.getElementById('install-banner-close');
+function isInstallDismissed(){
+  const t = Number(localStorage.getItem(INSTALL_DISMISS_KEY) || 0);
+  return t && (Date.now() - t < INSTALL_DISMISS_TTL);
+}
+function isStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+}
+function showInstallBanner(){
+  if(!installBanner || isStandalone() || isInstallDismissed()) return;
+  installBanner.hidden = false;
+}
+function hideInstallBanner(){ if(installBanner) installBanner.hidden = true; }
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  showInstallBanner();
+});
+window.addEventListener('appinstalled', ()=>{
+  deferredInstallPrompt = null;
+  hideInstallBanner();
+});
+installAction && installAction.addEventListener('click', async ()=>{
+  if(!deferredInstallPrompt){ hideInstallBanner(); return; }
+  hideInstallBanner();
+  try{
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+  }catch(_){}
+  deferredInstallPrompt = null;
+});
+installClose && installClose.addEventListener('click', ()=>{
+  localStorage.setItem(INSTALL_DISMISS_KEY, String(Date.now()));
+  hideInstallBanner();
+});
+
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
     navigator.serviceWorker.register('sw.js').then(reg=>{

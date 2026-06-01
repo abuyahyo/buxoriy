@@ -19,7 +19,8 @@ DASH = '-' * 80
 
 re_kitob = re.compile(r'^(\d+)-KITOB:\s*(.*)$')
 re_bob = re.compile(r'^(\d+)\.(\d+)-BOB:\s*(.*)$')
-re_hadis = re.compile(r'^\[Hadis\s+(\d+)\]\s*$')
+# бир блокда бир неча рақам ёки "(такрорий)" изоҳи бўлиши мумкин
+re_hadis = re.compile(r'^\[Hadis\s+([\d,\s]+?)(?:\s*\([^)]*\))?\.?\]\s*$')
 re_fn_def = re.compile(r'^\[(\d+)\]\s+(.+)$')          # footnote таърифи
 re_bob_prefix = re.compile(r'^\s*\d+\s*-\s*[Бб][Оо][Бб]\s*\.?\s*')  # "N-боб." олд қўшимча
 
@@ -61,8 +62,21 @@ def strip_arabic(text):
     return text
 
 
+# OCR аралашма токенларини тузатиш (лотин↔кирилл look-alike). Кириллча бўлиши
+# керак сўзларда лотин ҳарфлар, илмий ном/ношир номида кирилл ҳарфлар аралашган.
+OCR_FIXES = {
+    'Mаккада': 'Маккада', 'Mаккага': 'Маккага', 'Cарфлагани': 'Сарфлагани',
+    'Аltаf': 'Altaf', 'sоns': 'sons', 'mеdicа': 'medica',
+    'cоlоcуnthis': 'colocynthis', 'cоlоcynthis': 'colocynthis',
+    'urоmаstуx': 'uromastyx', 'аеgурtiа': 'aegyptia', 'cаlаmus': 'calamus',
+}
+
+
 def clean(text):
     text = strip_arabic(text)
+    for bad, good in OCR_FIXES.items():
+        if bad in text:
+            text = text.replace(bad, good)
     # сатр ичидаги ортиқча бўшлиқларни йиғиштириш
     lines = [re.sub(r'[ \t]+', ' ', ln).strip() for ln in text.split('\n')]
     text = '\n'.join(lines)
@@ -236,7 +250,19 @@ def finalize_bob():
         h = build_hadis(hr, inliner)
         if h:
             hadises.append(h)
-    cur_bob['hadislar'] = hadises
+    # бир хил рақамли ҳадисларни («такрорий») битта ёзувга бирлаштириш
+    merged, by_id = [], {}
+    for h in hadises:
+        if h['id'] in by_id:
+            prev = by_id[h['id']]
+            add = (h['rowi'] + ': ' if h.get('rowi') else '') + h['matn']
+            prev['matn'] = (prev['matn'] + '\n\n' + add).strip()
+            if h.get('izoh'):
+                prev['izoh'] = ((prev.get('izoh', '') + '\n\n' + h['izoh']).strip())
+        else:
+            by_id[h['id']] = h
+            merged.append(h)
+    cur_bob['hadislar'] = merged
 
     # тозалаш
     for k in ('_pre', '_hadis_raw', '_nomi_raw'):
@@ -258,9 +284,9 @@ def build_hadis(hr, inliner):
     matn_lines, izoh_lines = [], []
     in_izoh = False
 
-    # биринчи сатрдан ровийни ажратиш
+    # биринчи сатрдан ровийни ажратиш ("329, 330." ёки "1228 (такрорий)." бўлиши мумкин)
     first = content[0]
-    m = re.match(r'^(\d+)\.\s*(.*)$', first)
+    m = re.match(r'^([\d,\s]+)(?:\s*\([^)]*\))?\.\s*(.*)$', first)
     start = 0
     if m:
         rest = m.group(2).strip()
@@ -295,9 +321,13 @@ def build_hadis(hr, inliner):
     izoh = re.sub(r'\[(\d+)\]', inliner, clean('\n\n'.join(izoh_lines))) if izoh_lines else ''
     rowi = re.sub(r'\[(\d+)\]', inliner, rowi).strip()
 
-    # ИЛОВАЛАР дан тегишли матнни izoh га қўшиш
-    if hid in appendix_by_hadis:
-        extra = '\n\n'.join(appendix_by_hadis[hid])
+    # ИЛОВАЛАР дан тегишли матнни izoh га қўшиш (блокдаги ҳамма рақам учун)
+    extra_parts = []
+    for n in hr.get('ids', [hid]):
+        if n in appendix_by_hadis:
+            extra_parts.extend(appendix_by_hadis[n])
+    if extra_parts:
+        extra = '\n\n'.join(extra_parts)
         izoh = (izoh + '\n\n' + extra).strip() if izoh else extra
 
     h = {'id': hid, 'matn': clean(matn)}
@@ -345,7 +375,8 @@ while k < M:
     mh = re_hadis.match(ln)
     if mh:
         finalize_hadis()
-        cur_hadis = {'id': int(mh.group(1)), 'lines': []}
+        ids = [int(x) for x in re.findall(r'\d+', mh.group(1))]
+        cur_hadis = {'id': ids[0], 'ids': ids, 'lines': []}
         k += 1
         continue
 

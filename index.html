@@ -396,9 +396,7 @@ function linkifyRefs(html){
 }
 
 // Арабча матн (arabic.json) — фақат «Арабча» тугмаси босилганда юкланади.
-// Манба арабчаси бузуқ кодлашда бўлгани учун вақтинча ўчирилган; тоза манба
-// келганда ARABIC_ENABLED=true қилинади.
-const ARABIC_ENABLED = false;
+const ARABIC_ENABLED = true;
 let ARAB = null, arabPromise = null;
 function loadArab(){
   if(ARAB) return Promise.resolve(ARAB);
@@ -702,7 +700,9 @@ const App = {
     const arabEl=document.getElementById('hadisArab');
     arabEl.style.display='none'; arabEl.textContent='';
     const arabBtn=document.getElementById('arabBtn');
-    arabBtn.classList.remove('active'); arabBtn.style.display=ARABIC_ENABLED?'':'none';
+    arabBtn.classList.remove('active');
+    // юкланмагунча тугма кўринади; юклангач — фақат арабчаси бор ҳадисда
+    arabBtn.style.display=(ARABIC_ENABLED && !(ARAB && !ARAB[h.id]))?'':'none';
     const narratorEl=document.getElementById('hadisNarrator');
     if(h.rowi){narratorEl.innerHTML='<strong>Ривояти:</strong> '+h.rowi;narratorEl.style.display='';}
     else{narratorEl.style.display='none';}

@@ -1320,7 +1320,9 @@ const App = {
     if(s.bob.length && (f==='all'||f==='bob')){
       html += `<div class="result-section"><div class="result-section-header">Боблар (${s.bob.length})</div>`;
       html += s.bob.map(({k,b,where})=>{
-        const txt = where==='nomi' ? b.nomi : where==='izoh' ? b.izoh : b.muallaqot;
+        // Боб номини дисплей форматида (bobNomi) кўрсатамиз — хом маълумотда касе
+        // нотўғри бўлиши мумкин; илованинг қолган жойларидек нормаллаштирилади.
+        const txt = where==='nomi' ? bobNomi(b.nomi) : where==='izoh' ? b.izoh : b.muallaqot;
         const lbl = where==='izoh' ? 'Изоҳда' : where==='muallaqot' ? 'Муаллақотда' : '';
         return `<div class="result-item" role="button" tabindex="0" onclick="App.openFromSearch('b',${k.id},${b.id})"><div class="result-label">${escHtml(k.nomi)} › ${b.id}-боб${lbl?' <span class="result-where">'+lbl+'</span>':''}</div><div class="result-text">${renderSnippet(txt, q, 'uz')}</div></div>`;
       }).join('');

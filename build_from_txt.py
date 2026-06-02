@@ -109,6 +109,23 @@ def make_fn_inliner(fdict):
     return repl
 
 
+# матн ичида келадиган footnote таърифлари (масалан "...сўзи.[7] Нисо сураси,
+# 101-оят.") — оят/сура/ҳадис ҳаволаси шаклидаги таърифларни ажратиб олиб,
+# ҳаволаларни (...) шаклига киритамиз.
+_INLINE_DEF = re.compile(
+    r'\s*\[(\d+)\]\s+([^\[\]]*?(?:сураси|сўзи|оят|оятлар|ҳадис|ҳадисга|қаранг)[^\[\]]*?\.)')
+
+
+def inline_footnotes(text, fdict):
+    local = dict(fdict)
+
+    def collect(m):
+        local[int(m.group(1))] = m.group(2).strip()
+        return ''
+    text = _INLINE_DEF.sub(collect, text)
+    return re.sub(r'\[(\d+)\]', make_fn_inliner(local), text)
+
+
 # ---------------------------------------------------------------------------
 # 1) Файлни сатрларга ажратиш, ИЛОВАЛАР чегарасини топиш
 # ---------------------------------------------------------------------------
@@ -197,7 +214,6 @@ def finalize_bob():
     # боб footnote'лари (pre_lines дан) + олдинги боб (олдинга ишора)
     fdict = parse_fn_defs(cur_bob['_pre'])
     resolve = {**prev_bob_fn, **fdict}
-    inliner = make_fn_inliner(resolve)
 
     # --- боб сарлавҳаси (рақам кейинроқ кетма-кет берилади) ---
     # Сарлавҳада footnote'нинг фақат қисқа ҳаволасини («Сура, оят») қолдирамиз,
@@ -235,8 +251,8 @@ def finalize_bob():
             bizoh.append(re.sub(r'^\s*Изоҳ:\s*', '', ln))
             continue
         (bizoh if in_izoh else mual).append(ln)
-    mual_t = re.sub(r'\[(\d+)\]', inliner, clean('\n\n'.join(mual))) if mual else ''
-    bizoh_t = re.sub(r'\[(\d+)\]', inliner, clean('\n\n'.join(bizoh))) if bizoh else ''
+    mual_t = inline_footnotes(clean('\n\n'.join(mual)), resolve) if mual else ''
+    bizoh_t = inline_footnotes(clean('\n\n'.join(bizoh)), resolve) if bizoh else ''
     if mual_t:
         cur_bob['muallaqot'] = clean(mual_t)
     # сарлавҳадан кўчирилган узун оят таржималарини изоҳ бошига қўшамиз
@@ -247,7 +263,7 @@ def finalize_bob():
     # --- ҳадислар ---
     hadises = []
     for hr in cur_bob['_hadis_raw']:
-        h = build_hadis(hr, inliner)
+        h = build_hadis(hr, resolve)
         if h:
             hadises.append(h)
     # бир хил рақамли ҳадисларни («такрорий») битта ёзувга бирлаштириш
@@ -272,11 +288,18 @@ def finalize_bob():
     cur_bob = None
 
 
-def build_hadis(hr, inliner):
+def build_hadis(hr, resolve):
     hid = hr['id']
     lines = [ln for ln in hr['lines'] if not is_arabic_line(ln)]
     # бўш сатрларни сақлаб, контент сатрларини ажратамиз
     content = [ln.strip() for ln in lines if ln.strip()]
+    if not content:
+        return None
+
+    # ҳадис блоки ичидаги footnote таърифлари (боб ва олдинги боб устига)
+    hadis_fn = parse_fn_defs(content)
+    # footnote таъриф сатрлари матнга кирмаслиги керак
+    content = [ln for ln in content if not re.match(r'^\[\d+\]\s', ln)]
     if not content:
         return None
 
@@ -317,9 +340,10 @@ def build_hadis(hr, inliner):
             continue
         matn_lines.append(ln)
 
-    matn = re.sub(r'\[(\d+)\]', inliner, clean('\n\n'.join(matn_lines)))
-    izoh = re.sub(r'\[(\d+)\]', inliner, clean('\n\n'.join(izoh_lines))) if izoh_lines else ''
-    rowi = re.sub(r'\[(\d+)\]', inliner, rowi).strip()
+    fdict = {**resolve, **hadis_fn}
+    matn = inline_footnotes(clean('\n\n'.join(matn_lines)), fdict)
+    izoh = inline_footnotes(clean('\n\n'.join(izoh_lines)), fdict) if izoh_lines else ''
+    rowi = inline_footnotes(rowi, fdict).strip()
 
     # ИЛОВАЛАР дан тегишли матнни izoh га қўшиш (блокдаги ҳамма рақам учун)
     extra_parts = []
@@ -427,6 +451,29 @@ for b in books:
         ordered['hadislar'] = bo['hadislar']
         bo.clear()
         bo.update(ordered)
+
+# Якуний тозалаш: ҳал бўлмаган [N] footnote ҳаволаларини олиб ташлаш
+# (таърифи доирада топилмаган — масалан сарлавҳа ёки китоб номидаги) ва
+# қолган қўш бўшлиқларни йиғиштириш.
+def final_clean(s):
+    s = re.sub(r'\s*\[\d+\]', '', s)
+    s = re.sub(r'[ \t]{2,}', ' ', s)
+    s = re.sub(r' +([,.;:!?»])', r'\1', s)
+    return s.strip()
+
+
+for b in books:
+    b['nomi'] = final_clean(b['nomi'])
+    for bo in b['boblar']:
+        bo['nomi'] = final_clean(bo['nomi'])
+        for f in ('muallaqot', 'izoh'):
+            if f in bo:
+                bo[f] = final_clean(bo[f])
+        for h in bo['hadislar']:
+            h['matn'] = final_clean(h['matn'])
+            for f in ('rowi', 'izoh'):
+                if f in h:
+                    h[f] = final_clean(h[f])
 
 nb = len(books)
 nbob = sum(len(b['boblar']) for b in books)

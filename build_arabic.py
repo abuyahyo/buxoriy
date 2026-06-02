@@ -97,9 +97,10 @@ for ln in open(STD, encoding='utf-8').read().split('\n'):
             std_skel[n] = skel(t)
 
 # 0-босқич: РАҚАМ-БЎЙИЧА мослик (стандарт манбадан), исно-скелет тасдиғи билан
-# Шарт: исно SequenceMatcher.ratio() ≥ 0.6 ВА LCP ≥ 15
-# (мавжуд stage 1—4 фильтри 0.85/18 — кучлироқ; рақам ўзи асосий далил
-# бўлгани учун бу ерда енгилроқ чегара ишлатилади, лекин тасдиқ сақланади.)
+# Шарт: исно SequenceMatcher.ratio() ≥ 0.6
+# Манба исноди реконструксия шовкини туфайли LCP паст бўлиши мумкин (масалан,
+# ع↔ال айирмаси), шунинг учун LCP шарт эмас; рейтинг 0.6 уз и кучли далил.
+# Минимум узунлик ҳар иккаласида ≥ 12 — шовқинли қисқа мосликни четлайди.
 direct = {}      # oid -> арабча матн (стандарт манбадан)
 direct_idx = set()  # our_index қийматлари (stage 1—4 учун)
 for i, (oid, os) in enumerate(our):
@@ -107,8 +108,7 @@ for i, (oid, os) in enumerate(our):
     if not sk or len(os) < 12 or len(sk) < 12:
         continue
     r = difflib.SequenceMatcher(None, os[:50], sk[:50]).ratio()
-    l = lcp(os, sk)
-    if r >= 0.6 and l >= 15:
+    if r >= 0.6:
         direct[oid] = std_text[oid]
         direct_idx.add(i)
 

@@ -242,6 +242,12 @@ body.fabs-hidden .install-banner{transform:translateY(120%);opacity:0;pointer-ev
   .home-title{font-size:25px}
   .grid-wrap{padding:28px 14px 130px}
 }
+.kitob-name-ar{font-size:14px;color:var(--text-dim);font-family:'Amiri','Noto Naskh Arabic',serif;font-weight:400;margin-top:6px;direction:rtl;text-align:right;opacity:.85}
+.bob-name-ar{font-size:13px;color:var(--text-dim);font-family:'Amiri','Noto Naskh Arabic',serif;margin-top:4px;direction:rtl;text-align:right;opacity:.8;line-height:1.6}
+.hadis-stub-note{padding:14px 16px;margin:0 0 22px;background:var(--surface);border-left:3px solid var(--rose-soft);border-radius:var(--radius-sm);color:var(--text-dim);font-size:13px;line-height:1.6;font-family:'Roboto',sans-serif;font-style:italic}
+.hadis-arab-stub{display:block !important;margin-top:14px}
+.hadis-stub-badge{display:inline-block;font-size:9px;color:var(--rose-soft);background:rgba(184,138,130,.12);padding:2px 7px;border-radius:99px;margin-left:8px;text-transform:none;letter-spacing:.05em;font-weight:600;font-style:italic}
+.hadis-item-preview-ar{font-family:'Amiri','Noto Naskh Arabic',serif;font-size:16px;line-height:1.85;color:var(--text-dim)}
 .ar-link{position:fixed;top:14px;right:14px;z-index:60;background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:7px 14px;border-radius:99px;font-family:'Amiri','Noto Naskh Arabic',serif;font-size:15px;font-weight:700;text-decoration:none;box-shadow:var(--shadow-sm);transition:all .25s;display:inline-flex;align-items:center;gap:6px}
 .ar-link:hover,.ar-link:active{border-color:var(--sage);color:var(--sage-deep);background:var(--sage-glow)}
 .ar-link::after{content:'↗';font-family:'Roboto',sans-serif;font-size:11px;opacity:.6;font-weight:400}
@@ -620,7 +626,7 @@ const App = {
     BOOKS.forEach(k=>{
       const el=document.createElement('div');
       el.className='kitob-card';el.setAttribute('role','button');el.tabIndex=0;
-      el.innerHTML=`<div class="kitob-top"><div class="kitob-num">${k.id}-КИТОБ</div><div class="kitob-stats"><div class="kitob-stat"><b>${k.bC}</b> боб</div><div class="kitob-stat"><b>${k.hC}</b> ҳадис</div></div></div><div class="kitob-name">${k.nomi}</div>`;
+      el.innerHTML=`<div class="kitob-top"><div class="kitob-num">${k.id}-КИТОБ</div><div class="kitob-stats"><div class="kitob-stat"><b>${k.bC}</b> боб</div><div class="kitob-stat"><b>${k.hC}</b> ҳадис</div></div></div><div class="kitob-name">${k.nomi}</div>${k.canon_nomi_ar?`<div class="kitob-name-ar">${k.canon_nomi_ar}</div>`:''}`;
       el.onclick=()=>App.openKitob(k.id);
       g.appendChild(el);
     });
@@ -671,7 +677,7 @@ const App = {
       const el=document.createElement('div');
       el.className='bob-card';el.setAttribute('role','button');el.tabIndex=0;
       el.id=`bob-card-${k.id}-${b.id}`;
-      el.innerHTML=`<div class="bob-name">${bobNomi(b.nomi)}</div>${b.izoh?`<div class="bob-izoh">${b.izoh.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')}</div>`:''}<div class="bob-count" style="${b.izoh?'margin-top:8px':''}"><b>${bhC}</b> та ҳадис${b.muallaqot?'<span class="bob-muallaqot-badge">⚑ муаллақот</span>':''}</div>`;
+      el.innerHTML=`<div class="bob-name">${bobNomi(b.nomi)}</div>${b.canon_bab_nomi_ar?`<div class="bob-name-ar">${b.canon_bab_nomi_ar}</div>`:''}${b.izoh?`<div class="bob-izoh">${b.izoh.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')}</div>`:''}<div class="bob-count" style="${b.izoh?'margin-top:8px':''}"><b>${bhC}</b> та ҳадис${b.muallaqot?'<span class="bob-muallaqot-badge">⚑ муаллақот</span>':''}</div>`;
       el.onclick=()=>App.openBob(kid,b.id);
       g.appendChild(el);
     });
@@ -720,7 +726,11 @@ const App = {
       const el=document.createElement('div');
       el.className='hadis-item';el.setAttribute('role','button');el.tabIndex=0;
       el.id=`hadis-card-${kid}-${bid}-${h.id}`;
-      el.innerHTML=`<div class="hadis-item-num">${h.id}-ҳадис</div><div class="hadis-item-preview">${h.matn.replace(/\n/g,' ')}</div><div class="hadis-item-narrator">${h.rowi||''}</div>`;
+      if(h.tarjima_status === 'missing'){
+        el.innerHTML=`<div class="hadis-item-num">${h.id}-ҳадис <span class="hadis-stub-badge">таржимаси йўқ</span></div><div class="hadis-item-preview hadis-item-preview-ar" dir="rtl">${(h.matn_ar||'').slice(0,200).replace(/\n/g,' ')}</div>`;
+      } else {
+        el.innerHTML=`<div class="hadis-item-num">${h.id}-ҳадис</div><div class="hadis-item-preview">${h.matn.replace(/\n/g,' ')}</div><div class="hadis-item-narrator">${h.rowi||''}</div>`;
+      }
       el.onclick=()=>App.openHadis(kid,bid,h.id);
       g.appendChild(el);
     });
@@ -770,8 +780,17 @@ const App = {
     }
     const h=getH(kid,bid,hid);
     if(!h){ App.openBob(kid,bid); return; }   // нотўғри ҳадис рақами — боб рўйхатига қайтамиз
-    const _fn=splitFootnotes(h.matn);
-    let _html=`<span class="hadis-num-inline">${h.id}-ҲАДИС</span> `+linkifyRefs(_fn.body.replace(/\n\n/g,'<br>').replace(/\n/g,'<br>'));
+    const _isStub = h.tarjima_status === 'missing';
+    const _fn = _isStub ? {body:'', notes:[]} : splitFootnotes(h.matn);
+    let _html = `<span class="hadis-num-inline">${h.id}-ҲАДИС</span> `;
+    if(_isStub){
+      _html += `<div class="hadis-stub-note">Бу ҳадиснинг ўзбекча таржимаси ҳозирча мавжуд эмас. Арабча матни:</div>`;
+      if(h.matn_ar){
+        _html += `<div class="hadis-arab hadis-arab-stub">${escHtml(h.matn_ar)}</div>`;
+      }
+    } else {
+      _html += linkifyRefs(_fn.body.replace(/\n\n/g,'<br>').replace(/\n/g,'<br>'));
+    }
     if(_fn.notes.length){
       _html+='<div class="hadis-fn">'+_fn.notes.map(n=>`<div class="hadis-fn-item"><span class="hadis-fn-star">*</span>${linkifyRefs(n.replace(/^\*\s*/,'').replace(/\n/g,' '))}</div>`).join('')+'</div>';
     }

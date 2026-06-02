@@ -1,9 +1,9 @@
-// Service Worker for Buxoriy
+﻿// Service Worker for Buxoriy
 // CACHE name embeds a version that build_index.py bumps when data.json changes.
 // On version bump the browser sees a new sw.js, installs it, and the page
 // shows an "Update available" banner.
 
-const CACHE = 'buxoriy-v1780405686';
+const CACHE = 'buxoriy-v1780405986';
 
 const ASSETS = [
   './',
@@ -20,7 +20,7 @@ self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(c => c.addAll(ASSETS))
   );
-  // Don't auto-skipWaiting — let the page trigger it when user clicks the
+  // Don't auto-skipWaiting вЂ” let the page trigger it when user clicks the
   // update banner, so we control the reload moment.
 });
 
@@ -58,3 +58,4 @@ async function staleWhileRevalidate(request) {
 self.addEventListener('message', e => {
   if (e.data === 'skip-waiting') self.skipWaiting();
 });
+

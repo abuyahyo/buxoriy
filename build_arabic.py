@@ -17,6 +17,7 @@ import bisect
 
 SRC = 'sahihul-buxoriy.txt'
 CLEAN = 'sahih_bukhari_arabic.txt'
+STD = 'sahih_bukhari_arabic_standard.txt'  # standart 1—7563 раqамлаш
 OUT = 'arabic.json'
 
 AR = re.compile(r'[؀-ۿﭐ-﷿ﹰ-﻿﴾﴿]')
@@ -74,11 +75,42 @@ for ln in open(SRC, encoding='utf-8').read().split('\n'):
         our.append((cid, skel(recon(body))))
         got = True
 
-# --- тоза манба ---
+# --- тоза манба (мҳashim6 — кетма-кет рақамлаш) ---
 ftxt = open(CLEAN, encoding='utf-8').read()
 fil = [(int(m.group(1)), m.group(2).strip(), skel(m.group(2)))
        for m in re.finditer(r'(?m)^(\d+)\.\s*(.+)$', ftxt)]
 N = len(fil)
+
+# --- стандарт манба (fawazahmed0 — 1—7563 халқаро рақамлаш) ---
+# Бизнинг sahihul-buxoriy.txt ҳам шу рақамлашда (1—7563), шунинг учун
+# раqам-бўйича тўғридан-тўғри мослик мумкин. Лекин ҳар бир мосликни
+# исно скелет о'хшашлиги билан тасдиқлаймиз (хатоликнинг олдини олиш учун).
+std_text = {}
+std_skel = {}
+for ln in open(STD, encoding='utf-8').read().split('\n'):
+    m = re.match(r'^(\d+)\.\s*(.+)$', ln)
+    if m:
+        n = int(m.group(1))
+        t = m.group(2).strip()
+        if t and t != '[N/A]':
+            std_text[n] = t
+            std_skel[n] = skel(t)
+
+# 0-босқич: РАҚАМ-БЎЙИЧА мослик (стандарт манбадан), исно-скелет тасдиғи билан
+# Шарт: исно SequenceMatcher.ratio() ≥ 0.6 ВА LCP ≥ 15
+# (мавжуд stage 1—4 фильтри 0.85/18 — кучлироқ; рақам ўзи асосий далил
+# бўлгани учун бу ерда енгилроқ чегара ишлатилади, лекин тасдиқ сақланади.)
+direct = {}      # oid -> арабча матн (стандарт манбадан)
+direct_idx = set()  # our_index қийматлари (stage 1—4 учун)
+for i, (oid, os) in enumerate(our):
+    sk = std_skel.get(oid)
+    if not sk or len(os) < 12 or len(sk) < 12:
+        continue
+    r = difflib.SequenceMatcher(None, os[:50], sk[:50]).ratio()
+    l = lcp(os, sk)
+    if r >= 0.6 and l >= 15:
+        direct[oid] = std_text[oid]
+        direct_idx.add(i)
 
 # 1-босқич: глобал кетма-кетлик мослаштириш (иснод бошлари токен)
 otok = [s[:30] for _, s in our]
@@ -128,7 +160,7 @@ def isnad_ratio(i, fj):
 
 # our_index -> fil_index (фақат иснод>=0.85 ва LCP>=18 бўлганлар)
 final = {}
-seen_oid = set()
+seen_oid = set(direct)  # stage 0 топган oid'ларни такрор ишламаслик
 for i, fj in omap.items():
     oid = our[i][0]
     if oid in seen_oid or lcp(our[i][1], fil[fj][2]) < 18:
@@ -199,15 +231,20 @@ for i, (oid, os) in enumerate(our):
         seen_oid.add(oid)
 
 mapping = {}
+# Stage 0 натижалари — биринчи навбатда
+mapping.update(direct)
+# Stage 1—4 натижалари — тўлдиргич
+fallback_count = 0
 for i, fj in final.items():
     oid = our[i][0]
     if oid not in mapping:
         mapping[oid] = fil[fj][1]
+        fallback_count += 1
 
 # Глобал такрорий рақамлар (бир id икки бобда, турли мазмун) — арабча рақам
 # бўйича сақлангани учун бир нусхада нотўғри чиқар эди; уларни чиқариб ташлаймиз.
 from collections import Counter
-db = json.load(open('data.json'))
+db = json.load(open('data.json', encoding='utf-8'))
 idc = Counter(h['id'] for b in db for bo in b['boblar'] for h in bo['hadislar'])
 dups = [i for i, c in idc.items() if c > 1]
 for d in dups:
@@ -217,10 +254,13 @@ with open(OUT, 'w', encoding='utf-8') as f:
     json.dump(mapping, f, ensure_ascii=False, separators=(',', ':'))
 
 import os
-db = json.load(open('data.json'))
+db = json.load(open('data.json', encoding='utf-8'))
 uniq = set(h['id'] for b in db for bo in b['boblar'] for h in bo['hadislar'])
 cov = len(set(mapping) & uniq)
-print('бизнинг ҳадис (арабчали):', len(our), '| тоза манба:', N)
+print('бизнинг ҳадис (арабчали):', len(our),
+      '| мҳashim6:', N, '| стандарт:', len(std_text))
+print('  Stage 0 (рақам+тасдиқ):', len(direct))
+print('  Stage 1—4 (иснод-скелет):', fallback_count)
 print('mapping:', len(mapping), '| қамров:', cov, '/', len(uniq),
       '(%.1f%%)' % (100 * cov / len(uniq)))
 print('arabic.json: %.2f MB' % (os.path.getsize(OUT) / 1024 / 1024))

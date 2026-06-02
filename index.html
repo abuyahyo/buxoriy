@@ -137,6 +137,8 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 .hadis-narrator{border-left:3px solid var(--sage)}
 .hadis-source{border-left:3px solid var(--rose-soft)}
 .hadis-narrator strong,.hadis-source strong{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--text-muted);margin-bottom:6px;font-style:normal;font-weight:600;font-family:'Roboto',sans-serif}
+.kitob-izoh{margin-bottom:22px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--sage);border-radius:var(--radius);font-size:13px;line-height:1.75;color:var(--text-dim);font-family:'Merriweather',serif;font-weight:300}
+.kitob-izoh-star{color:var(--sage);font-weight:700;margin-right:4px}
 .muallaqot-block{margin-bottom:24px;padding:18px 20px;background:var(--surface);border-radius:var(--radius);border-left:3px solid var(--rose-soft)}
 .muallaqot-label{font-size:10px;color:var(--rose-soft);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:7px;font-weight:600}
 .muallaqot-label::before{content:"⚑";font-size:13px}
@@ -626,6 +628,12 @@ const App = {
     document.getElementById('bobCount').textContent='';
     const g=document.getElementById('bobGrid');
     g.innerHTML='';
+    if(k.izoh){
+      const note=document.createElement('div');
+      note.className='kitob-izoh';
+      note.innerHTML='<span class="kitob-izoh-star">*</span> '+linkifyRefs(escHtml(k.izoh).replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>'));
+      g.appendChild(note);
+    }
     k.boblar.forEach(b=>{
       const bhC = b.hC ?? b.hadislar.length;
       const el=document.createElement('div');

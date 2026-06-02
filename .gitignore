@@ -5,3 +5,6 @@ data_issues.csv
 data_issues.json
 *.db
 data.json.bak
+tarjima/
+tarjima_uchun.json
+tarjimasiz_hadislar.txt

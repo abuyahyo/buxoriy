@@ -151,6 +151,7 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 .result-label{font-size:10px;color:var(--sage-deep);margin-bottom:6px;line-height:1.6;letter-spacing:.04em;font-weight:500}
 .result-text{font-size:14px;line-height:1.7;color:var(--text-dim);font-weight:300}
 .result-text mark{background:var(--sage-glow);color:var(--text);border-radius:3px;padding:1px 4px;font-weight:500}
+.result-text.arab{font-family:'Amiri','Noto Naskh Arabic',serif;font-size:17px;line-height:1.9}
 .no-results{text-align:center;padding:60px 20px;color:var(--text-muted)}
 .no-results-icon{font-size:52px;margin-bottom:18px;opacity:.4}
 .result-section{margin-bottom:28px}
@@ -403,14 +404,29 @@ function linkifyRefs(html){
   });
 }
 
-// Арабча матн (arabic.json) — фақат «Арабча» тугмаси босилганда юкланади.
+// Арабча матн (arabic.json) — «Арабча» тугмаси ёки арабча қидирувда юкланади.
 const ARABIC_ENABLED = true;
-let ARAB = null, arabPromise = null;
+let ARAB = null, ARAB_NORM = null, arabPromise = null;
+// Арабча нормализация: ташкил/татвиҳ ҳарфларни олиб ташлайди, ҳарф вариантларини бирлаштиради
+function normArab(s){
+  return String(s)
+    .replace(/[ً-ٰٟـ]/g, '') // tashkeel + tatweel
+    .replace(/[آأإ]/g, 'ا')   // أ إ آ → ا
+    .replace(/ى/g, 'ي')                  // ى → ي
+    .replace(/ة/g, 'ه')                  // ة → ه
+    .replace(/[ؤئ]/g, 'و');         // ؤ ئ → و
+}
+function isArabicQuery(s){ return /[؀-ۿ]/.test(s); }
 function loadArab(){
   if(ARAB) return Promise.resolve(ARAB);
   if(!arabPromise) arabPromise = fetch('arabic.json')
     .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-    .then(d=>{ ARAB=d; return d; })
+    .then(d=>{
+      ARAB = d;
+      ARAB_NORM = {};
+      for(const id in d) ARAB_NORM[id] = normArab(d[id]);
+      return d;
+    })
     .catch(e=>{ arabPromise=null; throw e; });
   return arabPromise;
 }
@@ -1012,14 +1028,25 @@ const App = {
       return;
     }
 
-    const q = trimmed.toLowerCase();
+    const isArab = isArabicQuery(trimmed);
+    if(isArab && !ARAB){
+      kView.style.display='none';
+      sView.style.display='';
+      document.getElementById('searchMeta').textContent='';
+      document.getElementById('searchResults').innerHTML='<div class="loading-state">Арабча матн юкланмоқда…</div>';
+      loadArab().then(()=>App.doSearch(v, fromHash))
+        .catch(()=>{ document.getElementById('searchResults').innerHTML='<div class="no-results"><p>Арабча матнни юклаб бўлмади</p></div>'; });
+      return;
+    }
+
+    const q = isArab ? normArab(trimmed) : trimmed.toLowerCase();
     const isNum = /^\d+$/.test(trimmed);
     const kitob=[], bob=[], hadis=[];
 
     DB.forEach(k=>{
-      if(!isNum && k.nomi.toLowerCase().includes(q)) kitob.push({k});
+      if(!isArab && !isNum && k.nomi.toLowerCase().includes(q)) kitob.push({k});
       k.boblar.forEach(b=>{
-        if(!isNum){
+        if(!isArab && !isNum){
           const inN = b.nomi.toLowerCase().includes(q);
           const inI = b.izoh && b.izoh.toLowerCase().includes(q);
           const inM = b.muallaqot && b.muallaqot.toLowerCase().includes(q);
@@ -1030,6 +1057,11 @@ const App = {
             if(String(h.id)===trimmed) hadis.push({k, b, h, where:'matn'});
             return;
           }
+          if(isArab){
+            const arabN = ARAB_NORM && ARAB_NORM[h.id];
+            if(arabN && arabN.includes(q)) hadis.push({k, b, h, where:'arabic'});
+            return;
+          }
           const inM = h.matn.toLowerCase().includes(q);
           const inR = h.rowi && h.rowi.toLowerCase().includes(q);
           const inI = h.izoh && h.izoh.toLowerCase().includes(q);
@@ -1038,7 +1070,7 @@ const App = {
       });
     });
 
-    _searchState = { query:trimmed, kitob, bob, hadis, hadisShown: Math.min(SEARCH_HADIS_PAGE, hadis.length), filter:'all' };
+    _searchState = { query:trimmed, kitob, bob, hadis, hadisShown: Math.min(SEARCH_HADIS_PAGE, hadis.length), filter:'all', isArab };
     this._renderSearch();
     kView.style.display='none';
     sView.style.display='';
@@ -1071,6 +1103,8 @@ const App = {
       `<button class="search-filter-tab${f===k?' active':''}" onclick="App.setFilter('${k}')">${lbl} ${n}</button>`).join('');
     const re = new RegExp(escRegex(s.query), 'gi');
     const hl = t => escHtml(t).replace(re, m=>`<mark>${m}</mark>`);
+    const reArab = s.isArab ? new RegExp(escRegex(normArab(s.query)), 'g') : null;
+    const hlArab = t => escHtml(t).replace(reArab, m=>`<mark>${m}</mark>`);
     let html='';
 
     if(s.kitob.length && (f==='all'||f==='kitob')){
@@ -1093,6 +1127,11 @@ const App = {
       const shown = s.hadis.slice(0, s.hadisShown);
       html += `<div class="result-section"><div class="result-section-header">Ҳадислар (${s.hadis.length})</div>`;
       html += shown.map(({k,b,h,where})=>{
+        if(where==='arabic'){
+          const arabN = ARAB_NORM && ARAB_NORM[h.id] || '';
+          const normQ = normArab(s.query);
+          return `<div class="result-item" role="button" tabindex="0" onclick="App.openFromSearch('h',${k.id},${b.id},${h.id})"><div class="result-label">${escHtml(k.nomi)} › ${b.id}-боб › ${h.id}-ҳадис <span class="result-where">Арабча</span></div><div class="result-text arab" dir="rtl">${hlArab(snippet(arabN, normQ))}</div></div>`;
+        }
         const txt = where==='matn' ? h.matn : where==='rowi' ? h.rowi : h.izoh;
         const lbl = where==='rowi' ? 'Ровийда' : where==='izoh' ? 'Изоҳда' : '';
         return `<div class="result-item" role="button" tabindex="0" onclick="App.openFromSearch('h',${k.id},${b.id},${h.id})"><div class="result-label">${escHtml(k.nomi)} › ${b.id}-боб › ${h.id}-ҳадис${lbl?' <span class="result-where">'+lbl+'</span>':''}</div><div class="result-text">${hl(snippet(txt, s.query))}</div></div>`;

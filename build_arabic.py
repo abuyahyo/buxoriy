@@ -172,6 +172,32 @@ for _ in range(4):
     if not added:
         break
 
+# 4-босқич: ГЛОБАЛ юқори-ишонч тиклаш — позицияга боғланмай, ишлатилмаган
+# манба ҳадислари ичидан иснод>=0.92 ВА ягона (2-ўриндан >0.06 фарқли) бўлган
+# мосликни қабул қилиш. Ягоналик шарти нотўғри (ўхшаш иснодли бошқа) мосликни
+# четлайди.
+used = set(final.values())
+unused_idx = [j for j in range(N) if j not in used]
+for i, (oid, os) in enumerate(our):
+    if i in final or oid in seen_oid or len(os) < 15:
+        continue
+    scored = []
+    for j in unused_idx:
+        if j in used:
+            continue
+        r = difflib.SequenceMatcher(None, os[:50], fil[j][2][:50]).ratio()
+        if r >= 0.85:
+            scored.append((r, j))
+    if not scored:
+        continue
+    scored.sort(reverse=True)
+    best_r, best_j = scored[0]
+    second = scored[1][0] if len(scored) > 1 else 0
+    if best_r >= 0.92 and (best_r - second) > 0.06:
+        final[i] = best_j
+        used.add(best_j)
+        seen_oid.add(oid)
+
 mapping = {}
 for i, fj in final.items():
     oid = our[i][0]

@@ -462,18 +462,26 @@ def final_clean(s):
     return s.strip()
 
 
+def clean_izoh(s):
+    # иловадан келган изоҳ матни баъзан "Изоҳ:" билан бошланади — олиб ташлаймиз
+    s = re.sub(r'^\s*Изоҳ\s*:\s*', '', final_clean(s))
+    return s.strip()
+
+
 for b in books:
     b['nomi'] = final_clean(b['nomi'])
     for bo in b['boblar']:
         bo['nomi'] = final_clean(bo['nomi'])
-        for f in ('muallaqot', 'izoh'):
-            if f in bo:
-                bo[f] = final_clean(bo[f])
+        if 'muallaqot' in bo:
+            bo['muallaqot'] = final_clean(bo['muallaqot'])
+        if 'izoh' in bo:
+            bo['izoh'] = clean_izoh(bo['izoh'])
         for h in bo['hadislar']:
             h['matn'] = final_clean(h['matn'])
-            for f in ('rowi', 'izoh'):
-                if f in h:
-                    h[f] = final_clean(h[f])
+            if 'rowi' in h:
+                h['rowi'] = final_clean(h['rowi'])
+            if 'izoh' in h:
+                h['izoh'] = clean_izoh(h['izoh'])
 
 nb = len(books)
 nbob = sum(len(b['boblar']) for b in books)

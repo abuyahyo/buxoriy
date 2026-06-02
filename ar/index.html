@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>صحيح البخاري</title>
+<meta name="theme-color" content="#1f1a16" media="(prefers-color-scheme:dark)">
+<meta name="theme-color" content="#faf3e7" media="(prefers-color-scheme:light)">
+<meta name="apple-mobile-web-app-title" content="صحيح البخاري">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png?v=4">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%23f5f0e8"/><text x="32" y="40" font-family="Amiri,serif" font-size="24" font-weight="bold" fill="%238b6914" text-anchor="middle">البخاري</text></svg>'>
+<link rel="preload" href="index.json" as="fetch" crossorigin="anonymous">
+<link rel="prefetch" href="data.json" as="fetch" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;500;700&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#1f1a16;--surface:#2a231e;--surface2:#342c26;--surface3:#40362e;--border:#463a30;
+  --text:#f5ecdb;--text-dim:#b8a890;--text-muted:#8a7c68;
+  --sage:#8aa388;--sage-deep:#6d8a6a;--sage-glow:rgba(138,163,136,.18);
+  --rose:#c8a098;--rose-soft:#b58a82;
+  --gold:#d9b870;--gold-soft:#b89958;--gold-light:#e8d59a;--gold-dark:#b89958;
+  --radius-sm:10px;--radius:18px;--radius-lg:28px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.10),0 1px 2px rgba(0,0,0,.06);
+  --shadow:0 4px 16px rgba(0,0,0,.14),0 2px 6px rgba(0,0,0,.08);
+  --shadow-lg:0 12px 32px rgba(0,0,0,.20),0 6px 12px rgba(0,0,0,.10);
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --font-ar:'Amiri','Noto Naskh Arabic',serif;
+  --font-ui:'Cairo','Noto Naskh Arabic',sans-serif;
+}
+.light{
+  --bg:#faf3e7;--surface:#f5ecd6;--surface2:#efe5cb;--surface3:#e8dcb8;--border:#d7cdb1;
+  --text:#2a2218;--text-dim:#5a4d3e;--text-muted:#8a7d68;
+  --sage:#6d8a6a;--sage-deep:#4a6a48;--sage-glow:rgba(109,138,106,.14);
+  --rose:#a07568;--rose-soft:#c89a90;
+  --gold:#a87a2c;--gold-soft:#8a6520;--gold-light:#8a6520;--gold-dark:#6b5010;
+  --shadow-sm:0 1px 3px rgba(70,50,20,.06),0 1px 2px rgba(70,50,20,.03);
+  --shadow:0 4px 14px rgba(70,50,20,.08),0 2px 5px rgba(70,50,20,.05);
+  --shadow-lg:0 12px 30px rgba(70,50,20,.12),0 6px 12px rgba(70,50,20,.06);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font-ui);font-weight:400;min-height:100vh;transition:background .4s,color .4s;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;touch-action:manipulation;direction:rtl}
+
+.search-wrap{position:relative}
+.search-input{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--font-ui);font-size:16px;padding:14px 20px 14px 46px;border-radius:var(--radius-lg);outline:none;transition:border-color .3s,background .3s,box-shadow .3s;box-shadow:var(--shadow-sm);text-align:right}
+.search-input:focus{border-color:var(--sage);box-shadow:0 0 0 4px var(--sage-glow),var(--shadow-sm)}
+.search-input::placeholder{color:var(--text-muted);font-weight:300}
+.search-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:14px;opacity:.7}
+.search-clear{position:absolute;left:10px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--text-muted);font-size:14px;width:30px;height:30px;border-radius:50%;cursor:pointer;display:none;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:color .25s,background .25s}
+.search-clear:hover,.search-clear:active{color:var(--sage-deep);background:var(--surface2)}
+.search-wrap.has-text .search-clear{display:flex}
+.search-wrap.has-text .search-icon{display:none}
+
+.breadcrumb{position:sticky;top:0;z-index:50;padding:18px 20px 14px;border-bottom:1px solid var(--border);background:rgba(31,26,22,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.light .breadcrumb{background:rgba(250,243,231,.92)}
+.breadcrumb .bc-trail{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.breadcrumb .bc-link{display:inline-block;cursor:pointer;color:var(--sage-deep);font-size:11px;letter-spacing:.04em;font-weight:600;padding:5px 13px;background:var(--sage-glow);border-radius:99px;transition:color .25s,background .25s,transform .2s;-webkit-tap-highlight-color:transparent;font-family:var(--font-ui)}
+.breadcrumb .bc-link:hover,.breadcrumb .bc-link:active{color:var(--text);background:var(--sage);transform:translateY(-1px)}
+.breadcrumb .bc-sep{color:var(--text-muted);font-size:13px;margin:0 4px;opacity:.5}
+.breadcrumb .bc-cur{font-size:22px;font-weight:500;color:var(--text);line-height:1.45;font-family:var(--font-ar);display:block;margin-top:6px}
+
+.home-hero{text-align:center;padding:44px 20px 30px}
+.home-title{font-size:34px;color:var(--text);margin-bottom:12px;font-family:var(--font-ar);font-weight:700;line-height:1.3;animation:fadeUp .8s var(--ease) .1s both}
+.home-sub{font-size:15px;color:var(--text-dim);font-family:var(--font-ar);font-style:italic;font-weight:400;line-height:1.7;animation:fadeUp .8s var(--ease) .2s both;max-width:560px;margin:0 auto}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.hero-divider{display:flex;align-items:center;justify-content:center;gap:14px;margin:22px auto 0;max-width:200px;color:var(--sage);opacity:.6;animation:fadeUp .8s var(--ease) .3s both}
+.hero-divider .line{flex:1;height:1px;background:currentColor}
+.hero-divider .dot{width:6px;height:6px;background:currentColor;border-radius:50%;transform:rotate(45deg)}
+.home-search{max-width:560px;margin:32px auto 0;padding:0 20px}
+.grid-wrap{padding:36px 18px 140px;max-width:1100px;margin:0 auto}
+.grid-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;padding:0 4px}
+.grid-label{font-size:13px;color:var(--text-muted);font-weight:500;font-family:var(--font-ui)}
+.grid-count{font-size:12px;color:var(--sage-deep);font-weight:500;font-family:var(--font-ui)}
+
+.kitob-grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:720px){.kitob-grid{grid-template-columns:1fr 1fr;gap:16px}}
+.kitob-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:22px;cursor:pointer;transition:transform .35s var(--ease),box-shadow .35s,background .25s;position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow-sm);content-visibility:auto;contain-intrinsic-size:auto 110px}
+.kitob-card::before{content:'';position:absolute;inset:0;background:linear-gradient(225deg,transparent 0%,var(--sage-glow) 100%);opacity:0;transition:opacity .35s;pointer-events:none}
+.kitob-card:hover,.kitob-card:active{transform:translateY(-3px);box-shadow:var(--shadow-lg);background:var(--surface3)}
+.kitob-card:hover::before,.kitob-card:active::before{opacity:1}
+.kitob-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;position:relative;z-index:1}
+.kitob-num{font-size:13px;color:var(--sage-deep);font-weight:600;font-family:var(--font-ui)}
+.kitob-name{font-size:20px;font-weight:700;color:var(--text);line-height:1.5;font-family:var(--font-ar);position:relative;z-index:1}
+.kitob-stats{display:flex;gap:14px}
+.kitob-stat{font-size:12px;color:var(--text-muted);font-weight:400;font-family:var(--font-ui)}
+.kitob-stat b{color:var(--text-dim);font-weight:600}
+
+.hadis-list{display:flex;flex-direction:column;gap:12px}
+.hadis-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:transform .35s var(--ease),box-shadow .35s,background .25s;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow-sm);content-visibility:auto;contain-intrinsic-size:auto 140px}
+.hadis-item:hover,.hadis-item:active{transform:translateY(-2px);box-shadow:var(--shadow);background:var(--surface3)}
+.hadis-item-num{font-size:12px;color:var(--sage-deep);margin-bottom:8px;font-weight:600;font-family:var(--font-ui)}
+.hadis-item-preview{font-size:18px;color:var(--text);line-height:2;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-weight:400;font-family:var(--font-ar);text-align:justify}
+
+.hadis-text{padding:32px 14px 24px;margin:0 -6px 28px;line-height:2.1;color:var(--text);font-size:var(--hadis-fs,22px);font-family:var(--font-ar);font-weight:400;text-align:justify}
+.hadis-num-inline{display:block;text-align:center;font-weight:600;color:var(--sage-deep);margin-bottom:28px;font-family:var(--font-ui);font-size:14px;position:relative}
+.hadis-num-inline::before,.hadis-num-inline::after{content:'';position:absolute;top:50%;width:50px;height:1px;opacity:.7}
+.hadis-num-inline::before{left:50%;margin-left:60px;background:linear-gradient(270deg,transparent,var(--border))}
+.hadis-num-inline::after{left:50%;margin-left:-110px;background:linear-gradient(90deg,transparent,var(--border))}
+
+.hadis-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
+.hadis-tb-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);height:38px;min-width:38px;padding:0 14px;border-radius:99px;cursor:pointer;font-size:13px;font-family:var(--font-ui);font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent;transition:all .25s}
+.hadis-tb-btn:hover,.hadis-tb-btn:active{border-color:var(--sage);color:var(--sage-deep);background:var(--surface2)}
+.hadis-tb-btn.copied,.hadis-tb-btn.active{border-color:var(--sage);color:var(--sage-deep);background:var(--sage-glow)}
+.hadis-tb-group{display:inline-flex;border:1px solid var(--border);border-radius:99px;overflow:hidden;background:var(--surface)}
+.hadis-tb-group .hadis-tb-btn{border:none;border-radius:0;background:transparent;height:36px;min-width:38px;border-left:1px solid var(--border)}
+.hadis-tb-group .hadis-tb-btn:last-child{border-left:none}
+.hadis-tb-group .hadis-tb-btn:hover,.hadis-tb-group .hadis-tb-btn:active{background:var(--sage-glow);color:var(--sage-deep)}
+
+.search-pg-header{margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.search-pg-title{font-size:20px;color:var(--text);margin-bottom:6px;font-family:var(--font-ar);font-weight:500}
+.search-pg-meta{font-size:12px;color:var(--text-muted);font-family:var(--font-ui)}
+.result-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow-sm);transition:transform .35s var(--ease),box-shadow .35s,background .25s;content-visibility:auto;contain-intrinsic-size:auto 100px}
+.result-item:hover,.result-item:active{transform:translateY(-1px);box-shadow:var(--shadow);background:var(--surface3)}
+.result-label{font-size:12px;color:var(--sage-deep);margin-bottom:8px;font-weight:500;font-family:var(--font-ui)}
+.result-text{font-size:17px;line-height:1.95;color:var(--text-dim);font-weight:400;font-family:var(--font-ar);text-align:justify}
+.result-text.kitob-name-result{font-size:19px;color:var(--text);font-weight:700}
+.result-text mark{background:var(--sage-glow);color:var(--text);border-radius:3px;padding:1px 4px;font-weight:600}
+.no-results{text-align:center;padding:60px 20px;color:var(--text-muted);font-family:var(--font-ar)}
+.no-results-icon{font-size:52px;margin-bottom:18px;opacity:.4}
+.result-section{margin-bottom:28px}
+.result-section-header{font-size:13px;color:var(--text-muted);margin-bottom:12px;padding:0 4px 8px;border-bottom:1px solid var(--border);font-weight:500;font-family:var(--font-ui)}
+.result-where{font-size:11px;color:var(--rose-soft);margin-right:8px;padding:2px 7px;background:rgba(184,138,130,.12);border-radius:99px;font-weight:600;font-family:var(--font-ui)}
+.result-more-btn{display:block;width:100%;background:var(--surface);border:1px solid var(--border);color:var(--sage-deep);padding:14px;border-radius:var(--radius);cursor:pointer;font-family:var(--font-ui);font-size:14px;font-weight:500;margin-top:10px;-webkit-tap-highlight-color:transparent;transition:all .25s}
+.result-more-btn:hover,.result-more-btn:active{border-color:var(--sage);background:var(--sage-glow)}
+
+.kitob-card:focus-visible,.hadis-item:focus-visible,.result-item:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
+
+.scroll-top{position:fixed;bottom:24px;left:24px;width:44px;height:44px;background:var(--surface);border:1px solid var(--border);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:18px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .35s,transform .25s,background .25s,color .25s;z-index:50;box-shadow:var(--shadow)}
+.scroll-top.visible{opacity:1;pointer-events:auto}
+.scroll-top:hover,.scroll-top:active{background:var(--sage);color:#fff;transform:scale(.95)}
+.fab-theme{position:fixed;bottom:24px;right:24px;width:46px;height:46px;background:var(--surface);border:1px solid var(--border);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:transform .35s var(--ease),opacity .35s,background .25s;z-index:50;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow)}
+.fab-theme:hover,.fab-theme:active{background:var(--surface2);transform:scale(.95) rotate(15deg)}
+.fab-nav{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;background:var(--surface);border:1px solid var(--border);border-radius:99px;overflow:hidden;z-index:50;box-shadow:var(--shadow);transition:transform .35s var(--ease),opacity .35s;direction:ltr}
+.fab-nav button{background:transparent;border:none;color:var(--text-dim);width:58px;height:46px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:color .25s,background .25s;-webkit-tap-highlight-color:transparent}
+.fab-nav button:hover,.fab-nav button:active{color:var(--sage-deep);background:var(--sage-glow)}
+.fab-nav button.disabled{opacity:.3;pointer-events:none}
+.fab-nav button + button{border-right:1px solid var(--border)}
+
+body.fabs-hidden .fab-theme,body.fabs-hidden .scroll-top{transform:translateY(90px) !important;opacity:0;pointer-events:none}
+body.fabs-hidden .fab-nav{transform:translateX(-50%) translateY(90px);opacity:0;pointer-events:none}
+
+.page{display:none;opacity:0;transition:opacity .35s var(--ease);background:var(--bg);height:100vh;overflow-y:auto;position:fixed;top:0;left:0;right:0;bottom:0;overscroll-behavior:contain}
+.page.active{display:block;opacity:1}
+
+.uz-link{position:fixed;top:16px;left:16px;z-index:60;background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:8px 14px;border-radius:99px;font-family:var(--font-ui);font-size:12px;font-weight:500;text-decoration:none;box-shadow:var(--shadow-sm);transition:all .25s;direction:ltr}
+.uz-link:hover{border-color:var(--sage);color:var(--sage-deep);background:var(--sage-glow)}
+
+.update-banner{position:fixed;bottom:0;left:0;right:0;background:var(--sage-deep);color:#fff;padding:14px 20px;display:none;align-items:center;justify-content:space-between;gap:12px;z-index:100;font-family:var(--font-ui);font-size:14px;box-shadow:var(--shadow-lg)}
+.update-banner.show{display:flex}
+.update-banner button{background:#fff;color:var(--sage-deep);border:none;padding:8px 16px;border-radius:99px;cursor:pointer;font-family:var(--font-ui);font-weight:600;font-size:13px}
+.update-banner .dismiss{background:transparent;color:#fff;opacity:.7;padding:8px 10px}
+
+.recent-searches{margin-bottom:24px}
+.recent-searches[hidden]{display:none}
+.recent-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.recent-label{font-size:12px;color:var(--text-muted);font-family:var(--font-ui)}
+.recent-clear{background:none;border:none;color:var(--text-muted);font-size:12px;cursor:pointer;font-family:var(--font-ui);-webkit-tap-highlight-color:transparent;padding:2px 4px}
+.recent-clear:hover{color:var(--sage-deep)}
+.recent-chips{display:flex;flex-wrap:wrap;gap:8px}
+.recent-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 13px;border-radius:99px;cursor:pointer;font-family:var(--font-ui);font-size:13px;-webkit-tap-highlight-color:transparent;transition:all .2s}
+.recent-chip:hover{border-color:var(--sage);background:var(--sage-glow)}
+</style>
+</head>
+<body>
+
+<a href="../" class="uz-link" title="O'zbekcha versiya">UZ ↗</a>
+
+<div id="pgHome" class="page active">
+  <div class="home-hero">
+    <h1 class="home-title">صحيح البخاري</h1>
+    <p class="home-sub">الجامع المسند الصحيح المختصر من أمور رسول الله صلى الله عليه وسلم وسننه وأيامه<br>للإمام أبي عبد الله محمد بن إسماعيل البخاري</p>
+    <div class="hero-divider"><div class="line"></div><div class="dot"></div><div class="line"></div></div>
+  </div>
+  <div class="home-search">
+    <div class="search-wrap" id="homeSearchWrap">
+      <input type="search" id="homeSearch" class="search-input" placeholder="ابحث في الأحاديث..." autocomplete="off" spellcheck="false">
+      <span class="search-icon">⌕</span>
+      <button class="search-clear" id="homeSearchClear" aria-label="مسح">✕</button>
+    </div>
+  </div>
+  <div class="grid-wrap">
+    <div class="recent-searches" id="recentSearches" hidden>
+      <div class="recent-head">
+        <span class="recent-label">عمليات بحث حديثة</span>
+        <button class="recent-clear" id="recentClear">مسح</button>
+      </div>
+      <div class="recent-chips" id="recentChips"></div>
+    </div>
+    <div class="grid-header">
+      <span class="grid-label">الكتب</span>
+      <span class="grid-count" id="kitobCount">— كتابًا</span>
+    </div>
+    <div class="kitob-grid" id="kitobGrid"></div>
+  </div>
+</div>
+
+<div id="pgKitob" class="page">
+  <div class="breadcrumb">
+    <div class="bc-trail" id="kitobBc"></div>
+  </div>
+  <div class="grid-wrap">
+    <div class="grid-header">
+      <span class="grid-label">الأحاديث</span>
+      <span class="grid-count" id="hadisCount"></span>
+    </div>
+    <div class="hadis-list" id="hadisList"></div>
+  </div>
+</div>
+
+<div id="pgHadis" class="page">
+  <div class="breadcrumb">
+    <div class="bc-trail" id="hadisBc"></div>
+  </div>
+  <div class="grid-wrap" style="max-width:780px">
+    <span class="hadis-num-inline" id="hadisNumInline"></span>
+    <div class="hadis-text" id="hadisText"></div>
+    <div class="hadis-toolbar">
+      <div class="hadis-tb-group">
+        <button class="hadis-tb-btn" id="fontMinus" title="تصغير الخط">A−</button>
+        <button class="hadis-tb-btn" id="fontPlus" title="تكبير الخط">A+</button>
+      </div>
+      <button class="hadis-tb-btn" id="copyBtn">📋 نسخ</button>
+    </div>
+  </div>
+</div>
+
+<div id="pgSearch" class="page">
+  <div class="breadcrumb">
+    <div class="bc-trail" id="searchBc"></div>
+  </div>
+  <div class="grid-wrap">
+    <div class="search-pg-header">
+      <h2 class="search-pg-title" id="searchTitle"></h2>
+      <p class="search-pg-meta" id="searchMeta"></p>
+    </div>
+    <div id="searchResults"></div>
+  </div>
+</div>
+
+<button class="fab-theme" id="fabTheme" title="تبديل السمة">☾</button>
+<div class="fab-nav" id="fabNav">
+  <button id="navPrev" title="السابق">‹</button>
+  <button id="navHome" title="الرئيسية">⌂</button>
+  <button id="navNext" title="التالي">›</button>
+</div>
+<button class="scroll-top" id="scrollTop" title="إلى الأعلى">↑</button>
+
+<div class="update-banner" id="updateBanner">
+  <span>🔄 إصدار جديد متاح</span>
+  <div>
+    <button id="updateApply">تحديث</button>
+    <button class="dismiss" id="updateDismiss">لاحقًا</button>
+  </div>
+</div>
+
+<script id="books-data" type="application/json">[{"id":1,"nomi":"كتاب بدء الوحى","hC":7},{"id":2,"nomi":"كتاب الإيمان","hC":51},{"id":3,"nomi":"كتاب العلم","hC":76},{"id":4,"nomi":"كتاب الوضوء","hC":113},{"id":5,"nomi":"كتاب الغسل","hC":46},{"id":6,"nomi":"كتاب الحيض","hC":40},{"id":7,"nomi":"كتاب التيمم","hC":15},{"id":8,"nomi":"كتاب الصلاة","hC":173},{"id":9,"nomi":"كتاب مواقيت الصلاة","hC":81},{"id":10,"nomi":"كتاب الأذان","hC":275},{"id":11,"nomi":"كتاب الجمعة","hC":66},{"id":12,"nomi":"كتاب صلاة الخوف","hC":6},{"id":13,"nomi":"كتاب العيدين","hC":42},{"id":14,"nomi":"كتاب الوتر","hC":15},{"id":15,"nomi":"كتاب الاستسقاء","hC":35},{"id":16,"nomi":"كتاب الكسوف","hC":27},{"id":17,"nomi":"كتاب سجود القرآن","hC":13},{"id":18,"nomi":"كتاب التقصير","hC":40},{"id":19,"nomi":"كتاب التهجد","hC":69},{"id":20,"nomi":"كتاب فضل الصلاة فى مسجد مكة والمدينة","hC":10},{"id":21,"nomi":"كتاب العمل فى الصلاة","hC":27},{"id":22,"nomi":"كتاب السهو","hC":14},{"id":23,"nomi":"كتاب الجنائز","hC":160},{"id":24,"nomi":"كتاب الزكاة","hC":118},{"id":25,"nomi":"كتاب الحج","hC":260},{"id":26,"nomi":"كتاب العمرة","hC":33},{"id":27,"nomi":"كتاب المحصر","hC":15},{"id":28,"nomi":"كتاب جزاء الصيد","hC":46},{"id":29,"nomi":"كتاب فضائل المدينة","hC":24},{"id":30,"nomi":"كتاب الصوم","hC":117},{"id":31,"nomi":"كتاب صلاة التراويح","hC":6},{"id":32,"nomi":"كتاب فضل ليلة القدر","hC":11},{"id":33,"nomi":"كتاب الاعتكاف","hC":22},{"id":34,"nomi":"كتاب البيوع","hC":193},{"id":35,"nomi":"كتاب السلم","hC":20},{"id":36,"nomi":"كتاب الشفعة","hC":3},{"id":37,"nomi":"كتاب الإجارة","hC":27},{"id":38,"nomi":"كتاب الحوالات","hC":3},{"id":39,"nomi":"كتاب الكفالة","hC":9},{"id":40,"nomi":"كتاب الوكالة","hC":21},{"id":41,"nomi":"كتاب المزارعة","hC":31},{"id":42,"nomi":"كتاب المساقاة","hC":33},{"id":43,"nomi":"كتاب فى الاستقراض","hC":25},{"id":44,"nomi":"كتاب الخصومات","hC":16},{"id":45,"nomi":"كتاب فى اللقطة","hC":15},{"id":46,"nomi":"كتاب المظالم","hC":43},{"id":47,"nomi":"كتاب الشركة","hC":25},{"id":48,"nomi":"كتاب الرهن","hC":8},{"id":49,"nomi":"كتاب العتق","hC":43},{"id":50,"nomi":"كتاب المكاتب","hC":6},{"id":51,"nomi":"كتاب الهبة وفضلها والتحريض عليها","hC":71},{"id":52,"nomi":"كتاب الشهادات","hC":53},{"id":53,"nomi":"كتاب الصلح","hC":21},{"id":54,"nomi":"كتاب الشروط","hC":26},{"id":55,"nomi":"كتاب الوصايا","hC":44},{"id":56,"nomi":"كتاب الجهاد والسير","hC":309},{"id":57,"nomi":"كتاب فرض الخمس","hC":65},{"id":58,"nomi":"كتاب الجزية والموادعة","hC":33},{"id":59,"nomi":"كتاب بدء الخلق","hC":136},{"id":60,"nomi":"كتاب أحاديث الأنبياء","hC":163},{"id":61,"nomi":"كتاب المناقب","hC":162},{"id":62,"nomi":"كتاب فضائل أصحاب النبى صلى الله عليه وسلم","hC":128},{"id":63,"nomi":"كتاب مناقب الأنصار","hC":173},{"id":64,"nomi":"كتاب المغازى","hC":526},{"id":65,"nomi":"كتاب التفسير","hC":506},{"id":66,"nomi":"كتاب فضائل القرآن","hC":87},{"id":67,"nomi":"كتاب النكاح","hC":188},{"id":68,"nomi":"كتاب الطلاق","hC":100},{"id":69,"nomi":"كتاب النفقات","hC":22},{"id":70,"nomi":"كتاب الأطعمة","hC":95},{"id":71,"nomi":"كتاب العقيقة","hC":9},{"id":72,"nomi":"كتاب الذبائح والصيد","hC":70},{"id":73,"nomi":"كتاب الأضاحي","hC":30},{"id":74,"nomi":"كتاب الأشربة","hC":65},{"id":75,"nomi":"كتاب المرضى","hC":38},{"id":76,"nomi":"كتاب الطب","hC":100},{"id":77,"nomi":"كتاب اللباس","hC":188},{"id":78,"nomi":"كتاب الأدب","hC":253},{"id":79,"nomi":"كتاب الاستئذان","hC":77},{"id":80,"nomi":"كتاب الدعوات","hC":108},{"id":81,"nomi":"كتاب الرقاق","hC":182},{"id":82,"nomi":"كتاب القدر","hC":27},{"id":83,"nomi":"كتاب الأيمان والنذور","hC":87},{"id":84,"nomi":"كتاب كفارات الأيمان","hC":15},{"id":85,"nomi":"كتاب الفرائض","hC":49},{"id":86,"nomi":"كتاب الحدود","hC":89},{"id":87,"nomi":"كتاب الديات","hC":59},{"id":88,"nomi":"كتاب استتابة المرتدين والمعاندين وقتالهم","hC":22},{"id":89,"nomi":"كتاب الإكراه","hC":13},{"id":90,"nomi":"كتاب الحيل","hC":29},{"id":91,"nomi":"كتاب التعبير","hC":66},{"id":92,"nomi":"كتاب الفتن","hC":89},{"id":93,"nomi":"كتاب الأحكام","hC":89},{"id":94,"nomi":"كتاب التمنى","hC":20},{"id":95,"nomi":"كتاب أخبار الآحاد","hC":22},{"id":96,"nomi":"كتاب الاعتصام بالكتاب والسنة","hC":103},{"id":97,"nomi":"كتاب التوحيد","hC":193}]</script>
+
+<script>
+// === State ===
+let BOOKS = [];   // {id, nomi, hC} from inline / index.json
+let DB = null;    // full data.json (lazy-loaded)
+let ST = { page: 'home', kid: null, hid: null };
+let fs = parseInt(localStorage.getItem('ar_fs') || '22', 10);
+let th = localStorage.getItem('ar_th') || 'dark';
+let _recent = JSON.parse(localStorage.getItem('ar_recent') || '[]');
+let _searchState = { query: '', kitabResults: [], hadisResults: [], hadisShown: 0 };
+
+document.documentElement.style.setProperty('--hadis-fs', fs + 'px');
+if (th === 'light') document.body.classList.add('light');
+
+// === Arabic normalization (strip tashkeel and unify alef/ya) ===
+const TASHKEEL_RE = /[ً-ٰٟـ]/g;
+function normalize(s){
+  if (!s) return '';
+  return s
+    .replace(TASHKEEL_RE, '')
+    .replace(/[إأآا]/g, 'ا')
+    .replace(/ى/g, 'ي')
+    .replace(/ة/g, 'ه')
+    .replace(/[ؤئ]/g, 'ء')
+    .toLowerCase();
+}
+
+function escHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escRegex(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+// Build a normalized string with an index map back to the original
+function normalizeWithMap(text){
+  const idxMap = [];
+  let nb = '';
+  for (let i = 0; i < text.length; i++){
+    const c = text[i];
+    const code = c.charCodeAt(0);
+    // Skip Arabic tashkeel (U+064B..U+0652, U+0670, U+0640 tatweel, U+06D6..U+06ED supplementary)
+    if ((code >= 0x064B && code <= 0x0652) || code === 0x0670 || code === 0x0640 || code === 0x065C || code === 0x065D || code === 0x065E || code === 0x065F || code === 0x0653 || code === 0x0654 || code === 0x0655 || code === 0x0656 || code === 0x0657 || code === 0x0658 || code === 0x0659 || code === 0x065A || code === 0x065B || (code >= 0x06D6 && code <= 0x06ED)) {
+      continue;
+    }
+    let n = c;
+    if (c === 'إ' || c === 'أ' || c === 'آ') n = 'ا';
+    else if (c === 'ى') n = 'ي';
+    else if (c === 'ة') n = 'ه';
+    else if (c === 'ؤ' || c === 'ئ') n = 'ء';
+    else n = c.toLowerCase();
+    nb += n;
+    idxMap.push(i);
+  }
+  return { nb, idxMap };
+}
+
+function highlight(text, q){
+  if (!q) return escHtml(text);
+  const normQ = normalize(q);
+  if (!normQ) return escHtml(text);
+  const { nb, idxMap } = normalizeWithMap(text);
+  const qLen = normQ.length;
+  let out = '', searchFrom = 0, lastOrig = 0;
+  while (true){
+    const found = nb.indexOf(normQ, searchFrom);
+    if (found < 0) break;
+    const startO = idxMap[found];
+    const realEnd = idxMap[found + qLen - 1] + 1;
+    out += escHtml(text.slice(lastOrig, startO));
+    out += '<mark>' + escHtml(text.slice(startO, realEnd)) + '</mark>';
+    lastOrig = realEnd;
+    searchFrom = found + qLen;
+  }
+  out += escHtml(text.slice(lastOrig));
+  return out;
+}
+
+function snippet(text, q, maxLen = 220){
+  const normQ = normalize(q);
+  if (!normQ) return text.slice(0, maxLen) + (text.length > maxLen ? '…' : '');
+  const { nb, idxMap } = normalizeWithMap(text);
+  const idx = nb.indexOf(normQ);
+  if (idx < 0) return text.slice(0, maxLen) + (text.length > maxLen ? '…' : '');
+  const origIdx = idxMap[idx];
+  const start = Math.max(0, origIdx - 60);
+  const end = Math.min(text.length, origIdx + maxLen - 60);
+  let snip = text.slice(start, end);
+  if (start > 0) snip = '…' + snip;
+  if (end < text.length) snip = snip + '…';
+  return snip;
+}
+
+// === Loading ===
+async function loadIndex(){
+  try {
+    const inline = document.getElementById('books-data');
+    const t = inline.textContent.trim();
+    if (t && t !== '[]') BOOKS = JSON.parse(t);
+  } catch(e){}
+  if (!BOOKS.length){
+    const r = await fetch('index.json');
+    BOOKS = await r.json();
+  }
+  document.getElementById('kitobCount').textContent = `${BOOKS.length} كتابًا`;
+  renderHome();
+}
+
+let _dbPromise = null;
+function loadDB(){
+  if (DB) return Promise.resolve(DB);
+  if (!_dbPromise){
+    _dbPromise = fetch('data.json').then(r => r.json()).then(d => { DB = d; return d; });
+  }
+  return _dbPromise;
+}
+
+// === Helpers ===
+function getK(kid){ return BOOKS.find(b => b.id === kid); }
+function getKfull(kid){ return DB && DB.find(b => b.id === kid); }
+function getH(kid, hid){
+  const k = getKfull(kid);
+  if (!k) return null;
+  return k.hadislar.find(h => h.id === hid);
+}
+
+// === Rendering ===
+function renderHome(){
+  const g = document.getElementById('kitobGrid');
+  g.innerHTML = BOOKS.map(b => `
+    <div class="kitob-card" data-kid="${b.id}" tabindex="0" role="button">
+      <div class="kitob-top">
+        <span class="kitob-num">الكتاب ${toArabicNum(b.id)}</span>
+        <div class="kitob-stats">
+          <span class="kitob-stat"><b>${toArabicNum(b.hC)}</b> حديثًا</span>
+        </div>
+      </div>
+      <div class="kitob-name">${escHtml(b.nomi)}</div>
+    </div>
+  `).join('');
+  g.querySelectorAll('.kitob-card').forEach(el => {
+    const kid = parseInt(el.dataset.kid, 10);
+    el.addEventListener('click', () => openKitob(kid));
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openKitob(kid); } });
+  });
+  renderRecent();
+}
+
+function toArabicNum(n){
+  return String(n).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[+d]);
+}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById(id).scrollTop = 0;
+  // FAB nav only on hadis page
+  document.getElementById('fabNav').style.display = (id === 'pgHadis') ? 'flex' : 'none';
+}
+
+function bc(containerId, items){
+  const c = document.getElementById(containerId);
+  c.innerHTML = '<div class="bc-trail">' +
+    items.slice(0, -1).map(it => `<span class="bc-link" data-act="${it.act||''}">${escHtml(it.label)}</span><span class="bc-sep">›</span>`).join('') +
+    '</div><div class="bc-cur">' + escHtml(items[items.length-1].label) + '</div>';
+  c.querySelectorAll('.bc-link').forEach(el => {
+    el.addEventListener('click', () => {
+      const act = el.dataset.act;
+      if (act === 'home') goHome();
+      else if (act === 'kitob') openKitob(ST.kid);
+      else if (act === 'search') showSearchResults(_searchState.query);
+    });
+  });
+}
+
+async function openKitob(kid){
+  ST = { page: 'kitob', kid, hid: null };
+  history.pushState(ST, '', `#k/${kid}`);
+  await loadDB();
+  const k = getKfull(kid);
+  if (!k) return goHome();
+  bc('kitobBc', [
+    { label: 'الرئيسية', act: 'home' },
+    { label: k.nomi }
+  ]);
+  document.getElementById('hadisCount').textContent = `${toArabicNum(k.hadislar.length)} حديثًا`;
+  const list = document.getElementById('hadisList');
+  list.innerHTML = k.hadislar.map(h => `
+    <div class="hadis-item" data-hid="${h.id}" tabindex="0" role="button">
+      <div class="hadis-item-num">حديث رقم ${toArabicNum(h.id)}</div>
+      <div class="hadis-item-preview">${escHtml(h.matn.slice(0, 280))}${h.matn.length > 280 ? '…' : ''}</div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.hadis-item').forEach(el => {
+    const hid = parseFloat(el.dataset.hid);
+    const id = Number.isInteger(hid) ? hid : hid;
+    el.addEventListener('click', () => openHadis(kid, id));
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openHadis(kid, id); } });
+  });
+  showPage('pgKitob');
+}
+
+async function openHadis(kid, hid){
+  ST = { page: 'hadis', kid, hid };
+  history.pushState(ST, '', `#k/${kid}/h/${hid}`);
+  await loadDB();
+  const k = getKfull(kid);
+  const h = getH(kid, hid);
+  if (!k || !h) return goHome();
+  bc('hadisBc', [
+    { label: 'الرئيسية', act: 'home' },
+    { label: k.nomi, act: 'kitob' },
+    { label: `حديث ${toArabicNum(h.id)}` }
+  ]);
+  document.getElementById('hadisNumInline').textContent = `حديث رقم ${toArabicNum(h.id)}`;
+  document.getElementById('hadisText').textContent = h.matn;
+  // Update nav buttons
+  const idx = k.hadislar.findIndex(x => x.id === h.id);
+  const prevBtn = document.getElementById('navPrev');
+  const nextBtn = document.getElementById('navNext');
+  // In RTL fab-nav we keep visual order LTR (set on .fab-nav direction:ltr) so prev (=‹) goes back in RTL meaning previous = older = idx-1
+  prevBtn.classList.toggle('disabled', idx <= 0);
+  nextBtn.classList.toggle('disabled', idx >= k.hadislar.length - 1);
+  showPage('pgHadis');
+}
+
+function goHome(){
+  ST = { page: 'home', kid: null, hid: null };
+  history.pushState(ST, '', '#');
+  showPage('pgHome');
+}
+
+// === Search ===
+function doSearch(q){
+  q = (q || '').trim();
+  if (!q) return goHome();
+  _searchState.query = q;
+  saveRecent(q);
+  history.pushState({ page: 'search', q }, '', '#q=' + encodeURIComponent(q));
+  if (!DB){
+    loadDB().then(() => showSearchResults(q));
+    return;
+  }
+  showSearchResults(q);
+}
+
+function showSearchResults(q){
+  _searchState.query = q;
+  const normQ = normalize(q);
+  if (!normQ) return goHome();
+  // Search kitabs
+  const kitabResults = BOOKS.filter(b => normalize(b.nomi).includes(normQ));
+  // Search hadiths
+  const hadisResults = [];
+  for (const k of DB){
+    for (const h of k.hadislar){
+      if (normalize(h.matn).includes(normQ)){
+        hadisResults.push({ k, h });
+        if (hadisResults.length >= 500) break;
+      }
+    }
+    if (hadisResults.length >= 500) break;
+  }
+  _searchState.kitabResults = kitabResults;
+  _searchState.hadisResults = hadisResults;
+  _searchState.hadisShown = 0;
+  bc('searchBc', [
+    { label: 'الرئيسية', act: 'home' },
+    { label: `بحث: «${q}»` }
+  ]);
+  document.getElementById('searchTitle').textContent = `نتائج البحث عن «${q}»`;
+  const total = kitabResults.length + hadisResults.length;
+  document.getElementById('searchMeta').textContent = total === 0
+    ? 'لا توجد نتائج'
+    : `${toArabicNum(kitabResults.length)} كتاب · ${toArabicNum(hadisResults.length)}${hadisResults.length >= 500 ? '+' : ''} حديث`;
+  renderSearchResults();
+  showPage('pgSearch');
+}
+
+function renderSearchResults(){
+  const c = document.getElementById('searchResults');
+  const { query, kitabResults, hadisResults } = _searchState;
+  let html = '';
+  if (kitabResults.length === 0 && hadisResults.length === 0){
+    html = `<div class="no-results"><div class="no-results-icon">⌕</div><p>لم يتم العثور على نتائج</p></div>`;
+  }
+  if (kitabResults.length){
+    html += `<div class="result-section"><div class="result-section-header">الكتب · ${toArabicNum(kitabResults.length)}</div>`;
+    html += kitabResults.map(b => `
+      <div class="result-item" data-act="k" data-kid="${b.id}">
+        <div class="result-label">الكتاب ${toArabicNum(b.id)}</div>
+        <div class="result-text kitob-name-result">${highlight(b.nomi, query)}</div>
+      </div>
+    `).join('');
+    html += `</div>`;
+  }
+  if (hadisResults.length){
+    html += `<div class="result-section"><div class="result-section-header">الأحاديث · ${toArabicNum(hadisResults.length)}${hadisResults.length >= 500 ? '+' : ''}</div>`;
+    const shown = Math.min(_searchState.hadisShown + 50, hadisResults.length);
+    html += hadisResults.slice(0, shown).map(r => `
+      <div class="result-item" data-act="h" data-kid="${r.k.id}" data-hid="${r.h.id}">
+        <div class="result-label">${escHtml(r.k.nomi)} <span class="result-where">حديث ${toArabicNum(r.h.id)}</span></div>
+        <div class="result-text">${highlight(snippet(r.h.matn, query), query)}</div>
+      </div>
+    `).join('');
+    _searchState.hadisShown = shown;
+    if (shown < hadisResults.length){
+      html += `<button class="result-more-btn" id="moreBtn">عرض المزيد (${toArabicNum(hadisResults.length - shown)})</button>`;
+    }
+    html += `</div>`;
+  }
+  c.innerHTML = html;
+  c.querySelectorAll('.result-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const act = el.dataset.act;
+      const kid = parseInt(el.dataset.kid, 10);
+      if (act === 'k') openKitob(kid);
+      else {
+        const hid = parseFloat(el.dataset.hid);
+        openHadis(kid, hid);
+      }
+    });
+  });
+  const moreBtn = document.getElementById('moreBtn');
+  if (moreBtn) moreBtn.addEventListener('click', renderSearchResults);
+}
+
+// === Recent searches ===
+function saveRecent(q){
+  _recent = [q, ..._recent.filter(x => x !== q)].slice(0, 8);
+  localStorage.setItem('ar_recent', JSON.stringify(_recent));
+}
+function renderRecent(){
+  const wrap = document.getElementById('recentSearches');
+  const chips = document.getElementById('recentChips');
+  if (!_recent.length){ wrap.hidden = true; return; }
+  wrap.hidden = false;
+  chips.innerHTML = _recent.map(q => `<button class="recent-chip" data-q="${escHtml(q)}">${escHtml(q)}</button>`).join('');
+  chips.querySelectorAll('.recent-chip').forEach(el => {
+    el.addEventListener('click', () => {
+      document.getElementById('homeSearch').value = el.dataset.q;
+      doSearch(el.dataset.q);
+    });
+  });
+}
+
+document.getElementById('recentClear').addEventListener('click', () => {
+  _recent = [];
+  localStorage.removeItem('ar_recent');
+  renderRecent();
+});
+
+// === Hash routing ===
+function applyHash(){
+  const h = location.hash;
+  if (h.startsWith('#q=')){
+    const q = decodeURIComponent(h.slice(3));
+    document.getElementById('homeSearch').value = q;
+    doSearch(q);
+    return;
+  }
+  const m = h.match(/^#k\/(\d+)(?:\/h\/(\d+(?:\.\d+)?))?/);
+  if (m){
+    const kid = parseInt(m[1], 10);
+    if (m[2]) openHadis(kid, parseFloat(m[2]));
+    else openKitob(kid);
+    return;
+  }
+  showPage('pgHome');
+}
+
+window.addEventListener('popstate', applyHash);
+
+// === Search input ===
+const homeSearch = document.getElementById('homeSearch');
+const homeSearchWrap = document.getElementById('homeSearchWrap');
+homeSearch.addEventListener('input', () => {
+  homeSearchWrap.classList.toggle('has-text', homeSearch.value.length > 0);
+});
+homeSearch.addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch(homeSearch.value);
+});
+document.getElementById('homeSearchClear').addEventListener('click', () => {
+  homeSearch.value = '';
+  homeSearchWrap.classList.remove('has-text');
+  homeSearch.focus();
+});
+
+// === Toolbar ===
+document.getElementById('fontMinus').addEventListener('click', () => {
+  fs = Math.max(14, fs - 2);
+  document.documentElement.style.setProperty('--hadis-fs', fs + 'px');
+  localStorage.setItem('ar_fs', fs);
+});
+document.getElementById('fontPlus').addEventListener('click', () => {
+  fs = Math.min(36, fs + 2);
+  document.documentElement.style.setProperty('--hadis-fs', fs + 'px');
+  localStorage.setItem('ar_fs', fs);
+});
+document.getElementById('copyBtn').addEventListener('click', () => {
+  const t = document.getElementById('hadisText').textContent;
+  navigator.clipboard?.writeText(t).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.classList.add('copied');
+    const old = btn.textContent;
+    btn.textContent = '✓ تم النسخ';
+    setTimeout(() => { btn.classList.remove('copied'); btn.textContent = old; }, 1500);
+  });
+});
+
+document.getElementById('fabTheme').addEventListener('click', () => {
+  th = (th === 'dark') ? 'light' : 'dark';
+  document.body.classList.toggle('light', th === 'light');
+  localStorage.setItem('ar_th', th);
+  document.getElementById('fabTheme').textContent = (th === 'dark') ? '☾' : '☀';
+});
+document.getElementById('fabTheme').textContent = (th === 'dark') ? '☾' : '☀';
+
+document.getElementById('navHome').addEventListener('click', goHome);
+document.getElementById('navPrev').addEventListener('click', () => {
+  if (ST.page !== 'hadis') return;
+  const k = getKfull(ST.kid);
+  if (!k) return;
+  const idx = k.hadislar.findIndex(x => x.id === ST.hid);
+  if (idx > 0) openHadis(ST.kid, k.hadislar[idx - 1].id);
+});
+document.getElementById('navNext').addEventListener('click', () => {
+  if (ST.page !== 'hadis') return;
+  const k = getKfull(ST.kid);
+  if (!k) return;
+  const idx = k.hadislar.findIndex(x => x.id === ST.hid);
+  if (idx >= 0 && idx < k.hadislar.length - 1) openHadis(ST.kid, k.hadislar[idx + 1].id);
+});
+
+// Scroll-top + fabs auto-hide
+const scrollTopBtn = document.getElementById('scrollTop');
+let lastScroll = 0;
+let scrollTicking = false;
+function onScroll(){
+  const cur = document.querySelector('.page.active');
+  if (!cur) return;
+  const y = cur.scrollTop;
+  scrollTopBtn.classList.toggle('visible', y > 300);
+  if (Math.abs(y - lastScroll) > 8){
+    document.body.classList.toggle('fabs-hidden', y > lastScroll + 30 && y > 120);
+    lastScroll = y;
+  }
+  scrollTicking = false;
+}
+document.addEventListener('scroll', e => {
+  if (!scrollTicking){ requestAnimationFrame(onScroll); scrollTicking = true; }
+}, true);
+scrollTopBtn.addEventListener('click', () => {
+  const cur = document.querySelector('.page.active');
+  cur?.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// === Boot ===
+(async () => {
+  await loadIndex();
+  applyHash();
+  loadDB();
+})();
+
+// === Service worker ===
+if ('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js', { scope: './' }).then(reg => {
+      reg.addEventListener('updatefound', () => {
+        const w = reg.installing;
+        if (!w) return;
+        w.addEventListener('statechange', () => {
+          if (w.state === 'installed' && navigator.serviceWorker.controller){
+            document.getElementById('updateBanner').classList.add('show');
+            document.getElementById('updateApply').onclick = () => w.postMessage({ type: 'skip-waiting' });
+            document.getElementById('updateDismiss').onclick = () => document.getElementById('updateBanner').classList.remove('show');
+          }
+        });
+      });
+    });
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      location.reload();
+    });
+  });
+}
+</script>
+</body>
+</html>

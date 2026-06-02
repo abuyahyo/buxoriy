@@ -1,7 +1,7 @@
-// Service Worker for Sahih al-Bukhari Arabic edition (scope: /buxoriy/ar/)
+﻿// Service Worker for Sahih al-Bukhari Arabic edition (scope: /buxoriy/ar/)
 // CACHE name embeds a version that build_ar.py bumps when data.json changes.
 
-const CACHE = 'buxoriy-ar-v1780401073';
+const CACHE = 'buxoriy-ar-v1780407565';
 
 const ASSETS = [
   './',
@@ -52,3 +52,4 @@ async function staleWhileRevalidate(request){
 self.addEventListener('message', e => {
   if (e.data && e.data.type === 'skip-waiting') self.skipWaiting();
 });
+

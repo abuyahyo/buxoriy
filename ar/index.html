@@ -489,12 +489,17 @@ function goHome(){
 }
 
 // === Search ===
-function doSearch(q){
+function doSearch(q, replaceHistory){
   q = (q || '').trim();
   if (!q) return goHome();
   _searchState.query = q;
   saveRecent(q);
-  history.pushState({ page: 'search', q }, '', '#q=' + encodeURIComponent(q));
+  const newHash = '#q=' + encodeURIComponent(q);
+  if (replaceHistory && location.hash.startsWith('#q=')){
+    history.replaceState({ page: 'search', q }, '', newHash);
+  } else {
+    history.pushState({ page: 'search', q }, '', newHash);
+  }
   if (!DB){
     loadDB().then(() => showSearchResults(q));
     return;
@@ -502,22 +507,54 @@ function doSearch(q){
   showSearchResults(q);
 }
 
+// Live search: debounced. Empty input -> back to home.
+let _liveSearchTimer = null;
+function liveSearch(q){
+  clearTimeout(_liveSearchTimer);
+  q = (q || '').trim();
+  if (!q){
+    if (location.hash.startsWith('#q=')) history.replaceState(null, '', location.pathname);
+    if (ST.page === 'search') goHome();
+    return;
+  }
+  _liveSearchTimer = setTimeout(() => doSearch(q, true), 250);
+}
+
 function showSearchResults(q){
   _searchState.query = q;
   const normQ = normalize(q);
-  if (!normQ) return goHome();
+  // Numeric hadis id lookup: tolerate both Arabic-Indic and ASCII digits.
+  const asciiQ = q.replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x0660));
+  const numMatch = asciiQ.match(/^\s*(\d+)\s*$/);
+  let exactHadis = null;
+  if (numMatch){
+    const wantId = parseInt(numMatch[1], 10);
+    for (const k of DB || []){
+      const h = k.hadislar.find(hh => hh.id === wantId);
+      if (h){ exactHadis = { k, h }; break; }
+    }
+  }
+  if (!normQ && !exactHadis) return goHome();
   // Search kitabs
-  const kitabResults = BOOKS.filter(b => normalize(b.nomi).includes(normQ));
+  const kitabResults = normQ ? BOOKS.filter(b => normalize(b.nomi).includes(normQ)) : [];
   // Search hadiths
   const hadisResults = [];
-  for (const k of DB){
-    for (const h of k.hadislar){
-      if (normalize(h.matn).includes(normQ)){
-        hadisResults.push({ k, h });
-        if (hadisResults.length >= 500) break;
+  if (normQ){
+    for (const k of DB){
+      for (const h of k.hadislar){
+        if (normalize(h.matn).includes(normQ)){
+          hadisResults.push({ k, h });
+          if (hadisResults.length >= 500) break;
+        }
       }
+      if (hadisResults.length >= 500) break;
     }
-    if (hadisResults.length >= 500) break;
+  }
+  // If exact hadis matched, surface it first (de-duplicated against text results)
+  if (exactHadis){
+    const idx = hadisResults.findIndex(r => r.h.id === exactHadis.h.id);
+    if (idx >= 0) hadisResults.splice(idx, 1);
+    hadisResults.unshift(exactHadis);
   }
   _searchState.kitabResults = kitabResults;
   _searchState.hadisResults = hadisResults;
@@ -634,9 +671,14 @@ const homeSearch = document.getElementById('homeSearch');
 const homeSearchWrap = document.getElementById('homeSearchWrap');
 homeSearch.addEventListener('input', () => {
   homeSearchWrap.classList.toggle('has-text', homeSearch.value.length > 0);
+  liveSearch(homeSearch.value);
 });
 homeSearch.addEventListener('keydown', e => {
-  if (e.key === 'Enter') doSearch(homeSearch.value);
+  if (e.key === 'Enter'){
+    clearTimeout(_liveSearchTimer);
+    doSearch(homeSearch.value);
+    homeSearch.blur();
+  }
 });
 document.getElementById('homeSearchClear').addEventListener('click', () => {
   homeSearch.value = '';

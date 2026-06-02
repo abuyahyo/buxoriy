@@ -18,6 +18,9 @@ for k in db:
     book = {'id': k['id'], 'nomi': k['nomi'], 'boblar': []}
     if k.get('izoh'):
         book['izoh'] = k['izoh']
+    if k.get('canon_kitab'):
+        book['canon_kitab'] = k['canon_kitab']
+        book['canon_nomi_ar'] = k.get('canon_nomi_ar', '')
     for b in k['boblar']:
         bob = {
             'id': b['id'],
@@ -28,6 +31,9 @@ for k in db:
             bob['izoh'] = b['izoh']
         if b.get('muallaqot'):
             bob['muallaqot'] = b['muallaqot']
+        if b.get('canon_bab_id') is not None:
+            bob['canon_bab_id'] = b['canon_bab_id']
+            bob['canon_bab_nomi_ar'] = b.get('canon_bab_nomi_ar', '')
         book['boblar'].append(bob)
     idx.append(book)
 
@@ -37,12 +43,16 @@ with open('index.json', 'w', encoding='utf-8') as f:
 # --- BOOKS data: home page (id, nomi, bob count, hadis count) ---
 home = []
 for k in db:
-    home.append({
+    entry = {
         'id': k['id'],
         'nomi': k['nomi'],
         'bC': len(k['boblar']),
         'hC': sum(len(b.get('hadislar', [])) for b in k['boblar']),
-    })
+    }
+    if k.get('canon_kitab'):
+        entry['canon_kitab'] = k['canon_kitab']
+        entry['canon_nomi_ar'] = k.get('canon_nomi_ar', '')
+    home.append(entry)
 home_json = json.dumps(home, ensure_ascii=False, separators=(',', ':'))
 
 # Inject into index.html between markers

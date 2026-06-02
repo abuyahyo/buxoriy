@@ -3,3 +3,5 @@
 *.bak
 data_issues.csv
 data_issues.json
+*.db
+data.json.bak

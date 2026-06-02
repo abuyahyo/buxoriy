@@ -492,13 +492,33 @@ function showPage(id, scrollToId){
   }
 }
 
+function fmtBobTitle(rest){
+  rest = rest.toLowerCase();
+  return rest.replace(/(^|[.?!»«(]\s*)([а-яёҳқғўҚҒЎҲa-z])/g, (match, before, letter) => before + letter.toUpperCase()).replace(/(\s)Деган(\s)/g, '$1деган$2').replace(/набий/g, 'Набий').replace(/(?<!солла)аллоҳ(?!\s*у\s*алайҳи)/g, 'Аллоҳ').replace(/муҳаммад/g, 'Муҳаммад');
+}
 function bobNomi(nomi){
+  // Каноник бирлаштирилган боблар: "3-БОБ // 4-БОБ" -> "3–4-БОБ"
+  if(nomi.indexOf(' // ') !== -1){
+    const nums=[], titles=[];
+    nomi.split(' // ').forEach(p=>{
+      const mm = p.match(/^\s*(\d+)\s*-\s*[Бб][Оо][Бб]\.?\s*([\s\S]*)$/);
+      if(mm){
+        nums.push(+mm[1]);
+        const t = mm[2].trim().replace(/^\(такрорий\)\.?\s*/i,'').trim();
+        if(t) titles.push(t);
+      }
+    });
+    if(nums.length){
+      const nl = (nums.length===2 && nums[1]===nums[0]+1) ? nums[0]+'–'+nums[1] : nums.join(', ');
+      let r = nl + '-БОБ';
+      if(titles.length){ let ft = fmtBobTitle(titles.join('. ')); if(!/[.?!…»]$/.test(ft)) ft += '.'; r += '. ' + ft; }
+      return r;
+    }
+  }
   const m = nomi.match(/^(\d+-[Бб][Оо][Бб]\.?\s*)([\s\S]*)/);
   if(!m) return nomi;
   const prefix = m[1].toUpperCase();
-  const rest = m[2].toLowerCase();
-  // tiniш belgиlaridan keyin birinchi harfni katta qilish
-  const restFormatted = rest.replace(/(^|[.?!»«(]\s*)([а-яёҳқғўҚҒЎҲa-z])/g, (match, before, letter) => before + letter.toUpperCase()).replace(/(\s)Деган(\s)/g, '$1деган$2').replace(/набий/g, 'Набий').replace(/(?<!солла)аллоҳ(?!\s*у\s*алайҳи)/g, 'Аллоҳ').replace(/муҳаммад/g, 'Муҳаммад');
+  const restFormatted = fmtBobTitle(m[2]);
   if(!/[.?!…»]$/.test(restFormatted)) return prefix + restFormatted + '.';
   return prefix + restFormatted;
 }

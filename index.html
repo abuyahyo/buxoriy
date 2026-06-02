@@ -167,6 +167,7 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 .search-filter-tab{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:7px 14px;border-radius:99px;cursor:pointer;font-family:'Roboto',sans-serif;font-size:12.5px;font-weight:500;-webkit-tap-highlight-color:transparent;transition:all .2s}
 .search-filter-tab:hover{border-color:var(--sage)}
 .search-filter-tab.active{background:var(--sage);border-color:var(--sage);color:#fff}
+.kitob-card:focus-visible,.bob-card:focus-visible,.hadis-item:focus-visible,.result-item:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
 /* Floating action buttons */
 .scroll-top{position:fixed;bottom:24px;right:24px;width:44px;height:44px;background:var(--surface);border:1px solid var(--border);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:18px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .35s,transform .25s,background .25s,color .25s;z-index:50;box-shadow:var(--shadow)}
 .scroll-top.visible{opacity:1;pointer-events:auto}
@@ -524,7 +525,7 @@ const App = {
     g.innerHTML='';
     BOOKS.forEach(k=>{
       const el=document.createElement('div');
-      el.className='kitob-card';
+      el.className='kitob-card';el.setAttribute('role','button');el.tabIndex=0;
       el.innerHTML=`<div class="kitob-top"><div class="kitob-num">${k.id}-КИТОБ</div><div class="kitob-stats"><div class="kitob-stat"><b>${k.bC}</b> боб</div><div class="kitob-stat"><b>${k.hC}</b> ҳадис</div></div></div><div class="kitob-name">${k.nomi}</div>`;
       el.onclick=()=>App.openKitob(k.id);
       g.appendChild(el);
@@ -568,7 +569,7 @@ const App = {
     k.boblar.forEach(b=>{
       const bhC = b.hC ?? b.hadislar.length;
       const el=document.createElement('div');
-      el.className='bob-card';
+      el.className='bob-card';el.setAttribute('role','button');el.tabIndex=0;
       el.id=`bob-card-${k.id}-${b.id}`;
       el.innerHTML=`<div class="bob-name">${bobNomi(b.nomi)}</div>${b.izoh?`<div class="bob-izoh">${b.izoh.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')}</div>`:''}<div class="bob-count" style="${b.izoh?'margin-top:8px':''}"><b>${bhC}</b> та ҳадис${b.muallaqot?'<span class="bob-muallaqot-badge">⚑ муаллақот</span>':''}</div>`;
       el.onclick=()=>App.openBob(kid,b.id);
@@ -617,7 +618,7 @@ const App = {
     }
     b.hadislar.forEach(h=>{
       const el=document.createElement('div');
-      el.className='hadis-item';
+      el.className='hadis-item';el.setAttribute('role','button');el.tabIndex=0;
       el.id=`hadis-card-${kid}-${bid}-${h.id}`;
       el.innerHTML=`<div class="hadis-item-num">${h.id}-ҳадис</div><div class="hadis-item-preview">${h.matn.replace(/\n/g,' ')}</div><div class="hadis-item-narrator">${h.rowi||''}</div>`;
       el.onclick=()=>App.openHadis(kid,bid,h.id);
@@ -1011,7 +1012,7 @@ const App = {
 
     if(s.kitob.length && (f==='all'||f==='kitob')){
       html += `<div class="result-section"><div class="result-section-header">Китоблар (${s.kitob.length})</div>`;
-      html += s.kitob.map(({k})=>`<div class="result-item" onclick="App.openFromSearch('k',${k.id})"><div class="result-label">${k.id}-китоб</div><div class="result-text">${hl(k.nomi)}</div></div>`).join('');
+      html += s.kitob.map(({k})=>`<div class="result-item" role="button" tabindex="0" onclick="App.openFromSearch('k',${k.id})"><div class="result-label">${k.id}-китоб</div><div class="result-text">${hl(k.nomi)}</div></div>`).join('');
       html += '</div>';
     }
 
@@ -1020,7 +1021,7 @@ const App = {
       html += s.bob.map(({k,b,where})=>{
         const txt = where==='nomi' ? b.nomi : where==='izoh' ? b.izoh : b.muallaqot;
         const lbl = where==='izoh' ? 'Изоҳда' : where==='muallaqot' ? 'Муаллақотда' : '';
-        return `<div class="result-item" onclick="App.openFromSearch('b',${k.id},${b.id})"><div class="result-label">${escHtml(k.nomi)} › ${b.id}-боб${lbl?' <span class="result-where">'+lbl+'</span>':''}</div><div class="result-text">${hl(snippet(txt, s.query))}</div></div>`;
+        return `<div class="result-item" role="button" tabindex="0" onclick="App.openFromSearch('b',${k.id},${b.id})"><div class="result-label">${escHtml(k.nomi)} › ${b.id}-боб${lbl?' <span class="result-where">'+lbl+'</span>':''}</div><div class="result-text">${hl(snippet(txt, s.query))}</div></div>`;
       }).join('');
       html += '</div>';
     }
@@ -1031,7 +1032,7 @@ const App = {
       html += shown.map(({k,b,h,where})=>{
         const txt = where==='matn' ? h.matn : where==='rowi' ? h.rowi : h.izoh;
         const lbl = where==='rowi' ? 'Ровийда' : where==='izoh' ? 'Изоҳда' : '';
-        return `<div class="result-item" onclick="App.openFromSearch('h',${k.id},${b.id},${h.id})"><div class="result-label">${escHtml(k.nomi)} › ${b.id}-боб › ${h.id}-ҳадис${lbl?' <span class="result-where">'+lbl+'</span>':''}</div><div class="result-text">${hl(snippet(txt, s.query))}</div></div>`;
+        return `<div class="result-item" role="button" tabindex="0" onclick="App.openFromSearch('h',${k.id},${b.id},${h.id})"><div class="result-label">${escHtml(k.nomi)} › ${b.id}-боб › ${h.id}-ҳадис${lbl?' <span class="result-where">'+lbl+'</span>':''}</div><div class="result-text">${hl(snippet(txt, s.query))}</div></div>`;
       }).join('');
       if(s.hadisShown < s.hadis.length){
         html += `<button class="result-more-btn" onclick="App.showMoreHadis()">Яна кўрсатиш (${s.hadis.length - s.hadisShown} та қолди)</button>`;
@@ -1089,6 +1090,16 @@ function runRecentSearch(i){
   updateSearchUI();
   App.doSearch(q);
 }
+
+// Клавиатура: role="button" карталарни Enter/Space билан фаоллаштириш
+document.addEventListener('keydown', e=>{
+  if(e.key!=='Enter' && e.key!==' ') return;
+  const t=e.target;
+  if(t && t.getAttribute && t.getAttribute('role')==='button' && t.tagName!=='BUTTON' && t.tagName!=='A'){
+    e.preventDefault();
+    t.click();
+  }
+});
 
 let sT;
 const searchInput = document.getElementById('searchInput');

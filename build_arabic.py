@@ -1,79 +1,146 @@
 # -*- coding: utf-8 -*-
-"""sahihul-buxoriy.txt -> arabic.json
+"""arabic.json ни тоза арабча манбадан (sahih_bukhari_arabic.txt) генерация қилади.
 
-Ҳар бир ҳадиснинг арабча иснод+матнини ажратиб, алоҳида файлга сақлайди.
-Илова бу файлни фақат фойдаланувчи «Арабча» тугмасини босганда юклайди.
-Охиридаги ﺃﻃﺮﺍﻓﻪ (атраф) / ﺗﺤﻔﺔ (туҳфа) ҳавола рақамлари кесилади.
+Манбадаги (sahihul-buxoriy.txt) арабча «presentation forms» бузуқ кодлашда
+бўлгани учун, бу скрипт:
+  1. Бизнинг ҳар ҳадис учун бузуқ арабчани «скелет» (ундош) ҳолатига тиклайди.
+  2. Тоза манба (sahih_bukhari_arabic.txt, кетма-кет рақамлаш) билан мазмун
+     бўйича мослаштиради (sequence alignment) — чунки рақамлаш фарқ қилади.
+  3. Бизнинг ҳадис id си → тоза арабча матн (arabic.json) ясайди.
+Фақат ишончли (юқори LCP) мосликлар сақланади.
 """
-import json
 import re
+import json
+import unicodedata
+import difflib
+import bisect
 
 SRC = 'sahihul-buxoriy.txt'
+CLEAN = 'sahih_bukhari_arabic.txt'
 OUT = 'arabic.json'
 
 AR = re.compile(r'[؀-ۿﭐ-﷿ﹰ-﻿﴾﴿]')
 re_kitob = re.compile(r'^(\d+)-KITOB:')
 re_hadis = re.compile(r'^\[Hadis\s+([\d,\s]+?)(?:\s*\([^)]*\))?\.?\]\s*$')
 
-# атраф/туҳфа ва бошқа ҳавола маркерлари (presentation forms)
-REF_MARKERS = ['ﺃﻃﺮﺍﻓﻪ', 'ﻃﺮﻓﺎﻩ', 'ﻃﺮﻓﻪ', 'ﺗﺤﻔﺔ', 'أطرافه', 'طرفاه', 'طرفه', 'تحفة']
 
-
-def is_arabic_line(s):
+def is_ar(s):
     s2 = s.replace(' ', '')
-    if not s2:
-        return False
-    return len(AR.findall(s2)) / len(s2) > 0.4
+    return bool(s2) and len(AR.findall(s2)) / len(s2) > 0.4
 
 
-def trim_refs(s):
-    cut = len(s)
-    for mk in REF_MARKERS:
-        i = s.find(mk)
-        if i != -1:
-            cut = min(cut, i)
-    return s[:cut].strip().rstrip('-').strip()
+def recon(t):
+    """Бузуқ presentation-forms арабчани ундош скелетга тиклаш."""
+    t = t.replace('ﴦﴥﴤ', 'لله')
+    t = re.sub('ﵖ[ﭐ-﷿]?ﵐ', 'لا', t)
+    t = ''.join(c for c in t if not (0xFB50 <= ord(c) <= 0xFDFF))
+    return unicodedata.normalize('NFKC', t)
 
 
-with open(SRC, encoding='utf-8') as f:
-    lines = f.read().split('\n')
+def skel(t):
+    t = re.sub(r'[ًٌٍَُِّْـ]', '', t)
+    for a, b in [('أ', 'ا'), ('إ', 'ا'), ('آ', 'ا'), ('ى', 'ي'),
+                 ('ة', 'ه'), ('ؤ', 'و'), ('ئ', 'ي')]:
+        t = t.replace(a, b)
+    return re.sub(r'[^ا-ي]', '', t)
 
-# ILOVALAR гача
-end = len(lines)
-for i, ln in enumerate(lines):
+
+def lcp(a, b):
+    n = min(len(a), len(b))
+    i = 0
+    while i < n and a[i] == b[i]:
+        i += 1
+    return i
+
+
+# --- бизнинг ҳадислар (манба тартибида, арабча скелети билан) ---
+our = []
+started = cid = None
+got = False
+for ln in open(SRC, encoding='utf-8').read().split('\n'):
     if ln.strip() == 'ILOVALAR':
-        end = i
         break
-
-arabic = {}
-started = False
-cur_id = None
-cur_arab = None   # шу ҳадиснинг биринчи арабча сатри
-
-for ln in lines[:end]:
     if re_kitob.match(ln):
         started = True
     if not started:
         continue
     mh = re_hadis.match(ln)
     if mh:
-        cur_id = int(re.findall(r'\d+', mh.group(1))[0])
-        cur_arab = None
+        cid = int(re.findall(r'\d+', mh.group(1))[0])
+        got = False
         continue
-    if cur_id is None:
-        continue
-    # ҳадис блокидаги биринчи арабча сатр — иснод+матн
-    if cur_arab is None and is_arabic_line(ln):
-        # бошидаги "N - " ёки "N ﻡ - " рақам-тире олиб ташланади
+    if cid and not got and is_ar(ln):
         body = re.sub(r'^\s*\d+\s*[ﻡم]?\s*-\s*', '', ln)
-        body = trim_refs(body)
-        if body:
-            arabic[cur_id] = body
-        cur_arab = ln
+        our.append((cid, skel(recon(body))))
+        got = True
+
+# --- тоза манба ---
+ftxt = open(CLEAN, encoding='utf-8').read()
+fil = [(int(m.group(1)), m.group(2).strip(), skel(m.group(2)))
+       for m in re.finditer(r'(?m)^(\d+)\.\s*(.+)$', ftxt)]
+N = len(fil)
+
+# 1-босқич: глобал кетма-кетлик мослаштириш (иснод бошлари токен)
+otok = [s[:30] for _, s in our]
+ftok = [fs[:30] for _, _, fs in fil]
+sm = difflib.SequenceMatcher(None, otok, ftok, autojunk=False)
+omap = {}   # our_index -> fil_index
+for tag, i1, i2, j1, j2 in sm.get_opcodes():
+    if tag == 'equal':
+        for k in range(i2 - i1):
+            omap[i1 + k] = j1 + k
+
+
+def expected(i, anchors):
+    p = bisect.bisect_left(anchors, i)
+    if p == 0:
+        a = anchors[0]
+        return omap[a] + (i - a)
+    if p >= len(anchors):
+        a = anchors[-1]
+        return omap[a] + (i - a)
+    a, b = anchors[p - 1], anchors[p]
+    return round(omap[a] + (omap[b] - omap[a]) * (i - a) / (b - a))
+
+
+# 2-босқич: интерполяция + ойнали LCP, бир неча марта (якорлар ўсади)
+for win, thr in ((20, 24), (30, 22), (40, 20)):
+    anchors = sorted(omap)
+    if not anchors:
+        break
+    for i, (oid, os) in enumerate(our):
+        if i in omap or len(os) < 12:
+            continue
+        exp = expected(i, anchors)
+        best, bs = -1, 0
+        for j in range(max(0, exp - win), min(N, exp + win + 1)):
+            s = lcp(os, fil[j][2])
+            if s > bs:
+                bs, best = s, j
+        if bs >= thr and best >= 0:
+            omap[i] = best
+
+# our_id -> тоза арабча. Тасдиқлаш: иснод боши LCP>=18 ВА тўлиқ скелет
+# ўхшашлиги >=0.6 (иснод боши бир хил, лекин ҳадис бошқа бўлган нотўғри
+# мосликларни четлаш учун).
+mapping = {}
+for i, fj in omap.items():
+    oid, os = our[i]
+    if oid in mapping or lcp(os, fil[fj][2]) < 18:
+        continue
+    fs = fil[fj][2]
+    ratio = difflib.SequenceMatcher(None, os[:160], fs[:160]).ratio()
+    if ratio >= 0.6:
+        mapping[oid] = fil[fj][1]
 
 with open(OUT, 'w', encoding='utf-8') as f:
-    json.dump(arabic, f, ensure_ascii=False, separators=(',', ':'))
+    json.dump(mapping, f, ensure_ascii=False, separators=(',', ':'))
 
 import os
-print('ҳадислар (арабча):', len(arabic))
-print('arabic.json:', f'{os.path.getsize(OUT):,} bytes ({os.path.getsize(OUT)/1024/1024:.2f} MB)')
+db = json.load(open('data.json'))
+uniq = set(h['id'] for b in db for bo in b['boblar'] for h in bo['hadislar'])
+cov = len(set(mapping) & uniq)
+print('бизнинг ҳадис (арабчали):', len(our), '| тоза манба:', N)
+print('mapping:', len(mapping), '| қамров:', cov, '/', len(uniq),
+      '(%.1f%%)' % (100 * cov / len(uniq)))
+print('arabic.json: %.2f MB' % (os.path.getsize(OUT) / 1024 / 1024))

@@ -502,6 +502,76 @@ for b in books:
             if 'izoh' in h:
                 h['izoh'] = clean_izoh(h['izoh'])
 
+# Кросс-ҳавола изоҳларни ҳақиқий таъриф билан алмаштириш:
+# "* Xнинг изоҳи N-ҳадисда берилган." -> "* X – <таъриф>" (бошқа ҳадислардан)
+_DEFLINE = re.compile(r'^«?([^–—»\n]{2,30}?)»?\s*[–—]\s+\S')
+_CROSSREF = re.compile(r'^\*\s*(.+?)\s+изоҳи\s+\d+-ҳадис(?:да)?(?:\s+берилган)?\.?\s*$')
+
+
+def _build_term_defs(bks):
+    g = {}            # глобал: term -> def
+    per = {}          # ҳадис id -> {term -> def}
+    for b in bks:
+        for bo in b['boblar']:
+            for h in bo['hadislar']:
+                for p in h['matn'].split('\n\n'):
+                    p = p.strip()
+                    if not p.startswith('* '):
+                        continue
+                    body = p[1:].strip()
+                    m = _DEFLINE.match(body)
+                    if m:
+                        term = m.group(1).strip().lower()
+                        if 2 <= len(term) <= 30:
+                            per.setdefault(h['id'], {})[term] = body
+                            if term not in g:
+                                g[term] = body
+    return g, per
+
+
+def _resolve_crossrefs(text, g, per):
+    changed = False
+    out = []
+    for p in text.split('\n\n'):
+        m = _CROSSREF.match(p.strip())
+        if m:
+            nm = re.search(r'(\d+)-ҳадис', p)
+            ref = per.get(int(nm.group(1)), {}) if nm else {}
+            terms = re.findall(r'«([^»]+)»', m.group(1)) or \
+                [re.sub(r'\s*(сўзлари?нинг|нинг)\b.*$', '', m.group(1)).strip()]
+            defs = []
+            for t in terms:
+                tl = t.strip().lower().rstrip('!?.')
+                d = ref.get(tl) or g.get(tl)        # аввал ишора қилинган ҳадис
+                if not d:
+                    for src in (ref, g):
+                        for k, v in src.items():
+                            if k.startswith(tl[:6]) and abs(len(k) - len(tl)) <= 3:
+                                d = v
+                                break
+                        if d:
+                            break
+                if d:
+                    defs.append('* ' + d)
+            if defs and len(defs) == len(terms):
+                out.extend(defs)
+                changed = True
+                continue
+        out.append(p)
+    return '\n\n'.join(out), changed
+
+
+_TERMDEFS, _HADIS_DEFS = _build_term_defs(books)
+_xref = 0
+for b in books:
+    for bo in b['boblar']:
+        for h in bo['hadislar']:
+            for fld in ('matn', 'izoh'):
+                if fld in h and 'изоҳи' in h[fld] and '-ҳадис' in h[fld]:
+                    h[fld], ch = _resolve_crossrefs(h[fld], _TERMDEFS, _HADIS_DEFS)
+                    if ch:
+                        _xref += 1
+
 nb = len(books)
 nbob = sum(len(b['boblar']) for b in books)
 nh = sum(len(bo['hadislar']) for b in books for bo in b['boblar'])

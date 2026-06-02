@@ -120,17 +120,18 @@ for win, thr in ((20, 24), (30, 22), (40, 20)):
         if bs >= thr and best >= 0:
             omap[i] = best
 
-# our_id -> тоза арабча. Тасдиқлаш: иснод боши LCP>=18 ВА тўлиқ скелет
-# ўхшашлиги >=0.6 (иснод боши бир хил, лекин ҳадис бошқа бўлган нотўғри
-# мосликларни четлаш учун).
+# our_id -> тоза арабча. Тасдиқлаш: иснод (нарратор занжири) мослиги.
+# Танчи (матн) тиклашда шовқин бўлгани учун тўлиқ матн эмас, балки иснод боши
+# (биринчи ~50 скелет белги) ўхшашлиги ишлатилади: >=0.85 бўлса — ўша ҳадис.
+# Бу иснод занжири фарқли (нотўғри) мосликларни четлайди.
 mapping = {}
 for i, fj in omap.items():
     oid, os = our[i]
     if oid in mapping or lcp(os, fil[fj][2]) < 18:
         continue
     fs = fil[fj][2]
-    ratio = difflib.SequenceMatcher(None, os[:160], fs[:160]).ratio()
-    if ratio >= 0.6:
+    isnad = difflib.SequenceMatcher(None, os[:50], fs[:50]).ratio()
+    if isnad >= 0.85:
         mapping[oid] = fil[fj][1]
 
 with open(OUT, 'w', encoding='utf-8') as f:

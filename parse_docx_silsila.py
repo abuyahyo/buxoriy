@@ -22,7 +22,7 @@ DOCX_DIR = "buxoriy kitoblari"
 OUT = "silsila_index.json"
 
 HADIS_HEADER_RE = re.compile(
-    r"^\s*(\d+(?:\s*[,–—\-]\s*\d+)*)\s*\.\s*(.+?)\s*$"
+    r"^\s*(\d+(?:\s*[,–—\-]\s*\d+)*)\s*[.\-–—]\s*(.+?)\s*$"
 )
 ID_LIST_RE = re.compile(r"\d+")
 BOB_RE = re.compile(r"^\s*\d+\s*[-­–—­\s]*[БB][ОO][БB]", re.IGNORECASE)
@@ -40,7 +40,11 @@ def get_lines(path):
 
 
 def expand_id_spec(spec):
-    """`299, 300, 301` ёки `896-897` ёки `123` ни рўйхатга ўгириш."""
+    """`299, 300, 301` ёки `896-897` ёки `1156-1157-1158` ёки `123` ни рўйхатга ўгириш.
+
+    Кўп тире (`A-B-C`) — кетма-кет ID лар деб қаралади (диапазон эмас).
+    Икки тире (`A-B`) — диапазон сифатида қаралади.
+    """
     spec = spec.strip()
     if "," in spec:
         ids = []
@@ -52,10 +56,13 @@ def expand_id_spec(spec):
                 ids.append(int(part))
         return ids
     if "-" in spec or "–" in spec or "—" in spec:
-        parts = re.split(r"[\-–—]", spec)
+        parts = [p.strip() for p in re.split(r"[\-–—]", spec) if p.strip()]
         if len(parts) == 2:
-            a, b = int(parts[0].strip()), int(parts[1].strip())
+            a, b = int(parts[0]), int(parts[1])
             return list(range(a, b + 1))
+        if len(parts) >= 3:
+            # Multiple dashes — treat each as separate ID (e.g., 1156-1157-1158)
+            return [int(p) for p in parts]
     return [int(spec)]
 
 
@@ -112,6 +119,17 @@ def parse_one(path):
             continue
         id_spec = m.group(1)
         after_header = m.group(2)
+        # Handle `1997. 1998.` pattern — peel off additional leading IDs
+        while True:
+            m2 = re.match(r"^\s*(\d+)\s*[.\-–—]\s*(.*)$", after_header)
+            if not m2:
+                break
+            next_id = int(m2.group(1))
+            if 0 < next_id < 8000 and len(m2.group(2)) > 10:
+                id_spec = id_spec + ", " + str(next_id)
+                after_header = m2.group(2)
+            else:
+                break
         try:
             ids = expand_id_spec(id_spec)
         except (ValueError, Exception):
@@ -168,30 +186,34 @@ def parse_one(path):
             if n_groups == 0:
                 matn = ""
             elif n_groups == 1:
-                # one group for all IDs — share or assign to first only
-                matn = "\n\n".join(groups[0]) if k == 0 else ""
+                # one group for all IDs — REPLICATE (parallel narration)
+                matn = "\n\n".join(groups[0])
             elif n_groups == n_ids:
                 matn = "\n\n".join(groups[k])
             elif n_groups < n_ids:
-                # fewer groups than IDs — only first ones get content
-                matn = "\n\n".join(groups[k]) if k < n_groups else ""
+                # fewer groups than IDs — replicate last available group
+                gi = min(k, n_groups - 1)
+                matn = "\n\n".join(groups[gi])
             else:  # more groups than IDs
                 if k < n_ids - 1:
                     matn = "\n\n".join(groups[k])
                 else:
-                    # last ID gets the remaining groups
-                    rest = []
-                    for g in groups[k:]:
-                        rest.extend(g)
-                    matn = "\n\n".join(rest) if rest else ""
-                    if k < n_groups:
-                        matn = "\n\n".join(["\n\n".join(g) for g in groups[k:]])
+                    # last ID gets the remaining groups merged
+                    matn = "\n\n".join(["\n\n".join(g) for g in groups[k:]])
+
+            # Post-process: if matn empty but rowi looks like a narrative
+            # (long sentence, ends with period/full stop), swap into matn
+            r = rowi
+            m = matn.strip()
+            if not m and r and (len(r) > 80 or r.rstrip().endswith(".")):
+                m = r
+                r = ""
 
             entry = {
-                "rowi": rowi if k == 0 or n_groups == n_ids else rowi,
-                "matn": matn.strip(),
+                "rowi": r,
+                "matn": m,
                 "izoh": "\n\n".join(izoh_parts).strip() if k == 0 else "",
-                "id_group": id_spec,  # debug
+                "id_group": id_spec,
                 "group_idx": k,
                 "group_total": n_ids,
             }

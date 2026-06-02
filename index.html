@@ -242,7 +242,6 @@ body.fabs-hidden .install-banner{transform:translateY(120%);opacity:0;pointer-ev
   .home-title{font-size:25px}
   .grid-wrap{padding:28px 14px 130px}
 }
-.kitob-name-ar{font-size:14px;color:var(--text-dim);font-family:'Amiri','Noto Naskh Arabic',serif;font-weight:400;margin-top:6px;direction:rtl;text-align:right;opacity:.85}
 .bob-name-ar{font-size:13px;color:var(--text-dim);font-family:'Amiri','Noto Naskh Arabic',serif;margin-top:4px;direction:rtl;text-align:right;opacity:.8;line-height:1.6}
 .hadis-stub-note{padding:14px 16px;margin:0 0 22px;background:var(--surface);border-left:3px solid var(--rose-soft);border-radius:var(--radius-sm);color:var(--text-dim);font-size:13px;line-height:1.6;font-family:'Roboto',sans-serif;font-style:italic}
 .hadis-arab-stub{display:block !important;margin-top:14px}
@@ -621,7 +620,7 @@ const App = {
     BOOKS.forEach(k=>{
       const el=document.createElement('div');
       el.className='kitob-card';el.setAttribute('role','button');el.tabIndex=0;
-      el.innerHTML=`<div class="kitob-top"><div class="kitob-num">${k.id}-КИТОБ</div><div class="kitob-stats"><div class="kitob-stat"><b>${k.bC}</b> боб</div><div class="kitob-stat"><b>${k.hC}</b> ҳадис</div></div></div><div class="kitob-name">${k.nomi}</div>${k.canon_nomi_ar?`<div class="kitob-name-ar">${k.canon_nomi_ar}</div>`:''}`;
+      el.innerHTML=`<div class="kitob-top"><div class="kitob-num">${k.id}-КИТОБ</div><div class="kitob-stats"><div class="kitob-stat"><b>${k.bC}</b> боб</div><div class="kitob-stat"><b>${k.hC}</b> ҳадис</div></div></div><div class="kitob-name">${k.nomi}</div>`;
       el.onclick=()=>App.openKitob(k.id);
       g.appendChild(el);
     });

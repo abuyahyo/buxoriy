@@ -242,7 +242,6 @@ body.fabs-hidden .install-banner{transform:translateY(120%);opacity:0;pointer-ev
   .home-title{font-size:25px}
   .grid-wrap{padding:28px 14px 130px}
 }
-.bob-name-ar{font-size:13px;color:var(--text-dim);font-family:'Amiri','Noto Naskh Arabic',serif;margin-top:4px;direction:rtl;text-align:right;opacity:.8;line-height:1.6}
 .hadis-stub-note{padding:14px 16px;margin:0 0 22px;background:var(--surface);border-left:3px solid var(--rose-soft);border-radius:var(--radius-sm);color:var(--text-dim);font-size:13px;line-height:1.6;font-family:'Roboto',sans-serif;font-style:italic}
 .hadis-arab-stub{display:block !important;margin-top:14px}
 .hadis-stub-badge{display:inline-block;font-size:9px;color:var(--rose-soft);background:rgba(184,138,130,.12);padding:2px 7px;border-radius:99px;margin-left:8px;text-transform:none;letter-spacing:.05em;font-weight:600;font-style:italic}
@@ -671,7 +670,7 @@ const App = {
       const el=document.createElement('div');
       el.className='bob-card';el.setAttribute('role','button');el.tabIndex=0;
       el.id=`bob-card-${k.id}-${b.id}`;
-      el.innerHTML=`<div class="bob-name">${bobNomi(b.nomi)}</div>${b.canon_bab_nomi_ar?`<div class="bob-name-ar">${b.canon_bab_nomi_ar}</div>`:''}${b.izoh?`<div class="bob-izoh">${b.izoh.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')}</div>`:''}<div class="bob-count" style="${b.izoh?'margin-top:8px':''}"><b>${bhC}</b> та ҳадис${b.muallaqot?'<span class="bob-muallaqot-badge">⚑ муаллақот</span>':''}</div>`;
+      el.innerHTML=`<div class="bob-name">${bobNomi(b.nomi)}</div>${b.izoh?`<div class="bob-izoh">${b.izoh.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>')}</div>`:''}<div class="bob-count" style="${b.izoh?'margin-top:8px':''}"><b>${bhC}</b> та ҳадис${b.muallaqot?'<span class="bob-muallaqot-badge">⚑ муаллақот</span>':''}</div>`;
       el.onclick=()=>App.openBob(kid,b.id);
       g.appendChild(el);
     });

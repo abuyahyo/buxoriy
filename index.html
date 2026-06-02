@@ -15,8 +15,6 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2064%2064%22%3E%3Crect%20width=%2264%22%20height=%2264%22%20rx=%2214%22%20fill=%22%23f5f0e8%22/%3E%3Ctext%20x=%2232%22%20y=%2229%22%20font-family=%22Georgia,serif%22%20font-size=%2213%22%20font-weight=%22bold%22%20fill=%22%238b6914%22%20text-anchor=%22middle%22%3E%D0%A1%D0%B0%D2%B3%D0%B8%D2%B3%3C/text%3E%3Ctext%20x=%2232%22%20y=%2246%22%20font-family=%22Georgia,serif%22%20font-size=%2210%22%20font-weight=%22bold%22%20fill=%22%238b6914%22%20text-anchor=%22middle%22%3E%D0%91%D1%83%D1%85%D0%BE%D1%80%D0%B8%D0%B9%3C/text%3E%3C/svg%3E">
 <link rel="preload" href="index.json" as="fetch" crossorigin="anonymous">
 <link rel="prefetch" href="data.json" as="fetch" crossorigin="anonymous">
-<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* SOFT MEDITATIVE — warm cream + sage + muted gold */
 :root{
@@ -43,10 +41,10 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-serif;font-weight:400;min-height:100vh;transition:background .4s,color .4s;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;touch-action:manipulation}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;font-weight:400;min-height:100vh;transition:background .4s,color .4s;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;touch-action:manipulation}
 /* Search input — pill */
 .search-wrap{position:relative}
-.search-input{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Roboto',sans-serif;font-size:16px;padding:14px 46px 14px 20px;border-radius:var(--radius-lg);outline:none;transition:border-color .3s,background .3s,box-shadow .3s;box-shadow:var(--shadow-sm)}
+.search-input{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;font-size:16px;padding:14px 46px 14px 20px;border-radius:var(--radius-lg);outline:none;transition:border-color .3s,background .3s,box-shadow .3s;box-shadow:var(--shadow-sm)}
 .search-input:focus{border-color:var(--sage);box-shadow:0 0 0 4px var(--sage-glow),var(--shadow-sm)}
 .search-input::placeholder{color:var(--text-muted);font-weight:300}
 .search-icon{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:14px;opacity:.7}
@@ -62,11 +60,11 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 .breadcrumb .bc-link{display:inline-block;cursor:pointer;color:var(--sage-deep);font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;padding:5px 13px;background:var(--sage-glow);border-radius:99px;transition:color .25s,background .25s,transform .2s;-webkit-tap-highlight-color:transparent}
 .breadcrumb .bc-link:hover,.breadcrumb .bc-link:active{color:var(--text);background:var(--sage);transform:translateY(-1px)}
 .breadcrumb .bc-sep{color:var(--text-muted);font-size:11px;margin:0 2px;opacity:.5}
-.breadcrumb .bc-cur{font-size:20px;font-weight:400;color:var(--text);line-height:1.35;font-family:'Merriweather',serif;display:block;margin-top:4px;letter-spacing:-0.005em}
+.breadcrumb .bc-cur{font-size:20px;font-weight:400;color:var(--text);line-height:1.35;font-family:ui-serif,Georgia,'Times New Roman',serif;display:block;margin-top:4px;letter-spacing:-0.005em}
 /* Hero */
 .home-hero{text-align:center;padding:44px 20px 36px}
-.home-title{font-size:30px;color:var(--text);margin-bottom:10px;font-family:'Merriweather',serif;font-weight:400;line-height:1.35;letter-spacing:-0.01em;animation:fadeUp .8s var(--ease) .1s both}
-.home-sub{font-size:14px;color:var(--text-dim);font-family:'Merriweather',serif;font-style:italic;font-weight:300;letter-spacing:.03em;animation:fadeUp .8s var(--ease) .2s both}
+.home-title{font-size:30px;color:var(--text);margin-bottom:10px;font-family:ui-serif,Georgia,'Times New Roman',serif;font-weight:400;line-height:1.35;letter-spacing:-0.01em;animation:fadeUp .8s var(--ease) .1s both}
+.home-sub{font-size:14px;color:var(--text-dim);font-family:ui-serif,Georgia,'Times New Roman',serif;font-style:italic;font-weight:300;letter-spacing:.03em;animation:fadeUp .8s var(--ease) .2s both}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .hero-divider{display:flex;align-items:center;justify-content:center;gap:14px;margin:24px auto 0;max-width:200px;color:var(--sage);opacity:.6;animation:fadeUp .8s var(--ease) .3s both}
 .hero-divider .line{flex:1;height:1px;background:currentColor}
@@ -85,7 +83,7 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 .kitob-card:hover::before,.kitob-card:active::before{opacity:1}
 .kitob-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;position:relative;z-index:1}
 .kitob-num{font-size:11px;color:var(--sage-deep);letter-spacing:.15em;text-transform:uppercase;font-weight:600}
-.kitob-name{font-size:17px;font-weight:500;color:var(--text);line-height:1.4;font-family:'Merriweather',serif;position:relative;z-index:1}
+.kitob-name{font-size:17px;font-weight:500;color:var(--text);line-height:1.4;font-family:ui-serif,Georgia,'Times New Roman',serif;position:relative;z-index:1}
 .kitob-stats{display:flex;gap:14px}
 .kitob-stat{font-size:11px;color:var(--text-muted);font-weight:400}
 .kitob-stat b{color:var(--text-dim);font-weight:600}
@@ -94,7 +92,7 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 .bob-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;cursor:pointer;transition:transform .35s var(--ease),box-shadow .35s,background .25s;position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow-sm);content-visibility:auto;contain-intrinsic-size:auto 90px}
 .bob-card:hover,.bob-card:active{transform:translateY(-2px);box-shadow:var(--shadow);background:var(--surface3)}
 .bob-num{font-size:10px;color:var(--sage-deep);letter-spacing:.14em;margin-bottom:6px;text-transform:uppercase;font-weight:600}
-.bob-name{font-size:14px;font-weight:500;color:var(--text);line-height:1.55;margin-bottom:10px;font-family:'Merriweather',serif}
+.bob-name{font-size:14px;font-weight:500;color:var(--text);line-height:1.55;margin-bottom:10px;font-family:ui-serif,Georgia,'Times New Roman',serif}
 .bob-count{font-size:11px;color:var(--text-muted)}
 .bob-izoh{font-size:12px;color:var(--text-dim);line-height:1.75;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border)}
 .bob-count b{color:var(--text-dim);font-weight:600}
@@ -103,27 +101,27 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 .hadis-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;cursor:pointer;transition:transform .35s var(--ease),box-shadow .35s,background .25s;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow-sm);content-visibility:auto;contain-intrinsic-size:auto 110px}
 .hadis-item:hover,.hadis-item:active{transform:translateY(-2px);box-shadow:var(--shadow);background:var(--surface3)}
 .hadis-item-num{font-size:10px;color:var(--sage-deep);letter-spacing:.14em;margin-bottom:8px;text-transform:uppercase;font-weight:600}
-.hadis-item-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:8px;font-family:'Merriweather',serif}
+.hadis-item-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:8px;font-family:ui-serif,Georgia,'Times New Roman',serif}
 .hadis-item-preview{font-size:14px;color:var(--text);line-height:1.75;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:300}
-.hadis-item-narrator{font-size:11px;color:var(--text-muted);margin-top:10px;font-style:italic;font-family:'Merriweather',serif}
+.hadis-item-narrator{font-size:11px;color:var(--text-muted);margin-top:10px;font-style:italic;font-family:ui-serif,Georgia,'Times New Roman',serif}
 /* Hadis full page */
-.hadis-text{padding:32px 14px 24px;margin:0 -6px 28px;line-height:1.95;color:var(--text);font-size:var(--hadis-fs,17px);font-family:'Merriweather',serif;font-weight:300;letter-spacing:.005em}
-.hadis-izoh{padding:0 12px;line-height:1.85;color:var(--text-dim);font-size:calc(var(--hadis-fs,17px) - 1px);font-family:'Merriweather',serif;font-weight:300;margin-top:18px}
-.hadis-arab{direction:rtl;text-align:right;font-family:'Amiri','Noto Naskh Arabic',serif;font-size:calc(var(--hadis-fs,17px) + 8px);line-height:2.1;color:var(--text);padding:22px 18px;margin:4px -6px 24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.hadis-text{padding:32px 14px 24px;margin:0 -6px 28px;line-height:1.95;color:var(--text);font-size:var(--hadis-fs,17px);font-family:ui-serif,Georgia,'Times New Roman',serif;font-weight:300;letter-spacing:.005em}
+.hadis-izoh{padding:0 12px;line-height:1.85;color:var(--text-dim);font-size:calc(var(--hadis-fs,17px) - 1px);font-family:ui-serif,Georgia,'Times New Roman',serif;font-weight:300;margin-top:18px}
+.hadis-arab{direction:rtl;text-align:right;font-family:'Geeza Pro',system-ui,serif;font-size:calc(var(--hadis-fs,17px) + 8px);line-height:2.1;color:var(--text);padding:22px 18px;margin:4px -6px 24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .lang-toggle{display:flex;width:fit-content;margin:0 auto 22px;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:3px;gap:2px}
-.lang-toggle button{border:none;background:transparent;color:var(--text-muted);padding:7px 20px;border-radius:99px;font-family:'Roboto',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.lang-toggle button{border:none;background:transparent;color:var(--text-muted);padding:7px 20px;border-radius:99px;font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
 .lang-toggle button.active{background:var(--sage);color:#fff}
 .lang-toggle button:not(.active):hover{color:var(--sage-deep)}
 .lang-toggle button:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
 .hadis-fn{margin-top:22px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:9px}
-.hadis-fn-item{font-size:calc(var(--hadis-fs,17px) - 3px);line-height:1.7;color:var(--text-muted);font-family:'Merriweather',serif;font-weight:300;text-indent:-14px;padding-left:14px}
+.hadis-fn-item{font-size:calc(var(--hadis-fs,17px) - 3px);line-height:1.7;color:var(--text-muted);font-family:ui-serif,Georgia,'Times New Roman',serif;font-weight:300;text-indent:-14px;padding-left:14px}
 .hadis-fn-star{color:var(--sage);font-weight:700;margin-right:3px}
-.hadis-num-inline{display:block;text-align:center;font-weight:600;color:var(--sage-deep);letter-spacing:.18em;margin-bottom:28px;font-family:'Merriweather',serif;font-size:13px;text-transform:uppercase;position:relative}
+.hadis-num-inline{display:block;text-align:center;font-weight:600;color:var(--sage-deep);letter-spacing:.18em;margin-bottom:28px;font-family:ui-serif,Georgia,'Times New Roman',serif;font-size:13px;text-transform:uppercase;position:relative}
 .hadis-num-inline::before,.hadis-num-inline::after{content:'';position:absolute;top:50%;width:50px;height:1px;opacity:.7}
 .hadis-num-inline::before{left:50%;margin-left:-110px;background:linear-gradient(90deg,transparent,var(--border))}
 .hadis-num-inline::after{left:50%;margin-left:60px;background:linear-gradient(90deg,var(--border),transparent)}
 .hadis-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)}
-.hadis-tb-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);height:38px;min-width:38px;padding:0 14px;border-radius:99px;cursor:pointer;font-size:13px;font-family:'Roboto',sans-serif;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent;transition:all .25s}
+.hadis-tb-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);height:38px;min-width:38px;padding:0 14px;border-radius:99px;cursor:pointer;font-size:13px;font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent;transition:all .25s}
 .hadis-tb-btn:hover,.hadis-tb-btn:active{border-color:var(--sage);color:var(--sage-deep);background:var(--surface2)}
 .hadis-tb-btn.copied,.hadis-tb-btn.active{border-color:var(--sage);color:var(--sage-deep);background:var(--sage-glow)}
 .hadis-tb-btn:disabled{opacity:.55;cursor:wait}
@@ -133,27 +131,27 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 .hadis-tb-group .hadis-tb-btn:hover,.hadis-tb-group .hadis-tb-btn:active{background:var(--sage-glow);color:var(--sage-deep)}
 .hadis-ref{color:var(--sage-deep);text-decoration:none;border-bottom:1px dashed var(--sage);cursor:pointer;transition:color .25s,border-color .25s,background .25s;padding:0 3px;border-radius:3px;font-style:italic}
 .hadis-ref:hover,.hadis-ref:active{color:var(--text);border-bottom-color:var(--sage-deep);background:var(--sage-glow)}
-.hadis-narrator,.hadis-source{margin-top:14px;padding:16px 18px;background:var(--surface);border-radius:var(--radius);font-size:13px;line-height:1.75;color:var(--text-dim);font-family:'Merriweather',serif;font-style:italic;font-weight:300;position:relative}
+.hadis-narrator,.hadis-source{margin-top:14px;padding:16px 18px;background:var(--surface);border-radius:var(--radius);font-size:13px;line-height:1.75;color:var(--text-dim);font-family:ui-serif,Georgia,'Times New Roman',serif;font-style:italic;font-weight:300;position:relative}
 .hadis-narrator{border-left:3px solid var(--sage)}
 .hadis-source{border-left:3px solid var(--rose-soft)}
-.hadis-narrator strong,.hadis-source strong{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--text-muted);margin-bottom:6px;font-style:normal;font-weight:600;font-family:'Roboto',sans-serif}
-.kitob-izoh{margin-bottom:22px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--sage);border-radius:var(--radius);font-size:13px;line-height:1.75;color:var(--text-dim);font-family:'Merriweather',serif;font-weight:300}
+.hadis-narrator strong,.hadis-source strong{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--text-muted);margin-bottom:6px;font-style:normal;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif}
+.kitob-izoh{margin-bottom:22px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--sage);border-radius:var(--radius);font-size:13px;line-height:1.75;color:var(--text-dim);font-family:ui-serif,Georgia,'Times New Roman',serif;font-weight:300}
 .kitob-izoh-star{color:var(--sage);font-weight:700;margin-right:4px}
 .muallaqot-block{margin-bottom:24px;padding:18px 20px;background:var(--surface);border-radius:var(--radius);border-left:3px solid var(--rose-soft)}
 .muallaqot-label{font-size:10px;color:var(--rose-soft);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:7px;font-weight:600}
 .muallaqot-label::before{content:"⚑";font-size:13px}
-.muallaqot-text{font-size:13px;line-height:1.85;color:var(--text-dim);font-family:'Merriweather',serif;font-weight:300}
+.muallaqot-text{font-size:13px;line-height:1.85;color:var(--text-dim);font-family:ui-serif,Georgia,'Times New Roman',serif;font-weight:300}
 .bob-muallaqot-badge{display:inline-flex;align-items:center;gap:5px;font-size:9px;color:var(--rose-soft);margin-left:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
 /* Search results page */
 .search-pg-header{margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border)}
-.search-pg-title{font-size:18px;color:var(--text);margin-bottom:6px;font-family:'Merriweather',serif;font-weight:400}
+.search-pg-title{font-size:18px;color:var(--text);margin-bottom:6px;font-family:ui-serif,Georgia,'Times New Roman',serif;font-weight:400}
 .search-pg-meta{font-size:11px;color:var(--text-muted);letter-spacing:.05em}
 .result-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:var(--shadow-sm);transition:transform .35s var(--ease),box-shadow .35s,background .25s;content-visibility:auto;contain-intrinsic-size:auto 90px}
 .result-item:hover,.result-item:active{transform:translateY(-1px);box-shadow:var(--shadow);background:var(--surface3)}
 .result-label{font-size:10px;color:var(--sage-deep);margin-bottom:6px;line-height:1.6;letter-spacing:.04em;font-weight:500}
 .result-text{font-size:14px;line-height:1.7;color:var(--text-dim);font-weight:300}
 .result-text mark{background:var(--sage-glow);color:var(--text);border-radius:3px;padding:1px 4px;font-weight:500}
-.result-text.arab{font-family:'Amiri','Noto Naskh Arabic',serif;font-size:17px;line-height:1.9}
+.result-text.arab{font-family:'Geeza Pro',system-ui,serif;font-size:17px;line-height:1.9}
 .hadis-xrefs{margin-top:14px;padding:12px 14px;background:var(--surface);border-radius:8px;font-size:14px;line-height:1.9;color:var(--text-dim)}
 .hadis-xrefs strong{color:var(--text);font-weight:500;margin-right:6px}
 .xref-link{display:inline-block;padding:2px 9px;margin:2px 3px 2px 0;background:var(--bg);border:1px solid var(--border);border-radius:14px;color:var(--accent);font-weight:500;text-decoration:none;font-size:13px}
@@ -163,22 +161,22 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 .result-section{margin-bottom:28px}
 .result-section-header{font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--text-muted);margin-bottom:12px;padding:0 4px 8px;border-bottom:1px solid var(--border);font-weight:500}
 .result-where{font-size:9px;color:var(--rose-soft);text-transform:uppercase;letter-spacing:.12em;margin-left:8px;padding:2px 7px;background:rgba(184,138,130,.12);border-radius:99px;font-weight:600}
-.result-more-btn{display:block;width:100%;background:var(--surface);border:1px solid var(--border);color:var(--sage-deep);padding:14px;border-radius:var(--radius);cursor:pointer;font-family:'Roboto',sans-serif;font-size:13px;font-weight:500;margin-top:10px;-webkit-tap-highlight-color:transparent;transition:all .25s}
+.result-more-btn{display:block;width:100%;background:var(--surface);border:1px solid var(--border);color:var(--sage-deep);padding:14px;border-radius:var(--radius);cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;font-size:13px;font-weight:500;margin-top:10px;-webkit-tap-highlight-color:transparent;transition:all .25s}
 .result-more-btn:hover,.result-more-btn:active{border-color:var(--sage);background:var(--sage-glow)}
 /* Recent searches */
 .recent-searches{margin-bottom:24px}
 .recent-searches[hidden]{display:none}
 .recent-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .recent-label{font-size:11px;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
-.recent-clear{background:none;border:none;color:var(--text-muted);font-size:11px;cursor:pointer;font-family:'Roboto',sans-serif;-webkit-tap-highlight-color:transparent;padding:2px 4px}
+.recent-clear{background:none;border:none;color:var(--text-muted);font-size:11px;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;-webkit-tap-highlight-color:transparent;padding:2px 4px}
 .recent-clear:hover,.recent-clear:active{color:var(--sage-deep)}
 .recent-chips{display:flex;flex-wrap:wrap;gap:8px}
-.recent-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 13px;border-radius:99px;cursor:pointer;font-family:'Roboto',sans-serif;font-size:13px;-webkit-tap-highlight-color:transparent;transition:all .2s}
+.recent-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 13px;border-radius:99px;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;font-size:13px;-webkit-tap-highlight-color:transparent;transition:all .2s}
 .recent-chip:hover,.recent-chip:active{border-color:var(--sage);background:var(--sage-glow)}
 .recent-chip::before{content:'🕘';font-size:11px;opacity:.6}
 /* Search result filter tabs */
 .search-filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
-.search-filter-tab{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:7px 14px;border-radius:99px;cursor:pointer;font-family:'Roboto',sans-serif;font-size:12.5px;font-weight:500;-webkit-tap-highlight-color:transparent;transition:all .2s}
+.search-filter-tab{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:7px 14px;border-radius:99px;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;font-size:12.5px;font-weight:500;-webkit-tap-highlight-color:transparent;transition:all .2s}
 .search-filter-tab:hover{border-color:var(--sage)}
 .search-filter-tab.active{background:var(--sage);border-color:var(--sage);color:#fff}
 .kitob-card:focus-visible,.bob-card:focus-visible,.hadis-item:focus-visible,.result-item:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
@@ -207,7 +205,7 @@ body.fabs-hidden .fab-nav{transform:translateX(-50%) translateY(90px);opacity:0;
 .update-banner{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--sage);border-radius:99px;padding:8px 8px 8px 18px;box-shadow:var(--shadow-lg);z-index:60;max-width:calc(100vw - 32px);animation:slideUpBanner .35s var(--ease)}
 .update-banner.visible{display:flex}
 .update-banner span{font-size:13px;color:var(--text);font-weight:500;white-space:nowrap}
-.update-banner button.update-btn{background:var(--sage);color:#fff;border:none;padding:7px 14px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Roboto',sans-serif;letter-spacing:.02em;transition:background .25s}
+.update-banner button.update-btn{background:var(--sage);color:#fff;border:none;padding:7px 14px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;letter-spacing:.02em;transition:background .25s}
 .update-banner button.update-btn:hover,.update-banner button.update-btn:active{background:var(--sage-deep)}
 .update-banner button.update-dismiss{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:0 6px;line-height:1;transition:color .25s}
 .update-banner button.update-dismiss:hover{color:var(--text)}
@@ -217,9 +215,9 @@ body.fabs-hidden .update-banner{transform:translate(-50%,90px);opacity:0;pointer
 .install-banner[hidden]{display:none}
 .install-banner-icon{width:44px;height:44px;border-radius:10px;flex-shrink:0;object-fit:cover}
 .install-banner-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.install-banner-text strong{font-size:14px;font-weight:600;color:var(--text);font-family:'Roboto',sans-serif;letter-spacing:.005em}
+.install-banner-text strong{font-size:14px;font-weight:600;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;letter-spacing:.005em}
 .install-banner-text p{font-size:12px;color:var(--text-dim);margin:0;line-height:1.4;font-weight:400}
-#install-banner-action{background:var(--sage);color:#fff;border:none;padding:9px 16px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Roboto',sans-serif;letter-spacing:.02em;transition:background .25s,transform .15s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+#install-banner-action{background:var(--sage);color:#fff;border:none;padding:9px 16px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;letter-spacing:.02em;transition:background .25s,transform .15s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 #install-banner-action:hover,#install-banner-action:active{background:var(--sage-deep);transform:translateY(-1px)}
 #install-banner-close{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:6px;line-height:1;transition:color .25s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
 #install-banner-close:hover,#install-banner-close:active{color:var(--text)}
@@ -242,10 +240,10 @@ body.fabs-hidden .install-banner{transform:translateY(120%);opacity:0;pointer-ev
   .home-title{font-size:25px}
   .grid-wrap{padding:28px 14px 130px}
 }
-.hadis-stub-note{padding:14px 16px;margin:0 0 22px;background:var(--surface);border-left:3px solid var(--rose-soft);border-radius:var(--radius-sm);color:var(--text-dim);font-size:13px;line-height:1.6;font-family:'Roboto',sans-serif;font-style:italic}
+.hadis-stub-note{padding:14px 16px;margin:0 0 22px;background:var(--surface);border-left:3px solid var(--rose-soft);border-radius:var(--radius-sm);color:var(--text-dim);font-size:13px;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;font-style:italic}
 .hadis-arab-stub{display:block !important;margin-top:14px}
 .hadis-stub-badge{display:inline-block;font-size:9px;color:var(--rose-soft);background:rgba(184,138,130,.12);padding:2px 7px;border-radius:99px;margin-left:8px;text-transform:none;letter-spacing:.05em;font-weight:600;font-style:italic}
-.hadis-item-preview-ar{font-family:'Amiri','Noto Naskh Arabic',serif;font-size:16px;line-height:1.85;color:var(--text-dim)}
+.hadis-item-preview-ar{font-family:'Geeza Pro',system-ui,serif;font-size:16px;line-height:1.85;color:var(--text-dim)}
 </style>
 </head>
 <body>
@@ -970,8 +968,8 @@ const App = {
       accent:'#d9b870',divider:'rgba(217,184,112,.25)'
     };
     const W=1080,H=1080,PAD=80;
-    const bodyFont="'Merriweather', Georgia, serif";
-    const uiFont="'Roboto', system-ui, sans-serif";
+    const bodyFont="ui-serif, Georgia, 'Times New Roman', serif";
+    const uiFont="-apple-system, system-ui, sans-serif";
     const bodyFs=34, bodyLh=Math.round(bodyFs*1.7);
     const maxBodyW=W-PAD*2;
     const ctxLabel=k&&b?`${k.nomi} · ${b.id}-боб`:'';

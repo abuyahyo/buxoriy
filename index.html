@@ -152,6 +152,10 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 .result-text{font-size:14px;line-height:1.7;color:var(--text-dim);font-weight:300}
 .result-text mark{background:var(--sage-glow);color:var(--text);border-radius:3px;padding:1px 4px;font-weight:500}
 .result-text.arab{font-family:'Amiri','Noto Naskh Arabic',serif;font-size:17px;line-height:1.9}
+.hadis-xrefs{margin-top:14px;padding:12px 14px;background:var(--surface);border-radius:8px;font-size:14px;line-height:1.9;color:var(--text-dim)}
+.hadis-xrefs strong{color:var(--text);font-weight:500;margin-right:6px}
+.xref-link{display:inline-block;padding:2px 9px;margin:2px 3px 2px 0;background:var(--bg);border:1px solid var(--border);border-radius:14px;color:var(--accent);font-weight:500;text-decoration:none;font-size:13px}
+.xref-link:hover{background:var(--sage-glow);color:var(--text)}
 .no-results{text-align:center;padding:60px 20px;color:var(--text-muted)}
 .no-results-icon{font-size:52px;margin-bottom:18px;opacity:.4}
 .result-section{margin-bottom:28px}
@@ -322,6 +326,7 @@ body.fabs-hidden .install-banner{transform:translateY(120%);opacity:0;pointer-ev
     <div id="hadisIzoh" class="hadis-izoh" style="display:none"></div>
     <div class="hadis-narrator" id="hadisNarrator"></div>
     <div class="hadis-source" id="hadisSource"></div>
+    <div class="hadis-xrefs" id="hadisXrefs" style="display:none"></div>
   </div>
 </div>
 
@@ -402,6 +407,17 @@ function linkifyRefs(html){
     if(!target) return match;
     return `<a class="hadis-ref" href="#k/${target.kid}/b/${target.bid}/h/${num}" onclick="event.stopPropagation()">${num}${sep}${word}${suffix}</a>`;
   });
+}
+
+// Атраф (crossrefs.json) — кичкина файл (~9 КБ), ҳадис очилганида юкланади
+let XREFS = null, xrefsPromise = null;
+function loadXrefs(){
+  if(XREFS) return Promise.resolve(XREFS);
+  if(!xrefsPromise) xrefsPromise = fetch('crossrefs.json')
+    .then(r=>r.ok ? r.json() : {})
+    .then(d=>{ XREFS=d; return d; })
+    .catch(()=>{ XREFS={}; return {}; });
+  return xrefsPromise;
 }
 
 // Арабча матн (arabic.json) — «Арабча» тугмаси ёки арабча қидирувда юкланади.
@@ -735,6 +751,25 @@ const App = {
     const sourceEl=document.getElementById('hadisSource');
     if(h.manba){sourceEl.innerHTML='<strong>Манба:</strong> '+h.manba;sourceEl.style.display='';}
     else{sourceEl.style.display='none';}
+    // Атраф (шу мазмундаги бошқа ҳадислар) — крос-рефлар lazy-юкланади
+    const xrefsEl=document.getElementById('hadisXrefs');
+    xrefsEl.style.display='none';
+    loadXrefs().then(d=>{
+      // Бошқа ҳадисга ўтган бўлсак, кўрсатмаймиз
+      if(ST.hid !== hid) return;
+      const refs = d[String(hid)];
+      if(!refs || !refs.length){ xrefsEl.style.display='none'; return; }
+      buildHadisMap();
+      // Фақат мавжуд ҳадисларни кўрсатамиз (data.json'да бор бўлганлар)
+      const valid = refs.filter(rid => HADIS_MAP && HADIS_MAP.has(rid));
+      if(!valid.length){ xrefsEl.style.display='none'; return; }
+      const items = valid.map(rid=>{
+        const t = HADIS_MAP.get(rid);
+        return `<a class="xref-link" href="#k/${t.kid}/b/${t.bid}/h/${rid}">${rid}</a>`;
+      }).join(' ');
+      xrefsEl.innerHTML = '<strong>Шу мазмундаги ҳадислар:</strong> ' + items;
+      xrefsEl.style.display='';
+    });
     const izohEl=document.getElementById('hadisIzoh');
     const izohBtn=document.getElementById('izohBtn');
     izohEl.style.display='none';

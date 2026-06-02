@@ -427,15 +427,134 @@ function loadXrefs(){
 // Арабча матн (arabic.json) — «Арабча» тугмаси ёки арабча қидирувда юкланади.
 const ARABIC_ENABLED = true;
 let ARAB = null, ARAB_NORM = null, arabPromise = null;
-// Арабча нормализация: ташкил/татвиҳ ҳарфларни олиб ташлайди, ҳарф вариантларини бирлаштиради
-function normArab(s){
-  return String(s)
-    .replace(/[ً-ٰٟـ]/g, '') // tashkeel + tatweel
-    .replace(/[آأإ]/g, 'ا')   // أ إ آ → ا
-    .replace(/ى/g, 'ي')                  // ى → ي
-    .replace(/ة/g, 'ه')                  // ة → ه
-    .replace(/[ؤئ]/g, 'و');         // ؤ ئ → و
+// ─── Кўп ёзувли «кечиримли» нормализация ───────────────────────────────────
+// Кирилл → лотин канон. «ҳаққ» ва «haqq» бир хил калитга айланади, шунинг учун
+// фойдаланувчи қайси ёзувда ёзса ҳам бир хил натижа топилади.
+const _CYR = {'а':'a','б':'b','в':'v','г':'g','д':'d','е':'e','ё':'yo','ж':'j','з':'z','и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ф':'f','х':'x','ц':'ts','ч':'ch','ш':'sh','щ':'sh','ъ':'','ы':'i','ь':'','э':'e','ю':'yu','я':'ya','ў':'o','ғ':'g','қ':'q','ҳ':'h'};
+const _APO = /['’‘ʻʼ`´]/;                              // апострофлар (o'→o, g'→g — юмшоқлик)
+const _TASHKEEL = /[ً-ٰٟـ]/;        // ҳаракат + татвиҳ
+const _HARAKAT  = /[ً-ٰٟ]/;              // фақат ҳаракат (татвиҳсиз)
+const _hasHarakat = s => _HARAKAT.test(s);
+const _isWordCh = c => /[\p{L}\p{N}]/u.test(c);
+
+// Нормаллашган сатр + позиция харитаси (map[i] = норм-белги i нинг асл индекси).
+// mode 'ar' — арабча (ҳаракатсиз, ҳарф фолдинг); акс ҳолда ўзбекча (кирилл↔лотин).
+function buildNormMap(orig, mode){
+  let norm='', map=[];
+  if(mode==='ar'){
+    for(let i=0;i<orig.length;i++){
+      const c=orig[i];
+      if(_TASHKEEL.test(c)) continue;                  // ҳаракат/татвиҳ — асл матнда қолади, нормда йўқ
+      let r=c;
+      if(c==='آ'||c==='أ'||c==='إ') r='ا';      // آأإ → ا
+      else if(c==='ى') r='ي';                            // ى → ي
+      else if(c==='ة') r='ه';                            // ة → ه
+      else if(c==='ؤ'||c==='ئ') r='و';              // ؤئ → و
+      norm+=r; map.push(i);
+    }
+  } else {
+    for(let i=0;i<orig.length;i++){
+      const lc=orig[i].toLowerCase();
+      for(let k=0;k<lc.length;k++){
+        const ch=lc[k];
+        if(_APO.test(ch)) continue;
+        const r=(ch in _CYR)?_CYR[ch]:ch;
+        for(let j=0;j<r.length;j++){ norm+=r[j]; map.push(i); }
+      }
+    }
+  }
+  return {norm, map};
 }
+function normUz(s){ return buildNormMap(String(s),'uz').norm; }
+function normArab(s){ return buildNormMap(String(s),'ar').norm; }       // юмшоқ (ҳаракатсиз)
+// Аниқ даража: ҳарфларни фолдинг, лекин ҳаракатни сақлаш (фойдаланувчи ҳаракат ёзса)
+function normArabKeep(s){
+  return String(s).replace(/ـ/g,'')
+    .replace(/[آأإ]/g,'ا').replace(/ى/g,'ي')
+    .replace(/ة/g,'ه').replace(/[ؤئ]/g,'و');
+}
+
+// Сўз-чегарали мослик: поз=0 ёки олдинги белги ҳарф/рақам эмас. \b кирилл/арабда
+// ишламагани учун чегарани ўзимиз аниқлаймиз. arab=true → «ال» артикли ихтиёрий.
+function _boundaryOk(norm, idx, arab){
+  if(idx===0 || !_isWordCh(norm[idx-1])) return true;
+  if(arab && idx>=2 && norm.substr(idx-2,2)==='ال'
+     && (idx-2===0 || !_isWordCh(norm[idx-3]))) return true;  // ал+сўз
+  return false;
+}
+function firstMatch(norm, q, arab){           // early-exit (матчинг учун)
+  if(!q) return -1;
+  let from=0, idx;
+  while((idx=norm.indexOf(q,from))!==-1){
+    if(_boundaryOk(norm,idx,arab)) return idx;
+    from=idx+1;
+  }
+  return -1;
+}
+function allMatches(norm, q, arab){           // барча мосликлар (highlight учун)
+  const res=[]; if(!q) return res;
+  let from=0, idx;
+  while((idx=norm.indexOf(q,from))!==-1){
+    if(_boundaryOk(norm,idx,arab)) res.push(idx);
+    from=idx+1;
+  }
+  return res;
+}
+
+// Топилган сўзни асл матнга позиция-харита орқали <mark> билан ажратиб, парча қайтаради.
+// HTML esc қилинади — ажратиш ҳеч қачон HTML ни бузмайди.
+function renderSnippet(origRaw, q, mode, maxLen){
+  maxLen = maxLen || 200;
+  const orig = String(origRaw).replace(/\s+/g,' ').trim();
+  const arab = mode==='ar';
+  const {norm, map} = buildNormMap(orig, mode);
+  const starts = allMatches(norm, q, arab);
+  const ranges = starts.map(ns=>{
+    const ne = ns + q.length;
+    return [ map[ns], ne < map.length ? map[ne] : orig.length ];
+  });
+  let winStart=0, winEnd=orig.length, pre='', suf='';
+  if(orig.length > maxLen){
+    if(ranges.length){                                // парчани топилган сўз атрофидан
+      const before=Math.floor((maxLen - q.length)/2);
+      winStart=Math.max(0, ranges[0][0]-before);
+      winEnd=Math.min(orig.length, winStart+maxLen);
+      if(winEnd-winStart<maxLen && winStart>0) winStart=Math.max(0, winEnd-maxLen);
+    } else { winEnd=maxLen; }
+    if(winStart>0) pre='…';
+    if(winEnd<orig.length) suf='…';
+  }
+  ranges.sort((a,b)=>a[0]-b[0]);
+  let html='', i=winStart;
+  for(const [os,oe] of ranges){
+    const s=Math.max(os,winStart), e=Math.min(oe,winEnd);
+    if(e<=i) continue;
+    if(s>i) html+=escHtml(orig.slice(i,s));
+    html+='<mark>'+escHtml(orig.slice(Math.max(s,i),e))+'</mark>';
+    i=e;
+  }
+  if(i<winEnd) html+=escHtml(orig.slice(i,winEnd));
+  return pre+html+suf;
+}
+
+// ─── Олдиндан ҳисобланган қидирув индекси (бир марта, юкланганда) ───────────
+// Ҳар бир ёзув учун нормаллашган калитлар. Ҳар босилишда қайта нормаллаштириш ЙЎҚ.
+let SIDX = null;
+function buildSearchIndex(){
+  if(SIDX || !isFullDB) return;
+  const books=[], bobs=[], hadis=[];
+  DB.forEach(k=>{
+    books.push({k, n:normUz(k.nomi)});
+    k.boblar.forEach(b=>{
+      bobs.push({k, b, n:normUz(b.nomi), i:b.izoh?normUz(b.izoh):'', m:b.muallaqot?normUz(b.muallaqot):''});
+      b.hadislar.forEach(h=>{
+        hadis.push({k, b, h, m:normUz(h.matn), r:h.rowi?normUz(h.rowi):'', i:h.izoh?normUz(h.izoh):''});
+      });
+    });
+  });
+  SIDX = {books, bobs, hadis};
+}
+
 function isArabicQuery(s){ return /[؀-ۿ]/.test(s); }
 function loadArab(){
   if(ARAB) return Promise.resolve(ARAB);
@@ -586,24 +705,6 @@ function applyHash(){
 }
 
 function escHtml(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
-function escRegex(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-
-function snippet(text, query, maxLen){
-  if(!text) return '';
-  maxLen = maxLen || 200;
-  const t = text.replace(/\n+/g, ' ').trim();
-  if(t.length <= maxLen) return t;
-  const idx = t.toLowerCase().indexOf(query.toLowerCase());
-  if(idx === -1) return t.substring(0, maxLen) + '…';
-  const before = Math.floor((maxLen - query.length) / 2);
-  let start = Math.max(0, idx - before);
-  let end = Math.min(t.length, start + maxLen);
-  if(end - start < maxLen && start > 0) start = Math.max(0, end - maxLen);
-  let result = t.substring(start, end);
-  if(start > 0) result = '…' + result;
-  if(end < t.length) result = result + '…';
-  return result;
-}
 
 function syncSearchToHash(q){
   const newHash = q ? '#q=' + encodeURIComponent(q) : '';
@@ -1144,38 +1245,37 @@ const App = {
       return;
     }
 
-    const q = isArab ? normArab(trimmed) : trimmed.toLowerCase();
+    buildSearchIndex();
     const isNum = /^\d+$/.test(trimmed);
+    const qNorm = isArab ? normArab(trimmed) : normUz(trimmed);
     const kitob=[], bob=[], hadis=[];
 
-    DB.forEach(k=>{
-      if(!isArab && !isNum && k.nomi.toLowerCase().includes(q)) kitob.push({k});
-      k.boblar.forEach(b=>{
-        if(!isArab && !isNum){
-          const inN = b.nomi.toLowerCase().includes(q);
-          const inI = b.izoh && b.izoh.toLowerCase().includes(q);
-          const inM = b.muallaqot && b.muallaqot.toLowerCase().includes(q);
-          if(inN||inI||inM) bob.push({k, b, where: inN?'nomi':inI?'izoh':'muallaqot'});
-        }
-        b.hadislar.forEach(h=>{
-          if(isNum){
-            if(String(h.id)===trimmed) hadis.push({k, b, h, where:'matn'});
-            return;
-          }
-          if(isArab){
-            const arabN = ARAB_NORM && ARAB_NORM[h.id];
-            if(arabN && arabN.includes(q)) hadis.push({k, b, h, where:'arabic'});
-            return;
-          }
-          const inM = h.matn.toLowerCase().includes(q);
-          const inR = h.rowi && h.rowi.toLowerCase().includes(q);
-          const inI = h.izoh && h.izoh.toLowerCase().includes(q);
-          if(inM||inR||inI) hadis.push({k, b, h, where: inM?'matn':inR?'rowi':'izoh'});
-        });
+    if(isNum){
+      // Рақам бўйича — ҳадис id
+      SIDX.hadis.forEach(e=>{ if(String(e.h.id)===trimmed) hadis.push({k:e.k, b:e.b, h:e.h, where:'matn'}); });
+    } else if(isArab){
+      // Арабча: юмшоқ (ҳаракатсиз) даража; сўровда ҳаракат бўлса — аниқ даража фильтри
+      const keep = _hasHarakat(trimmed) ? normArabKeep(trimmed) : null;
+      SIDX.hadis.forEach(e=>{
+        const an = ARAB_NORM[e.h.id];
+        if(!an || firstMatch(an, qNorm, true)===-1) return;
+        if(keep && !normArabKeep(ARAB[e.h.id] || '').includes(keep)) return;
+        hadis.push({k:e.k, b:e.b, h:e.h, where:'arabic'});
       });
-    });
+    } else {
+      // Ўзбекча (кирилл↔лотин), сўз-чегарали — тайёр калитлар бўйича
+      SIDX.books.forEach(e=>{ if(firstMatch(e.n, qNorm)!==-1) kitob.push({k:e.k}); });
+      SIDX.bobs.forEach(e=>{
+        const inN=firstMatch(e.n,qNorm)!==-1, inI=e.i&&firstMatch(e.i,qNorm)!==-1, inM=e.m&&firstMatch(e.m,qNorm)!==-1;
+        if(inN||inI||inM) bob.push({k:e.k, b:e.b, where: inN?'nomi':inI?'izoh':'muallaqot'});
+      });
+      SIDX.hadis.forEach(e=>{
+        const inM=firstMatch(e.m,qNorm)!==-1, inR=e.r&&firstMatch(e.r,qNorm)!==-1, inI=e.i&&firstMatch(e.i,qNorm)!==-1;
+        if(inM||inR||inI) hadis.push({k:e.k, b:e.b, h:e.h, where: inM?'matn':inR?'rowi':'izoh'});
+      });
+    }
 
-    _searchState = { query:trimmed, kitob, bob, hadis, hadisShown: Math.min(SEARCH_HADIS_PAGE, hadis.length), filter:'all', isArab };
+    _searchState = { query:trimmed, qNorm, kitob, bob, hadis, hadisShown: Math.min(SEARCH_HADIS_PAGE, hadis.length), filter:'all', isArab };
     this._renderSearch();
     kView.style.display='none';
     sView.style.display='';
@@ -1206,15 +1306,14 @@ const App = {
     const tabs = [['all','Ҳаммаси',total],['kitob','Китоблар',s.kitob.length],['bob','Боблар',s.bob.length],['hadis','Ҳадислар',s.hadis.length]];
     filtersEl.innerHTML = tabs.filter(([k,,n])=>k==='all'||n).map(([k,lbl,n])=>
       `<button class="search-filter-tab${f===k?' active':''}" onclick="App.setFilter('${k}')">${lbl} ${n}</button>`).join('');
-    const re = new RegExp(escRegex(s.query), 'gi');
-    const hl = t => escHtml(t).replace(re, m=>`<mark>${m}</mark>`);
-    const reArab = s.isArab ? new RegExp(escRegex(normArab(s.query)), 'g') : null;
-    const hlArab = t => escHtml(t).replace(reArab, m=>`<mark>${m}</mark>`);
+    // Highlight нормаллашган сўров устида амалга ошади, лекин позиция-харита орқали
+    // АСЛ матн ҳарфларига боғланади (renderSnippet ичида).
+    const q = s.qNorm;
     let html='';
 
     if(s.kitob.length && (f==='all'||f==='kitob')){
       html += `<div class="result-section"><div class="result-section-header">Китоблар (${s.kitob.length})</div>`;
-      html += s.kitob.map(({k})=>`<div class="result-item" role="button" tabindex="0" onclick="App.openFromSearch('k',${k.id})"><div class="result-label">${k.id}-китоб</div><div class="result-text">${hl(k.nomi)}</div></div>`).join('');
+      html += s.kitob.map(({k})=>`<div class="result-item" role="button" tabindex="0" onclick="App.openFromSearch('k',${k.id})"><div class="result-label">${k.id}-китоб</div><div class="result-text">${renderSnippet(k.nomi, q, 'uz', 9999)}</div></div>`).join('');
       html += '</div>';
     }
 
@@ -1223,7 +1322,7 @@ const App = {
       html += s.bob.map(({k,b,where})=>{
         const txt = where==='nomi' ? b.nomi : where==='izoh' ? b.izoh : b.muallaqot;
         const lbl = where==='izoh' ? 'Изоҳда' : where==='muallaqot' ? 'Муаллақотда' : '';
-        return `<div class="result-item" role="button" tabindex="0" onclick="App.openFromSearch('b',${k.id},${b.id})"><div class="result-label">${escHtml(k.nomi)} › ${b.id}-боб${lbl?' <span class="result-where">'+lbl+'</span>':''}</div><div class="result-text">${hl(snippet(txt, s.query))}</div></div>`;
+        return `<div class="result-item" role="button" tabindex="0" onclick="App.openFromSearch('b',${k.id},${b.id})"><div class="result-label">${escHtml(k.nomi)} › ${b.id}-боб${lbl?' <span class="result-where">'+lbl+'</span>':''}</div><div class="result-text">${renderSnippet(txt, q, 'uz')}</div></div>`;
       }).join('');
       html += '</div>';
     }
@@ -1233,13 +1332,13 @@ const App = {
       html += `<div class="result-section"><div class="result-section-header">Ҳадислар (${s.hadis.length})</div>`;
       html += shown.map(({k,b,h,where})=>{
         if(where==='arabic'){
-          const arabN = ARAB_NORM && ARAB_NORM[h.id] || '';
-          const normQ = normArab(s.query);
-          return `<div class="result-item" role="button" tabindex="0" onclick="App.openFromSearch('h',${k.id},${b.id},${h.id})"><div class="result-label">${escHtml(k.nomi)} › ${b.id}-боб › ${h.id}-ҳадис <span class="result-where">Арабча</span></div><div class="result-text arab" dir="rtl">${hlArab(snippet(arabN, normQ))}</div></div>`;
+          // Highlight ҳаракатли АСЛ матнга тушади (нормаллашган эмас) — позиция-харита орқали
+          const arabOrig = (ARAB && ARAB[h.id]) || (ARAB_NORM && ARAB_NORM[h.id]) || '';
+          return `<div class="result-item" role="button" tabindex="0" onclick="App.openFromSearch('h',${k.id},${b.id},${h.id})"><div class="result-label">${escHtml(k.nomi)} › ${b.id}-боб › ${h.id}-ҳадис <span class="result-where">Арабча</span></div><div class="result-text arab" dir="rtl">${renderSnippet(arabOrig, q, 'ar')}</div></div>`;
         }
         const txt = where==='matn' ? h.matn : where==='rowi' ? h.rowi : h.izoh;
         const lbl = where==='rowi' ? 'Ровийда' : where==='izoh' ? 'Изоҳда' : '';
-        return `<div class="result-item" role="button" tabindex="0" onclick="App.openFromSearch('h',${k.id},${b.id},${h.id})"><div class="result-label">${escHtml(k.nomi)} › ${b.id}-боб › ${h.id}-ҳадис${lbl?' <span class="result-where">'+lbl+'</span>':''}</div><div class="result-text">${hl(snippet(txt, s.query))}</div></div>`;
+        return `<div class="result-item" role="button" tabindex="0" onclick="App.openFromSearch('h',${k.id},${b.id},${h.id})"><div class="result-label">${escHtml(k.nomi)} › ${b.id}-боб › ${h.id}-ҳадис${lbl?' <span class="result-where">'+lbl+'</span>':''}</div><div class="result-text">${renderSnippet(txt, q, 'uz')}</div></div>`;
       }).join('');
       if(s.hadisShown < s.hadis.length){
         html += `<button class="result-more-btn" onclick="App.showMoreHadis()">Яна кўрсатиш (${s.hadis.length - s.hadisShown} та қолди)</button>`;
@@ -1372,6 +1471,9 @@ window.addEventListener('hashchange', applyHash);
 fullDataPromise = fetch('data.json')
   .then(r => { if (!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
   .then(d => { DB = d; isFullDB = true; return d; });
+
+// Қидирув индексини фонда олдиндан қурамиз — биринчи қидирувда jank бўлмайди.
+fullDataPromise.then(()=>{ setTimeout(()=>{ try{ buildSearchIndex(); }catch(e){} }, 0); });
 
 indexPromise = fetch('index.json')
   .then(r => { if (!r.ok) throw new Error('HTTP '+r.status); return r.json(); })

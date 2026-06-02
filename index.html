@@ -596,7 +596,7 @@ const App = {
       document.getElementById('searchView').style.display='none';
       document.getElementById('kitoblarView').style.display='';
       _searchState = { query:'', kitob:[], bob:[], hadis:[], hadisShown:0 };
-      renderRecentSearches();
+      hideRecentSearches();
       setHash('');
     }
     showPage('pgHome');
@@ -1050,7 +1050,7 @@ const App = {
       sView.style.display='none';
       kView.style.display='';
       _searchState = { query:'', kitob:[], bob:[], hadis:[], hadisShown:0 };
-      renderRecentSearches();
+      showRecentSearches();
       return;
     }
 
@@ -1210,16 +1210,23 @@ function saveRecentSearch(q){
   lsSet(RECENT_KEY, JSON.stringify(list));
   renderRecentSearches();
 }
-function clearRecentSearches(){ lsDel(RECENT_KEY); renderRecentSearches(); }
+function clearRecentSearches(){ lsDel(RECENT_KEY); renderRecentSearches(); hideRecentSearches(); searchInput && searchInput.focus(); }
 function renderRecentSearches(){
   const el = document.getElementById('recentSearches');
   if(!el) return;
   const list = getRecentSearches();
-  if(!list.length){ el.hidden = true; el.innerHTML=''; return; }
-  el.hidden = false;
-  el.innerHTML = `<div class="recent-head"><span class="recent-label">Сўнгги қидирувлар</span><button class="recent-clear" onclick="clearRecentSearches()">Тозалаш</button></div>`+
-    `<div class="recent-chips">`+list.map((q,i)=>`<button class="recent-chip" onclick="runRecentSearch(${i})">${escHtml(q)}</button>`).join('')+`</div>`;
+  el.innerHTML = list.length ? (`<div class="recent-head"><span class="recent-label">Сўнгги қидирувлар</span><button class="recent-clear" onclick="clearRecentSearches()">Тозалаш</button></div>`+
+    `<div class="recent-chips">`+list.map((q,i)=>`<button class="recent-chip" onclick="runRecentSearch(${i})">${escHtml(q)}</button>`).join('')+`</div>`) : '';
 }
+// Сўнгги қидирувлар фақат қидирув майдони фокусланганда ва бўш бўлганда кўринади
+function showRecentSearches(){
+  const el = document.getElementById('recentSearches');
+  if(!el) return;
+  if(document.activeElement===searchInput && !searchInput.value && getRecentSearches().length){
+    renderRecentSearches(); el.hidden = false;
+  } else { el.hidden = true; }
+}
+function hideRecentSearches(){ const el = document.getElementById('recentSearches'); if(el) el.hidden = true; }
 function runRecentSearch(i){
   const q = getRecentSearches()[i];
   if(q==null) return;
@@ -1242,8 +1249,11 @@ let sT;
 const searchInput = document.getElementById('searchInput');
 const searchWrap = document.querySelector('.home-search .search-wrap');
 function updateSearchUI(){ searchWrap.classList.toggle('has-text', !!searchInput.value); }
+searchInput.addEventListener('focus',showRecentSearches);
+searchInput.addEventListener('blur',()=>setTimeout(hideRecentSearches,180));
 searchInput.addEventListener('input',e=>{
   updateSearchUI();
+  if(e.target.value) hideRecentSearches();          // ёзаётганда яшир
   clearTimeout(sT); sT=setTimeout(()=>App.doSearch(e.target.value),300);
 });
 searchInput.addEventListener('keydown',e=>{
@@ -1254,10 +1264,9 @@ document.getElementById('searchClear').addEventListener('click',()=>{
   updateSearchUI();
   clearTimeout(sT);
   App.doSearch('');
-  renderRecentSearches();
   searchInput.focus();
+  showRecentSearches();
 });
-renderRecentSearches();
 let _lastScrollY = 0, _scrollTicking = false;
 function _handleFabVisibility(scrollTop){
   if(_scrollTicking) return;

@@ -108,6 +108,9 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 /* Hadis full page */
 .hadis-text{padding:32px 14px 24px;margin:0 -6px 28px;line-height:1.95;color:var(--text);font-size:var(--hadis-fs,17px);font-family:'Merriweather',serif;font-weight:300;letter-spacing:.005em}
 .hadis-izoh{padding:0 12px;line-height:1.85;color:var(--text-dim);font-size:calc(var(--hadis-fs,17px) - 1px);font-family:'Merriweather',serif;font-weight:300;margin-top:18px}
+.hadis-fn{margin-top:22px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:9px}
+.hadis-fn-item{font-size:calc(var(--hadis-fs,17px) - 3px);line-height:1.7;color:var(--text-muted);font-family:'Merriweather',serif;font-weight:300;text-indent:-14px;padding-left:14px}
+.hadis-fn-star{color:var(--sage);font-weight:700;margin-right:3px}
 .hadis-num-inline{display:block;text-align:center;font-weight:600;color:var(--sage-deep);letter-spacing:.18em;margin-bottom:28px;font-family:'Merriweather',serif;font-size:13px;text-transform:uppercase;position:relative}
 .hadis-num-inline::before,.hadis-num-inline::after{content:'';position:absolute;top:50%;width:50px;height:1px;opacity:.7}
 .hadis-num-inline::before{left:50%;margin-left:-110px;background:linear-gradient(90deg,transparent,var(--border))}
@@ -381,6 +384,16 @@ function linkifyRefs(html){
     if(!target) return match;
     return `<a class="hadis-ref" href="#k/${target.kid}/b/${target.bid}/h/${num}" onclick="event.stopPropagation()">${num}${sep}${word}${suffix}</a>`;
   });
+}
+
+// Матн охиридаги "* ..." изоҳ сатрларини асосий матндан ажратиш
+function splitFootnotes(matn){
+  const paras = matn.split('\n\n');
+  const notes = [];
+  while(paras.length > 1 && /^\*\s/.test(paras[paras.length-1].trim())){
+    notes.unshift(paras.pop().trim());
+  }
+  return { body: paras.join('\n\n'), notes };
 }
 
 function showPage(id, scrollToId){
@@ -657,7 +670,12 @@ const App = {
     }
     const h=getH(kid,bid,hid);
     if(!h) return;
-    document.getElementById('hadisText').innerHTML=`<span class="hadis-num-inline">${h.id}-ҲАДИС</span> `+linkifyRefs(h.matn.replace(/\n\n/g,'<br>').replace(/\n/g,'<br>'));
+    const _fn=splitFootnotes(h.matn);
+    let _html=`<span class="hadis-num-inline">${h.id}-ҲАДИС</span> `+linkifyRefs(_fn.body.replace(/\n\n/g,'<br>').replace(/\n/g,'<br>'));
+    if(_fn.notes.length){
+      _html+='<div class="hadis-fn">'+_fn.notes.map(n=>`<div class="hadis-fn-item"><span class="hadis-fn-star">*</span>${linkifyRefs(n.replace(/^\*\s*/,'').replace(/\n/g,' '))}</div>`).join('')+'</div>';
+    }
+    document.getElementById('hadisText').innerHTML=_html;
     const narratorEl=document.getElementById('hadisNarrator');
     if(h.rowi){narratorEl.innerHTML='<strong>Ривояти:</strong> '+h.rowi;narratorEl.style.display='';}
     else{narratorEl.style.display='none';}

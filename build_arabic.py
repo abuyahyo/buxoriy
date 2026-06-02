@@ -120,19 +120,72 @@ for win, thr in ((20, 24), (30, 22), (40, 20)):
         if bs >= thr and best >= 0:
             omap[i] = best
 
-# our_id -> тоза арабча. Тасдиқлаш: иснод (нарратор занжири) мослиги.
-# Танчи (матн) тиклашда шовқин бўлгани учун тўлиқ матн эмас, балки иснод боши
-# (биринчи ~50 скелет белги) ўхшашлиги ишлатилади: >=0.85 бўлса — ўша ҳадис.
-# Бу иснод занжири фарқли (нотўғри) мосликларни четлайди.
-mapping = {}
+# Тасдиқлаш: иснод (нарратор занжири) мослиги. Танчи (матн) тиклашда шовқин
+# бўлгани учун тўлиқ матн эмас, балки иснод боши (~50 скелет белги) ишлатилади.
+def isnad_ratio(i, fj):
+    return difflib.SequenceMatcher(None, our[i][1][:50], fil[fj][2][:50]).ratio()
+
+
+# our_index -> fil_index (фақат иснод>=0.85 ва LCP>=18 бўлганлар)
+final = {}
+seen_oid = set()
 for i, fj in omap.items():
-    oid, os = our[i]
-    if oid in mapping or lcp(os, fil[fj][2]) < 18:
+    oid = our[i][0]
+    if oid in seen_oid or lcp(our[i][1], fil[fj][2]) < 18:
         continue
-    fs = fil[fj][2]
-    isnad = difflib.SequenceMatcher(None, os[:50], fs[:50]).ratio()
-    if isnad >= 0.85:
+    if isnad_ratio(i, fj) >= 0.85:
+        final[i] = fj
+        seen_oid.add(oid)
+
+# 3-босқич: ТИКЛАШ — мос топилмаган ҳадислар учун манбадаги ишлатилмаган
+# ҳадислардан, ишончли мослик якорлари асосида позицияни интерполяция қилиб,
+# иснод>=0.88 шарти билан қидириш (бир неча марта — якорлар ўсади).
+for _ in range(4):
+    used = set(final.values())
+    anchors = sorted(final)
+    if not anchors:
+        break
+    added = 0
+    for i, (oid, os) in enumerate(our):
+        if i in final or oid in seen_oid or len(os) < 15:
+            continue
+        p = bisect.bisect_left(anchors, i)
+        if p == 0:
+            e = final[anchors[0]] + (i - anchors[0])
+        elif p >= len(anchors):
+            e = final[anchors[-1]] + (i - anchors[-1])
+        else:
+            a, b = anchors[p - 1], anchors[p]
+            e = round(final[a] + (final[b] - final[a]) * (i - a) / (b - a))
+        best, br = -1, 0.0
+        for j in range(max(0, e - 45), min(N, e + 46)):
+            if j in used:
+                continue
+            r = difflib.SequenceMatcher(None, os[:50], fil[j][2][:50]).ratio()
+            if r > br:
+                br, best = r, j
+        if br >= 0.88 and best >= 0:
+            final[i] = best
+            used.add(best)
+            seen_oid.add(oid)
+            added += 1
+    if not added:
+        break
+
+mapping = {}
+for i, fj in final.items():
+    oid = our[i][0]
+    if oid not in mapping:
         mapping[oid] = fil[fj][1]
+
+# Глобал такрорий рақамлар (бир id икки бобда, турли мазмун) — арабча рақам
+# бўйича сақлангани учун бир нусхада нотўғри чиқар эди; уларни чиқариб ташлаймиз.
+from collections import Counter
+db = json.load(open('data.json'))
+idc = Counter(h['id'] for b in db for bo in b['boblar'] for h in bo['hadislar'])
+dups = [i for i, c in idc.items() if c > 1]
+for d in dups:
+    mapping.pop(d, None)
 
 with open(OUT, 'w', encoding='utf-8') as f:
     json.dump(mapping, f, ensure_ascii=False, separators=(',', ':'))

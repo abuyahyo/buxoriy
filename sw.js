@@ -3,7 +3,7 @@
 // On version bump the browser sees a new sw.js, installs it, and the page
 // shows an "Update available" banner.
 
-const CACHE = 'buxoriy-v1780377664';
+const CACHE = 'buxoriy-v1780378182';
 
 const ASSETS = [
   './',

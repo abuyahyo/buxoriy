@@ -237,6 +237,10 @@ def finalize_bob():
 
     nomi_raw = cur_bob['_nomi_raw']
     title = re_bob_prefix.sub('', nomi_raw).strip()
+    # OCR garble: бошида қолган "Зn-БОБ." (Кирилл «З»=3, «О»=0) ёки охирида
+    # такрорланган "N-БОБ." маркерини олиб ташлаш
+    title = re.sub(r'^[\dЗзОо]+\s*-\s*[Бб][Оо][Бб]\s*\.?\s*', '', title)
+    title = re.sub(r'\s*\d+\s*-\s*[Бб][Оо][Бб]\s*\.?\s*$', '', title)
     title = re.sub(r'[ \t]+', ' ', title)
     title = re.sub(r'\[(\d+)\]', title_repl, title).strip()
     cur_bob['_title'] = title

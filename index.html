@@ -110,6 +110,11 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 .hadis-text{padding:32px 14px 24px;margin:0 -6px 28px;line-height:1.95;color:var(--text);font-size:var(--hadis-fs,17px);font-family:'Merriweather',serif;font-weight:300;letter-spacing:.005em}
 .hadis-izoh{padding:0 12px;line-height:1.85;color:var(--text-dim);font-size:calc(var(--hadis-fs,17px) - 1px);font-family:'Merriweather',serif;font-weight:300;margin-top:18px}
 .hadis-arab{direction:rtl;text-align:right;font-family:'Amiri','Noto Naskh Arabic',serif;font-size:calc(var(--hadis-fs,17px) + 8px);line-height:2.1;color:var(--text);padding:22px 18px;margin:4px -6px 24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.lang-toggle{display:flex;width:fit-content;margin:0 auto 22px;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:3px;gap:2px}
+.lang-toggle button{border:none;background:transparent;color:var(--text-muted);padding:7px 20px;border-radius:99px;font-family:'Roboto',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.lang-toggle button.active{background:var(--sage);color:#fff}
+.lang-toggle button:not(.active):hover{color:var(--sage-deep)}
+.lang-toggle button:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
 .hadis-fn{margin-top:22px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:9px}
 .hadis-fn-item{font-size:calc(var(--hadis-fs,17px) - 3px);line-height:1.7;color:var(--text-muted);font-family:'Merriweather',serif;font-weight:300;text-indent:-14px;padding-left:14px}
 .hadis-fn-star{color:var(--sage);font-weight:700;margin-right:3px}
@@ -298,10 +303,13 @@ body.fabs-hidden .install-banner{transform:translateY(120%);opacity:0;pointer-ev
 <div id="hadisPage" class="page">
   <div id="bcHadis" class="breadcrumb"></div>
   <div style="max-width:720px;margin:0 auto;padding:24px 14px 160px">
+    <div class="lang-toggle" id="langToggle" role="group" aria-label="Матн тили" style="display:none">
+      <button type="button" id="langUz" class="active" onclick="App.setLang('uz')">Ўзбекча</button>
+      <button type="button" id="langAr" onclick="App.setLang('ar')">Арабча</button>
+    </div>
     <div class="hadis-text" id="hadisText"></div>
     <div class="hadis-arab" id="hadisArab" lang="ar" dir="rtl" style="display:none"></div>
     <div class="hadis-toolbar">
-      <button class="hadis-tb-btn" id="arabBtn" onclick="App.toggleArab()" aria-label="Арабча матнни кўрсатиш" style="display:none">۩ Арабча</button>
       <button class="hadis-tb-btn" id="izohBtn" onclick="App.toggleIzoh()" aria-label="Изоҳни кўрсатиш" style="display:none">ⓘ Изоҳ</button>
       <div class="hadis-tb-group" role="group" aria-label="Шрифт ўлчами">
         <button class="hadis-tb-btn" onclick="App.adjustFontSize(-1)" aria-label="Шрифтни кичрайтириш">A−</button>
@@ -697,12 +705,14 @@ const App = {
     }
     document.getElementById('hadisText').innerHTML=_html;
     // арабча матн блокини ресет қилиш (тугма доим кўринади)
+    // тил режимини «Ўзбекча»га қайтариш
     const arabEl=document.getElementById('hadisArab');
     arabEl.style.display='none'; arabEl.textContent='';
-    const arabBtn=document.getElementById('arabBtn');
-    arabBtn.classList.remove('active');
-    // юкланмагунча тугма кўринади; юклангач — фақат арабчаси бор ҳадисда
-    arabBtn.style.display=(ARABIC_ENABLED && !(ARAB && !ARAB[h.id]))?'':'none';
+    document.getElementById('hadisText').style.display='';
+    document.getElementById('langUz').classList.add('active');
+    document.getElementById('langAr').classList.remove('active');
+    // переключатель: юкланмагунча кўринади; юклангач — фақат арабчаси бор ҳадисда
+    document.getElementById('langToggle').style.display=(ARABIC_ENABLED && !(ARAB && !ARAB[h.id]))?'':'none';
     const narratorEl=document.getElementById('hadisNarrator');
     if(h.rowi){narratorEl.innerHTML='<strong>Ривояти:</strong> '+h.rowi;narratorEl.style.display='';}
     else{narratorEl.style.display='none';}
@@ -747,23 +757,30 @@ const App = {
     el.style.display=show?'block':'none';
     btn.classList.toggle('active', show);
   },
-  toggleArab(){
-    const el=document.getElementById('hadisArab');
-    const btn=document.getElementById('arabBtn');
-    if(el.style.display!=='none'){ el.style.display='none'; btn.classList.remove('active'); return; }
+  setLang(lang){
+    const uzBtn=document.getElementById('langUz'), arBtn=document.getElementById('langAr');
+    const txt=document.getElementById('hadisText'), arab=document.getElementById('hadisArab');
+    if(lang==='uz'){
+      txt.style.display=''; arab.style.display='none';
+      uzBtn.classList.add('active'); arBtn.classList.remove('active');
+      return;
+    }
     const hid=ST.hid;
-    btn.disabled=true;
+    arBtn.disabled=true;
     loadArab().then(A=>{
-      btn.disabled=false;
-      if(ST.hid!==hid) return;              // фойдаланувчи бошқа ҳадисга ўтган
+      arBtn.disabled=false;
+      if(ST.hid!==hid) return;                 // фойдаланувчи бошқа ҳадисга ўтган
       const t=A[hid];
-      el.textContent = t || 'Бу ҳадиснинг арабча матни мавжуд эмас.';
-      el.style.display='block';
-      btn.classList.add('active');
+      if(!t){                                   // арабчаси йўқ — ўзбекча қолади
+        document.getElementById('langToggle').style.display='none';
+        this.setLang('uz'); return;
+      }
+      arab.textContent=t;
+      txt.style.display='none'; arab.style.display='block';
+      arBtn.classList.add('active'); uzBtn.classList.remove('active');
     }).catch(()=>{
-      btn.disabled=false;
-      el.textContent='Арабча матнни юклаб бўлмади.';
-      el.style.display='block';
+      arBtn.disabled=false;
+      uzBtn.classList.add('active'); arBtn.classList.remove('active');
     });
   },
   adjustFontSize(delta){

@@ -581,6 +581,44 @@ for b in books:
                     if ch:
                         _xref += 1
 
+# «X китоби, N-бобга қаранг» — ўша боб изоҳини (атама таърифини) шу ерга киритиш
+_BOOKREF = re.compile(
+    r'^\*\s*«?([^»\n]*?китоби)»?,?\s*(\d+)\s*-\s*боб(?:га)?\s*қаранг\.?\s*$')
+_BOOKIDX = {re.sub(r'[*\s]', '', b['nomi']).lower(): b for b in books}
+
+
+def _resolve_book_refs(text):
+    out, changed = [], False
+    for p in text.split('\n\n'):
+        m = _BOOKREF.match(p.strip())
+        if m:
+            bk = _BOOKIDX.get(re.sub(r'[*\s]', '', m.group(1)).lower())
+            n = int(m.group(2))
+            if bk and 1 <= n <= len(bk['boblar']):
+                tb = bk['boblar'][n - 1]
+                d = tb.get('izoh') or tb.get('muallaqot')
+                if d:
+                    out.append('* ' + d)
+                    changed = True
+                    continue
+        out.append(p)
+    return '\n\n'.join(out), changed
+
+
+for b in books:
+    for bo in b['boblar']:
+        for fld in ('muallaqot', 'izoh'):
+            if bo.get(fld) and 'бобга қаранг' in bo[fld]:
+                bo[fld], ch = _resolve_book_refs(bo[fld])
+                if ch:
+                    _xref += 1
+        for h in bo['hadislar']:
+            for fld in ('matn', 'izoh'):
+                if h.get(fld) and 'бобга қаранг' in h[fld]:
+                    h[fld], ch = _resolve_book_refs(h[fld])
+                    if ch:
+                        _xref += 1
+
 nb = len(books)
 nbob = sum(len(b['boblar']) for b in books)
 nh = sum(len(bo['hadislar']) for b in books for bo in b['boblar'])

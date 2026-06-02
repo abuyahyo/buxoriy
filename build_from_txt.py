@@ -424,6 +424,9 @@ while k < M:
         cur_hadis['lines'].append(ln)
     elif cur_bob is not None and not skip_kirish:
         cur_bob['_pre'].append(ln)
+    elif skip_kirish and cur_book is not None and s.startswith('* '):
+        # [Kirish] даги «* Атама – ...» — китоб сарлавҳаси изоҳи
+        cur_book.setdefault('_kirish', []).append(s)
     # акс ҳолда (kirish ёки боб ташқариси) — ташлаб юборилади
 
     k += 1
@@ -487,6 +490,12 @@ def clean_izoh(s):
 
 for b in books:
     b['nomi'] = final_clean(b['nomi'])
+    kir = b.pop('_kirish', None)
+    if kir:
+        # «* Атама – ...» — китоб сарлавҳаси изоҳи (юлдузчасиз)
+        izoh = final_clean('\n\n'.join(re.sub(r'^\*\s*', '', x) for x in kir))
+        if izoh:
+            b['izoh'] = izoh
     for bo in b['boblar']:
         bo['nomi'] = final_clean(bo['nomi'])
         if 'muallaqot' in bo:

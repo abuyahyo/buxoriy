@@ -16,6 +16,8 @@ with open('data.json', 'r', encoding='utf-8') as f:
 idx = []
 for k in db:
     book = {'id': k['id'], 'nomi': k['nomi'], 'boblar': []}
+    if k.get('izoh'):
+        book['izoh'] = k['izoh']
     for b in k['boblar']:
         bob = {
             'id': b['id'],

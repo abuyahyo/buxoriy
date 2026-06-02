@@ -16,8 +16,13 @@ const end = html.indexOf('function isArabicQuery');
 if (start < 0 || end < 0) { console.error('FATAL: toolkit block not found'); process.exit(1); }
 const block = html.slice(start, end);
 
-const src = escHtmlSrc + '\n' + block + '\n' +
-  '({normUz,normArab,buildNormMap,firstMatch,allMatches,renderSnippet,normArabKeep,_hasHarakat});';
+// bobNomi + fmtBobTitle (боб номи дисплей форматлаш) — қидирув натижасида ишлатилади
+const fmtStart = html.indexOf('function fmtBobTitle');
+const bobEnd = html.indexOf('\n}', html.indexOf('function bobNomi')) + 2;
+const bobBlock = html.slice(fmtStart, bobEnd);
+
+const src = escHtmlSrc + '\n' + block + '\n' + bobBlock + '\n' +
+  '({normUz,normArab,buildNormMap,firstMatch,allMatches,renderSnippet,normArabKeep,_hasHarakat,bobNomi});';
 const F = vm.runInNewContext(src, {});
 
 let pass = 0, fail = 0;
@@ -109,6 +114,22 @@ section('8. XSS хавфсизлиги');
   ok('тег escape қилинди', out.includes('&lt;script&gt;'), out.slice(0, 60));
   ok('хом <script> йўқ', !out.includes('<script>'));
   ok('mark тўғри ишлайди', out.includes('<mark>ҳаққ</mark>'));
+}
+
+// 9. Боб номи — бузуқ касе дисплейда нормаллаштирилади
+section('9. Боб номи дисплей нормаллаштириш (bobNomi)');
+{
+  const { bobNomi } = F;
+  const raw = '56-БОБ. АҲЛу оилаНИНГ РЎЗА пайтиДАГИ ҳАҚқИ хусусида';
+  const disp = bobNomi(raw);
+  ok('касе нормаллаштирилди (бузуқ «АҲЛу оилаНИНГ» йўқ)', !/[а-яёўғҳқ][А-ЯЁЎҒҲ]/.test(disp.replace(/^\d+-БОБ/, '')), disp);
+  ok('сарлавҳа жумла-боши катта', /^56-БОБ\. А/.test(disp), disp);
+  // Хом индекс мослиги + дисплей highlight
+  const matched = firstMatch(normUz(raw), normUz('ҳаққ')) !== -1;
+  ok('хом индексда «ҳаққ» топилади', matched);
+  const out = renderSnippet(disp, normUz('ҳаққ'), 'uz', 9999);
+  ok('форматланган матнда «ҳаққ» ажратилди', out.includes('<mark>ҳаққ</mark>'), out);
+  ok('форматланган матн тоза кўринади', out.includes('Аҳлу') && out.includes('хусусида'), out);
 }
 
 console.log('\n──────────────────────────────');

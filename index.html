@@ -386,14 +386,13 @@ function linkifyRefs(html){
   });
 }
 
-// Матн охиридаги "* ..." изоҳ сатрларини асосий матндан ажратиш
+// Матндаги "* ..." изоҳ параграфларини (жойидан қатъи назар) асосий матндан ажратиш
 function splitFootnotes(matn){
-  const paras = matn.split('\n\n');
-  const notes = [];
-  while(paras.length > 1 && /^\*\s/.test(paras[paras.length-1].trim())){
-    notes.unshift(paras.pop().trim());
-  }
-  return { body: paras.join('\n\n'), notes };
+  const body = [], notes = [];
+  matn.split('\n\n').forEach(p => {
+    (/^\*\s/.test(p.trim()) ? notes : body).push(p.trim());
+  });
+  return { body: body.join('\n\n'), notes };
 }
 
 function showPage(id, scrollToId){

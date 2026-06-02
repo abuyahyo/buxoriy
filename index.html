@@ -16,6 +16,7 @@
 <link rel="preload" href="index.json" as="fetch" crossorigin="anonymous">
 <link rel="prefetch" href="data.json" as="fetch" crossorigin="anonymous">
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* SOFT MEDITATIVE — warm cream + sage + muted gold */
 :root{
@@ -108,6 +109,7 @@ body{background:var(--bg);color:var(--text);font-family:'Roboto',system-ui,sans-
 /* Hadis full page */
 .hadis-text{padding:32px 14px 24px;margin:0 -6px 28px;line-height:1.95;color:var(--text);font-size:var(--hadis-fs,17px);font-family:'Merriweather',serif;font-weight:300;letter-spacing:.005em}
 .hadis-izoh{padding:0 12px;line-height:1.85;color:var(--text-dim);font-size:calc(var(--hadis-fs,17px) - 1px);font-family:'Merriweather',serif;font-weight:300;margin-top:18px}
+.hadis-arab{direction:rtl;text-align:right;font-family:'Amiri','Noto Naskh Arabic',serif;font-size:calc(var(--hadis-fs,17px) + 8px);line-height:2.1;color:var(--text);padding:22px 18px;margin:4px -6px 24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
 .hadis-fn{margin-top:22px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:9px}
 .hadis-fn-item{font-size:calc(var(--hadis-fs,17px) - 3px);line-height:1.7;color:var(--text-muted);font-family:'Merriweather',serif;font-weight:300;text-indent:-14px;padding-left:14px}
 .hadis-fn-star{color:var(--sage);font-weight:700;margin-right:3px}
@@ -297,7 +299,9 @@ body.fabs-hidden .install-banner{transform:translateY(120%);opacity:0;pointer-ev
   <div id="bcHadis" class="breadcrumb"></div>
   <div style="max-width:720px;margin:0 auto;padding:24px 14px 160px">
     <div class="hadis-text" id="hadisText"></div>
+    <div class="hadis-arab" id="hadisArab" lang="ar" dir="rtl" style="display:none"></div>
     <div class="hadis-toolbar">
+      <button class="hadis-tb-btn" id="arabBtn" onclick="App.toggleArab()" aria-label="Арабча матнни кўрсатиш" style="display:none">۩ Арабча</button>
       <button class="hadis-tb-btn" id="izohBtn" onclick="App.toggleIzoh()" aria-label="Изоҳни кўрсатиш" style="display:none">ⓘ Изоҳ</button>
       <div class="hadis-tb-group" role="group" aria-label="Шрифт ўлчами">
         <button class="hadis-tb-btn" onclick="App.adjustFontSize(-1)" aria-label="Шрифтни кичрайтириш">A−</button>
@@ -385,6 +389,17 @@ function linkifyRefs(html){
     if(!target) return match;
     return `<a class="hadis-ref" href="#k/${target.kid}/b/${target.bid}/h/${num}" onclick="event.stopPropagation()">${num}${sep}${word}${suffix}</a>`;
   });
+}
+
+// Арабча матн (arabic.json) — фақат «Арабча» тугмаси босилганда юкланади
+let ARAB = null, arabPromise = null;
+function loadArab(){
+  if(ARAB) return Promise.resolve(ARAB);
+  if(!arabPromise) arabPromise = fetch('arabic.json')
+    .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(d=>{ ARAB=d; return d; })
+    .catch(e=>{ arabPromise=null; throw e; });
+  return arabPromise;
 }
 
 // Матндаги "* ..." изоҳ параграфларини (жойидан қатъи назар) асосий матндан ажратиш
@@ -676,6 +691,11 @@ const App = {
       _html+='<div class="hadis-fn">'+_fn.notes.map(n=>`<div class="hadis-fn-item"><span class="hadis-fn-star">*</span>${linkifyRefs(n.replace(/^\*\s*/,'').replace(/\n/g,' '))}</div>`).join('')+'</div>';
     }
     document.getElementById('hadisText').innerHTML=_html;
+    // арабча матн блокини ресет қилиш (тугма доим кўринади)
+    const arabEl=document.getElementById('hadisArab');
+    arabEl.style.display='none'; arabEl.textContent='';
+    const arabBtn=document.getElementById('arabBtn');
+    arabBtn.classList.remove('active'); arabBtn.style.display='';
     const narratorEl=document.getElementById('hadisNarrator');
     if(h.rowi){narratorEl.innerHTML='<strong>Ривояти:</strong> '+h.rowi;narratorEl.style.display='';}
     else{narratorEl.style.display='none';}
@@ -719,6 +739,25 @@ const App = {
     const show=el.style.display==='none';
     el.style.display=show?'block':'none';
     btn.classList.toggle('active', show);
+  },
+  toggleArab(){
+    const el=document.getElementById('hadisArab');
+    const btn=document.getElementById('arabBtn');
+    if(el.style.display!=='none'){ el.style.display='none'; btn.classList.remove('active'); return; }
+    const hid=ST.hid;
+    btn.disabled=true;
+    loadArab().then(A=>{
+      btn.disabled=false;
+      if(ST.hid!==hid) return;              // фойдаланувчи бошқа ҳадисга ўтган
+      const t=A[hid];
+      el.textContent = t || 'Бу ҳадиснинг арабча матни мавжуд эмас.';
+      el.style.display='block';
+      btn.classList.add('active');
+    }).catch(()=>{
+      btn.disabled=false;
+      el.textContent='Арабча матнни юклаб бўлмади.';
+      el.style.display='block';
+    });
   },
   adjustFontSize(delta){
     const min=13,max=24;

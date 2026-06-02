@@ -349,13 +349,17 @@ let fullDataPromise = null;
 let ST = { page:'home', kid:null, bid:null, hid:null };
 const scrollPos = {};
 let lastHash = '';
-let th = localStorage.getItem('th') || 'dark';
-let fs = parseInt(localStorage.getItem('fs'),10) || 16;
+// localStorage хавфсиз ўровчилари (private mode / quota хатоликларидан ҳимоя)
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+let th = lsGet('th') || 'dark';
+let fs = parseInt(lsGet('fs'),10) || 16;
 document.documentElement.style.setProperty('--hadis-fs',fs+'px');
 
 function apTh(){
   document.documentElement.className=th;
-  localStorage.setItem('th',th);
+  lsSet('th',th);
   const fab=document.getElementById('fabTheme');
   if(fab) fab.textContent = th==='dark' ? '☀️' : '🌙';
 }
@@ -684,7 +688,7 @@ const App = {
       return;
     }
     const h=getH(kid,bid,hid);
-    if(!h) return;
+    if(!h){ App.openBob(kid,bid); return; }   // нотўғри ҳадис рақами — боб рўйхатига қайтамиз
     const _fn=splitFootnotes(h.matn);
     let _html=`<span class="hadis-num-inline">${h.id}-ҲАДИС</span> `+linkifyRefs(_fn.body.replace(/\n\n/g,'<br>').replace(/\n/g,'<br>'));
     if(_fn.notes.length){
@@ -763,7 +767,7 @@ const App = {
     const min=13,max=24;
     fs=Math.max(min,Math.min(max,fs+delta));
     document.documentElement.style.setProperty('--hadis-fs',fs+'px');
-    localStorage.setItem('fs',fs);
+    lsSet('fs',fs);
   },
   copyHadis(){
     const h=getH(ST.kid,ST.bid,ST.hid); if(!h) return;
@@ -1102,17 +1106,17 @@ const App = {
 
 // --- Сўнгги қидирувлар (localStorage) ---
 const RECENT_KEY = 'recent-searches', RECENT_MAX = 8;
-function getRecentSearches(){ try{ return JSON.parse(localStorage.getItem(RECENT_KEY)||'[]'); }catch(e){ return []; } }
+function getRecentSearches(){ try{ return JSON.parse(lsGet(RECENT_KEY)||'[]'); }catch(e){ return []; } }
 function saveRecentSearch(q){
   q = (q||'').trim();
   if(q.length < 2) return;
   let list = getRecentSearches().filter(x=>x.toLowerCase()!==q.toLowerCase());
   list.unshift(q);
   list = list.slice(0, RECENT_MAX);
-  try{ localStorage.setItem(RECENT_KEY, JSON.stringify(list)); }catch(e){}
+  lsSet(RECENT_KEY, JSON.stringify(list));
   renderRecentSearches();
 }
-function clearRecentSearches(){ try{ localStorage.removeItem(RECENT_KEY); }catch(e){} renderRecentSearches(); }
+function clearRecentSearches(){ lsDel(RECENT_KEY); renderRecentSearches(); }
 function renderRecentSearches(){
   const el = document.getElementById('recentSearches');
   if(!el) return;
@@ -1214,7 +1218,7 @@ indexPromise.catch(() => {/* data.json орқали тиклаш мумкин */
 let _swRegistration = null;
 let _swWaiting = null;
 function showSwBanner(){
-  if(localStorage.getItem('sw-dismissed-this-update') === _swCurrentBuild()) return;
+  if(lsGet('sw-dismissed-this-update') === _swCurrentBuild()) return;
   document.getElementById('updateBanner').classList.add('visible');
 }
 function _swCurrentBuild(){
@@ -1232,7 +1236,7 @@ function applySwUpdate(){
 function dismissSwUpdate(){
   document.getElementById('updateBanner').classList.remove('visible');
   // Бу версия учун қайта кўрсатмаслик
-  if(_swWaiting) localStorage.setItem('sw-dismissed-this-update', _swCurrentBuild());
+  if(_swWaiting) lsSet('sw-dismissed-this-update', _swCurrentBuild());
 }
 // PWA install banner
 const INSTALL_DISMISS_KEY = 'buxoriy_install_dismissed_at';
@@ -1242,7 +1246,7 @@ const installBanner = document.getElementById('install-banner');
 const installAction = document.getElementById('install-banner-action');
 const installClose = document.getElementById('install-banner-close');
 function isInstallDismissed(){
-  const t = Number(localStorage.getItem(INSTALL_DISMISS_KEY) || 0);
+  const t = Number(lsGet(INSTALL_DISMISS_KEY) || 0);
   return t && (Date.now() - t < INSTALL_DISMISS_TTL);
 }
 function isStandalone(){
@@ -1273,7 +1277,7 @@ installAction && installAction.addEventListener('click', async ()=>{
   deferredInstallPrompt = null;
 });
 installClose && installClose.addEventListener('click', ()=>{
-  localStorage.setItem(INSTALL_DISMISS_KEY, String(Date.now()));
+  lsSet(INSTALL_DISMISS_KEY, String(Date.now()));
   hideInstallBanner();
 });
 

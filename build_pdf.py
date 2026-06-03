@@ -22,7 +22,7 @@ import sys
 
 from fpdf import FPDF
 
-FONT_DIR = '/usr/share/fonts/truetype/freefont'
+FONT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts', 'Inter')
 OUT_DIR = 'pdf'
 SITE_URL = 'https://abuyahyo.github.io/buxoriy/'
 
@@ -78,28 +78,32 @@ class Book(FPDF):
         super().__init__(format='A4')
         self.set_margins(20, 18, 20)
         self.set_auto_page_break(True, margin=18)
-        self.add_font('serif', '', f'{FONT_DIR}/FreeSerif.ttf')
-        self.add_font('serif', 'B', f'{FONT_DIR}/FreeSerifBold.ttf')
-        self.add_font('serif', 'I', f'{FONT_DIR}/FreeSerifItalic.ttf')
-        self.add_font('serif', 'BI', f'{FONT_DIR}/FreeSerifBoldItalic.ttf')
+        self.add_font('ui', '', f'{FONT_DIR}/Inter-Regular.ttf')
+        self.add_font('ui', 'B', f'{FONT_DIR}/Inter-Bold.ttf')
+        self.add_font('ui', 'I', f'{FONT_DIR}/Inter-Italic.ttf')
+        self.add_font('ui', 'BI', f'{FONT_DIR}/Inter-BoldItalic.ttf')
         self.running_title = ''
 
     def footer(self):
         self.set_y(-13)
-        self.set_font('serif', 'I', 9)
+        self.set_font('ui', 'I', 9)
         self.set_text_color(140, 140, 140)
         self.cell(0, 8, str(self.page_no()), align='C')
 
     def header(self):
         if self.page_no() == 1 or not self.running_title:
             return
-        self.set_font('serif', 'I', 8)
-        self.set_text_color(160, 160, 160)
-        self.cell(0, 6, self.running_title, align='C')
-        self.ln(3)
-        self.set_draw_color(220, 220, 220)
-        self.line(self.l_margin + 30, self.get_y(), self.w - self.r_margin - 30, self.get_y())
-        self.ln(4)
+        self.set_y(10)
+        self.set_font('ui', 'I', 8.5)
+        self.set_text_color(165, 165, 165)
+        # Матн — катак y'ни кейинги сатрга суриб юборади (NEXT)
+        self.cell(0, 5, self.running_title, align='C',
+                  new_x="LMARGIN", new_y="NEXT")
+        # Чизиқ — матн остида
+        y = self.get_y() + 1.5
+        self.set_draw_color(225, 225, 225)
+        self.line(self.l_margin + 25, y, self.w - self.r_margin - 25, y)
+        self.set_y(y + 5)
         self.set_text_color(0, 0, 0)
 
 
@@ -111,7 +115,7 @@ MUTED = (130, 130, 130)
 def write_para(pdf, text, size, style='', color=(0, 0, 0), align='J',
                lh=1.55, space_after=2.0):
     """\\n\\n параграфларни ва \\n сатр кўчишларни ҳисобга олиб ёзади."""
-    pdf.set_font('serif', style, size)
+    pdf.set_font('ui', style, size)
     pdf.set_text_color(*color)
     line_h = size * lh * 0.3528  # pt → mm коэффициент
     paras = text.split('\n\n')
@@ -129,11 +133,11 @@ def render_book(pdf, k):
     pdf.add_page()
     # Китоб сарлавҳаси
     pdf.ln(6)
-    pdf.set_font('serif', 'B', 11)
+    pdf.set_font('ui', 'B', 11)
     pdf.set_text_color(*SAGE)
     pdf.cell(0, 7, f"{k['id']}-КИТОБ", align='C')
     pdf.ln(9)
-    pdf.set_font('serif', 'B', 19)
+    pdf.set_font('ui', 'B', 19)
     pdf.set_text_color(20, 20, 20)
     pdf.multi_cell(0, 9, k['nomi'].replace('*', ''), align='C')
     pdf.ln(6)
@@ -147,52 +151,52 @@ def render_book(pdf, k):
         if pdf.get_y() > pdf.h - 60:
             pdf.add_page()
         pdf.ln(3)
-        pdf.set_font('serif', 'B', 13)
+        pdf.set_font('ui', 'B', 14)
         pdf.set_text_color(*SAGE)
-        pdf.multi_cell(0, 6.5, bob_nomi(b['nomi']), align='L')
+        pdf.multi_cell(0, 7, bob_nomi(b['nomi']), align='L')
         pdf.ln(1.5)
 
         if b.get('muallaqot'):
-            write_para(pdf, b['muallaqot'], 10.5, 'I', DIM, align='L', space_after=1.5)
+            write_para(pdf, b['muallaqot'], 11.5, 'I', DIM, align='L', space_after=1.5)
         if b.get('izoh'):
-            write_para(pdf, b['izoh'], 10, '', DIM, align='L', space_after=1.5)
+            write_para(pdf, b['izoh'], 11, '', DIM, align='L', space_after=1.5)
 
         for h in b.get('hadislar', []):
             if pdf.get_y() > pdf.h - 45:
                 pdf.add_page()
             pdf.ln(3)
             # Ҳадис рақами
-            pdf.set_font('serif', 'B', 10)
+            pdf.set_font('ui', 'B', 10.5)
             pdf.set_text_color(*MUTED)
             num = f"{h['id']}-ҲАДИС"
             pdf.cell(0, 6, '· ' + num + ' ·', align='C')
             pdf.ln(8)
             # Ровий
             if h.get('rowi'):
-                write_para(pdf, h['rowi'], 11, 'I', DIM, align='L',
+                write_para(pdf, h['rowi'], 12, 'I', DIM, align='L',
                            lh=1.4, space_after=1.2)
             # Матн
             if h.get('matn'):
-                write_para(pdf, h['matn'], 12, '', (15, 15, 15),
+                write_para(pdf, h['matn'], 13, '', (15, 15, 15),
                            align='J', lh=1.6, space_after=1.5)
             # Изоҳ
             if h.get('izoh'):
-                write_para(pdf, h['izoh'], 10, '', DIM, align='L',
+                write_para(pdf, h['izoh'], 11, '', DIM, align='L',
                            lh=1.5, space_after=1.0)
             # Манба
             if h.get('manba'):
-                write_para(pdf, h['manba'], 9.5, 'I', MUTED, align='L',
+                write_para(pdf, h['manba'], 10, 'I', MUTED, align='L',
                            lh=1.4, space_after=1.0)
 
 
 def title_page(pdf, subtitle):
     pdf.add_page()
     pdf.ln(60)
-    pdf.set_font('serif', 'B', 30)
+    pdf.set_font('ui', 'B', 30)
     pdf.set_text_color(*SAGE)
     pdf.multi_cell(0, 14, 'Ал-Жомиъ ас-Саҳиҳ', align='C')
     pdf.ln(4)
-    pdf.set_font('serif', 'I', 15)
+    pdf.set_font('ui', 'I', 15)
     pdf.set_text_color(60, 60, 60)
     pdf.multi_cell(0, 9, 'Имом Бухорий', align='C')
     pdf.ln(10)
@@ -200,11 +204,11 @@ def title_page(pdf, subtitle):
     cx = pdf.w / 2
     pdf.line(cx - 30, pdf.get_y(), cx + 30, pdf.get_y())
     pdf.ln(12)
-    pdf.set_font('serif', '', 13)
+    pdf.set_font('ui', '', 13)
     pdf.set_text_color(40, 40, 40)
     pdf.multi_cell(0, 8, subtitle, align='C')
     pdf.ln(40)
-    pdf.set_font('serif', 'I', 10)
+    pdf.set_font('ui', 'I', 10)
     pdf.set_text_color(*MUTED)
     pdf.multi_cell(0, 6, SITE_URL, align='C')
 

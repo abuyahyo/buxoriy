@@ -168,8 +168,11 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .pdf-btn{display:inline-flex;align-items:center;gap:8px;background:var(--sage-glow);border:1px solid var(--sage);color:var(--sage-deep);padding:12px 22px;border-radius:99px;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;font-size:14px;font-weight:500;-webkit-tap-highlight-color:transparent;transition:all .2s}
 .pdf-btn:hover,.pdf-btn:active{background:var(--sage);color:#fff}
 .pdf-note{font-size:11px;color:var(--text-muted)}
-.pdf-dl{color:var(--sage-deep);text-decoration:none;font-weight:500;-webkit-tap-highlight-color:transparent}
+.pdf-dl{color:var(--sage-deep);text-decoration:none;font-weight:500;-webkit-tap-highlight-color:transparent;cursor:pointer}
 .pdf-dl:hover,.pdf-dl:active{text-decoration:underline}
+.yuk-intro{font-size:12px;color:var(--text-muted);margin:-2px 0 16px;line-height:1.5}
+.yuk-card{text-decoration:none;display:block;color:inherit}
+.yuk-dl{margin-top:12px;font-size:12.5px;color:var(--sage-deep);font-weight:600;position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px}
 /* Recent searches */
 .recent-searches{margin-bottom:24px}
 .recent-searches[hidden]{display:none}
@@ -277,6 +280,7 @@ body.fabs-hidden .install-banner{transform:translateY(120%);opacity:0;pointer-ev
       <div class="pdf-download">
         <a class="pdf-btn" href="https://github.com/abuyahyo/buxoriy/releases/download/pdf/buxoriy-sahih-toliq.pdf" target="_blank" rel="noopener">📥 Тўлиқ китобни PDF юклаб олиш</a>
         <span class="pdf-note">Барча 97 китоб бир файлда · ўзбекча таржима</span>
+        <a class="pdf-dl" href="#yuklab" style="margin-top:6px">📚 Ёки китобларни алоҳида юклаб олиш</a>
       </div>
     </div>
     <div id="searchView" style="display:none">
@@ -299,6 +303,19 @@ body.fabs-hidden .install-banner{transform:translateY(120%);opacity:0;pointer-ev
       <span class="grid-count" id="bobCount"></span>
     </div>
     <div class="bob-grid" id="bobGrid"></div>
+  </div>
+</div>
+
+<!-- 2b. КИТОБЛАРНИ АЛОҲИДА ЮКЛАБ ОЛИШ -->
+<div id="pgYuk" class="page">
+  <div id="bcYuk" class="breadcrumb"></div>
+  <div class="grid-wrap">
+    <div class="grid-header">
+      <span class="grid-label">Китобларни алоҳида юклаб олиш</span>
+      <span class="grid-count" id="yukCount"></span>
+    </div>
+    <p class="yuk-intro">Ҳар бир китобни алоҳида PDF файл сифатида юклаб олинг · ўзбекча таржима</p>
+    <div class="kitob-grid" id="yukGrid"></div>
   </div>
 </div>
 
@@ -590,7 +607,7 @@ function splitFootnotes(matn){
 function showPage(id, scrollToId){
   const cur = document.querySelector('.page.visible');
   if(cur) scrollPos[lastHash] = cur.scrollTop;
-  ['pgHome','pgBob','pgHadisList','hadisPage'].forEach(p=>{
+  ['pgHome','pgBob','pgHadisList','hadisPage','pgYuk'].forEach(p=>{
     const el=document.getElementById(p);
     el.style.display='none';
     el.classList.remove('visible');
@@ -699,6 +716,7 @@ function applyHash(){
     App.doSearch(q, true);
     return;
   }
+  if(h === 'yuklab'){ App.openYuklab(); return; }
   const migrated = migrateLegacyHash(h);
   if(migrated){
     history.replaceState(null, '', '#' + migrated);
@@ -760,6 +778,25 @@ const App = {
       setHash('');
     }
     showPage('pgHome');
+  },
+
+  openYuklab(){
+    ST={page:'yuklab',kid:null,bid:null,hid:null};
+    bc('bcYuk',[...homeBcItems(),{t:'Юклаб олиш'}]);
+    document.getElementById('yukCount').textContent=BOOKS.length+' та китоб';
+    const g=document.getElementById('yukGrid');
+    g.innerHTML='';
+    BOOKS.forEach(k=>{
+      const a=document.createElement('a');
+      a.className='kitob-card yuk-card';
+      a.href=`${PDF_BASE}kitob-${String(k.id).padStart(2,'0')}.pdf`;
+      a.setAttribute('download','');
+      a.target='_blank'; a.rel='noopener';
+      a.innerHTML=`<div class="kitob-top"><div class="kitob-num">${k.id}-КИТОБ</div><div class="kitob-stats"><div class="kitob-stat"><b>${k.bC}</b> боб</div><div class="kitob-stat"><b>${k.hC}</b> ҳадис</div></div></div><div class="kitob-name">${k.nomi}</div><div class="yuk-dl">📥 PDF юклаб олиш</div>`;
+      g.appendChild(a);
+    });
+    showPage('pgYuk');
+    setHash('yuklab');
   },
 
   openKitob(kid, scrollToBid=false){
@@ -1447,7 +1484,7 @@ function _handleFabVisibility(scrollTop){
     _scrollTicking = false;
   });
 }
-['pgHome','pgBob','pgHadisList','hadisPage'].forEach(pageId=>{
+['pgHome','pgBob','pgHadisList','hadisPage','pgYuk'].forEach(pageId=>{
   const el = document.getElementById(pageId);
   el.addEventListener('scroll',()=>{
     document.getElementById('scrollTop').className='scroll-top'+(el.scrollTop>400?' visible':'');
@@ -1455,7 +1492,7 @@ function _handleFabVisibility(scrollTop){
   });
 });
 document.getElementById('scrollTop').onclick=()=>{
-  const pageIdMap={home:'pgHome',bob:'pgBob',hadisList:'pgHadisList',hadis:'hadisPage'};
+  const pageIdMap={home:'pgHome',bob:'pgBob',hadisList:'pgHadisList',hadis:'hadisPage',yuklab:'pgYuk'};
   const curId=pageIdMap[ST.page]||'pgHome';
   document.getElementById(curId).scrollTo({top:0,behavior:'smooth'});
 };

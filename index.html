@@ -163,6 +163,13 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .result-where{font-size:9px;color:var(--rose-soft);text-transform:uppercase;letter-spacing:.12em;margin-left:8px;padding:2px 7px;background:rgba(184,138,130,.12);border-radius:99px;font-weight:600}
 .result-more-btn{display:block;width:100%;background:var(--surface);border:1px solid var(--border);color:var(--sage-deep);padding:14px;border-radius:var(--radius);cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;font-size:13px;font-weight:500;margin-top:10px;-webkit-tap-highlight-color:transparent;transition:all .25s}
 .result-more-btn:hover,.result-more-btn:active{border-color:var(--sage);background:var(--sage-glow)}
+/* PDF юклаб олиш */
+.pdf-download{margin-top:28px;padding-top:24px;border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.pdf-btn{display:inline-flex;align-items:center;gap:8px;background:var(--sage-glow);border:1px solid var(--sage);color:var(--sage-deep);padding:12px 22px;border-radius:99px;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;font-size:14px;font-weight:500;-webkit-tap-highlight-color:transparent;transition:all .2s}
+.pdf-btn:hover,.pdf-btn:active{background:var(--sage);color:#fff}
+.pdf-note{font-size:11px;color:var(--text-muted)}
+.pdf-dl{color:var(--sage-deep);text-decoration:none;font-weight:500;-webkit-tap-highlight-color:transparent}
+.pdf-dl:hover,.pdf-dl:active{text-decoration:underline}
 /* Recent searches */
 .recent-searches{margin-bottom:24px}
 .recent-searches[hidden]{display:none}
@@ -267,6 +274,10 @@ body.fabs-hidden .install-banner{transform:translateY(120%);opacity:0;pointer-ev
         <span class="grid-count" id="kitobCount"></span>
       </div>
       <div class="kitob-grid" id="kitobGrid"></div>
+      <div class="pdf-download">
+        <a class="pdf-btn" href="https://github.com/abuyahyo/buxoriy/releases/download/pdf/buxoriy-sahih-toliq.pdf" target="_blank" rel="noopener">📥 Тўлиқ китобни PDF юклаб олиш</a>
+        <span class="pdf-note">Барча 97 китоб бир файлда · ўзбекча таржима</span>
+      </div>
     </div>
     <div id="searchView" style="display:none">
       <div class="search-pg-header">
@@ -354,6 +365,8 @@ body.fabs-hidden .install-banner{transform:translateY(120%);opacity:0;pointer-ev
 <script>
 // Енгил китоб метамаълумоти HTML га инлайн қилинган — бош саҳифа дарҳол кўрсатилади
 const BOOKS = JSON.parse(document.getElementById('books-data').textContent);
+// PDF юклаб олиш — файллар GitHub Releases'да ('pdf' тег) сақланади
+const PDF_BASE = 'https://github.com/abuyahyo/buxoriy/releases/download/pdf/';
 let DB = []; // дастлаб index.json (метамаълумот), сўнг data.json (тўлиқ)
 let isFullDB = false;
 let indexPromise = null;
@@ -768,7 +781,7 @@ const App = {
     }
     const hC=k.boblar.reduce((s,b)=>s+(b.hC ?? b.hadislar.length),0);
     bc('bcBob',[...homeBcItems(),{t:k.nomi}]);
-    document.getElementById('bcBob').innerHTML+=`<div style="margin-top:10px;display:flex;gap:14px;font-size:11px;color:var(--text-muted)"><span>${k.boblar.length} та боб</span><span>${hC} та ҳадис</span></div>`;
+    document.getElementById('bcBob').innerHTML+=`<div style="margin-top:10px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--text-muted)"><span>${k.boblar.length} та боб</span><span>${hC} та ҳадис</span><a class="pdf-dl" href="${PDF_BASE}kitob-${String(k.id).padStart(2,'0')}.pdf" target="_blank" rel="noopener">📥 Бу китобни PDF</a></div>`;
     document.getElementById('bobPageLabel').textContent='';
     document.getElementById('bobCount').textContent='';
     const g=document.getElementById('bobGrid');

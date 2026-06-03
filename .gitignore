@@ -9,3 +9,7 @@ tarjima/
 tarjima_uchun.json
 tarjimasiz_hadislar.txt
 pdf/
+data.json.bak*
+apk_extract/
+silsila_index.json
+silsila_candidates.json

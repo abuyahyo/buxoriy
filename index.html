@@ -239,10 +239,6 @@ body.fabs-hidden .install-banner{transform:translateY(120%);opacity:0;pointer-ev
   .home-title{font-size:25px}
   .grid-wrap{padding:28px 14px 130px}
 }
-.hadis-stub-note{padding:14px 16px;margin:0 0 22px;background:var(--surface);border-left:3px solid var(--rose-soft);border-radius:var(--radius-sm);color:var(--text-dim);font-size:13px;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;font-style:italic}
-.hadis-arab-stub{display:block !important;margin-top:14px}
-.hadis-stub-badge{display:inline-block;font-size:9px;color:var(--rose-soft);background:rgba(184,138,130,.12);padding:2px 7px;border-radius:99px;margin-left:8px;text-transform:none;letter-spacing:.05em;font-weight:600;font-style:italic}
-.hadis-item-preview-ar{font-family:system-ui,'Geeza Pro',sans-serif;font-size:16px;line-height:1.85;color:var(--text-dim)}
 </style>
 </head>
 <body>
@@ -837,11 +833,7 @@ const App = {
       const el=document.createElement('div');
       el.className='hadis-item';el.setAttribute('role','button');el.tabIndex=0;
       el.id=`hadis-card-${kid}-${bid}-${h.id}`;
-      if(h.tarjima_status === 'missing'){
-        el.innerHTML=`<div class="hadis-item-num">${h.id}-ҳадис <span class="hadis-stub-badge">таржимаси йўқ</span></div><div class="hadis-item-preview hadis-item-preview-ar" dir="rtl">${(h.matn_ar||'').slice(0,200).replace(/\n/g,' ')}</div>`;
-      } else {
-        el.innerHTML=`<div class="hadis-item-num">${h.id}-ҳадис</div><div class="hadis-item-preview">${h.matn.replace(/\n/g,' ')}</div><div class="hadis-item-narrator">${h.rowi||''}</div>`;
-      }
+      el.innerHTML=`<div class="hadis-item-num">${h.id}-ҳадис</div><div class="hadis-item-preview">${h.matn.replace(/\n/g,' ')}</div><div class="hadis-item-narrator">${h.rowi||''}</div>`;
       el.onclick=()=>App.openHadis(kid,bid,h.id);
       g.appendChild(el);
     });
@@ -891,17 +883,9 @@ const App = {
     }
     const h=getH(kid,bid,hid);
     if(!h){ App.openBob(kid,bid); return; }   // нотўғри ҳадис рақами — боб рўйхатига қайтамиз
-    const _isStub = h.tarjima_status === 'missing';
-    const _fn = _isStub ? {body:'', notes:[]} : splitFootnotes(h.matn);
+    const _fn = splitFootnotes(h.matn);
     let _html = `<span class="hadis-num-inline">${h.id}-ҲАДИС</span> `;
-    if(_isStub){
-      _html += `<div class="hadis-stub-note">Бу ҳадиснинг ўзбекча таржимаси ҳозирча мавжуд эмас. Арабча матни:</div>`;
-      if(h.matn_ar){
-        _html += `<div class="hadis-arab hadis-arab-stub">${escHtml(h.matn_ar)}</div>`;
-      }
-    } else {
-      _html += linkifyRefs(_fn.body.replace(/\n\n/g,'<br>').replace(/\n/g,'<br>'));
-    }
+    _html += linkifyRefs(_fn.body.replace(/\n\n/g,'<br>').replace(/\n/g,'<br>'));
     if(_fn.notes.length){
       _html+='<div class="hadis-fn">'+_fn.notes.map(n=>`<div class="hadis-fn-item"><span class="hadis-fn-star">*</span>${linkifyRefs(n.replace(/^\*\s*/,'').replace(/\n/g,' '))}</div>`).join('')+'</div>';
     }

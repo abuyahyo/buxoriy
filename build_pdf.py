@@ -261,10 +261,101 @@ def build_books(db):
     return paths
 
 
+# ── Арабча (arabic.json) ──────────────────────────────────────────────────────
+
+def write_ar(pdf, text, size=15.5, lh=1.85):
+    """Арабча матн — Amiri, RTL, ўнгга текислаб, text shaping билан."""
+    pdf.set_font('amiri', '', size)
+    pdf.set_text_color(15, 15, 15)
+    line_h = size * lh * 0.3528
+    pdf.set_text_shaping(True)
+    for para in text.split('\n\n'):
+        para = para.strip('\n')
+        if not para:
+            continue
+        pdf.multi_cell(0, line_h, para, align='R')
+    pdf.set_text_shaping(False)
+    pdf.ln(2.0)
+
+
+def render_book_arabic(pdf, k, ardict):
+    pdf.add_page()
+    pdf.ln(6)
+    pdf.set_font('ui', 'B', 11)
+    pdf.set_text_color(*SAGE)
+    pdf.cell(0, 7, f"{k['id']}-КИТОБ", align='C')
+    pdf.ln(9)
+    pdf.set_font('ui', 'B', 19)
+    pdf.set_text_color(20, 20, 20)
+    pdf.multi_cell(0, 9, k['nomi'].replace('*', ''), align='C')
+    pdf.ln(6)
+    pdf.set_draw_color(*SAGE)
+    cx = pdf.w / 2
+    pdf.line(cx - 25, pdf.get_y(), cx + 25, pdf.get_y())
+    pdf.ln(8)
+
+    for b in k.get('boblar', []):
+        if pdf.get_y() > pdf.h - 60:
+            pdf.add_page()
+        pdf.ln(3)
+        pdf.set_font('ui', 'B', 14)
+        pdf.set_text_color(*SAGE)
+        pdf.multi_cell(0, 7, bob_nomi(b['nomi']), align='L')
+        pdf.ln(1.5)
+
+        for h in b.get('hadislar', []):
+            ar = ardict.get(str(h['id']))
+            if not ar:
+                continue
+            if pdf.get_y() > pdf.h - 45:
+                pdf.add_page()
+            pdf.ln(3)
+            pdf.set_font('ui', 'B', 10.5)
+            pdf.set_text_color(*MUTED)
+            pdf.cell(0, 6, f"· {h['id']}-ҲАДИС ·", align='C')
+            pdf.ln(8)
+            write_ar(pdf, ar)
+
+
+def build_full_arabic(db, ardict):
+    pdf = Book()
+    pdf.set_title('Саҳиҳул Бухорий — арабча')
+    pdf.set_author('Имом Бухорий')
+    title_page(pdf, 'Арабча матн (асл)\n\nТўлиқ тўплам — {} китоб'.format(len(db)))
+    for k in db:
+        pdf.running_title = k['nomi'].replace('*', '')
+        render_book_arabic(pdf, k, ardict)
+    path = os.path.join(OUT_DIR, 'buxoriy-arab-toliq.pdf')
+    pdf.output(path)
+    return path
+
+
+def build_books_arabic(db, ardict):
+    bdir = os.path.join(OUT_DIR, 'kitoblar')
+    os.makedirs(bdir, exist_ok=True)
+    paths = []
+    for k in db:
+        pdf = Book()
+        pdf.set_title(f"{k['id']}-китоб (арабча) — {k['nomi']}")
+        pdf.set_author('Имом Бухорий')
+        pdf.running_title = k['nomi'].replace('*', '')
+        render_book_arabic(pdf, k, ardict)
+        fn = f"kitob-{k['id']:02d}-ar.pdf"
+        path = os.path.join(bdir, fn)
+        pdf.output(path)
+        paths.append(path)
+    return paths
+
+
 def main():
     args = set(sys.argv[1:])
-    do_full = '--full' in args or not (args & {'--full', '--books'})
-    do_books = '--books' in args or not (args & {'--full', '--books'})
+    modes = {'--full', '--books', '--ar', '--ar-books'}
+    selected = args & modes
+    # Ҳеч мод берилмаса — фақат ўзбекча (тўлиқ + китобма-китоб)
+    do_full = '--full' in args or not selected
+    do_books = '--books' in args or not selected
+    do_ar = '--ar' in args
+    do_ar_books = '--ar-books' in args
 
     with open('data.json', encoding='utf-8') as f:
         db = json.load(f)
@@ -273,12 +364,21 @@ def main():
 
     if do_full:
         p = build_full(db)
-        sz = os.path.getsize(p)
-        print(f'✓ {p}  ({sz/1024/1024:.1f} МБ)')
+        print(f'✓ {p}  ({os.path.getsize(p)/1024/1024:.1f} МБ)')
     if do_books:
         paths = build_books(db)
         total = sum(os.path.getsize(p) for p in paths)
         print(f'✓ {len(paths)} та китоб → {OUT_DIR}/kitoblar/  (жами {total/1024/1024:.1f} МБ)')
+    if do_ar or do_ar_books:
+        with open('arabic.json', encoding='utf-8') as f:
+            ardict = json.load(f)
+        if do_ar:
+            p = build_full_arabic(db, ardict)
+            print(f'✓ {p}  ({os.path.getsize(p)/1024/1024:.1f} МБ)')
+        if do_ar_books:
+            paths = build_books_arabic(db, ardict)
+            total = sum(os.path.getsize(p) for p in paths)
+            print(f'✓ {len(paths)} та арабча китоб → {OUT_DIR}/kitoblar/  (жами {total/1024/1024:.1f} МБ)')
 
 
 if __name__ == '__main__':

@@ -22,7 +22,9 @@ import sys
 
 from fpdf import FPDF
 
-FONT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fonts', 'Inter')
+_BASE = os.path.dirname(os.path.abspath(__file__))
+FONT_DIR = os.path.join(_BASE, 'fonts', 'Inter')
+AR_FONT_DIR = os.path.join(_BASE, 'fonts', 'Amiri')
 OUT_DIR = 'pdf'
 SITE_URL = 'https://abuyahyo.github.io/buxoriy/'
 
@@ -82,6 +84,12 @@ class Book(FPDF):
         self.add_font('ui', 'B', f'{FONT_DIR}/Inter-Bold.ttf')
         self.add_font('ui', 'I', f'{FONT_DIR}/Inter-Italic.ttf')
         self.add_font('ui', 'BI', f'{FONT_DIR}/Inter-BoldItalic.ttf')
+        # Арабча учун fallback (ўзбекча матн ичида учрайдиган арабча сўзлар).
+        # Inter'да арабча глифлар йўқ — Amiri билан тўлдирамиз.
+        self.add_font('amiri', '', f'{AR_FONT_DIR}/Amiri-Regular.ttf')
+        self.set_fallback_fonts(['amiri'])
+        # text shaping — арабчани тўғри (RTL, уланган) кўрсатиш учун
+        self.set_text_shaping(True)
         self.running_title = ''
 
     def footer(self):

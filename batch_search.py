@@ -28,15 +28,19 @@ def process_id(hid):
     # Close keyboard
     adb("shell", "input", "keyevent", "4")
     time.sleep(0.5)
-    # Top of result
+    # Scroll UP twice to reveal the header (which app auto-scrolled past)
+    adb("shell", "input", "swipe", "540", "500", "540", "1700", "500")
+    time.sleep(0.4)
+    adb("shell", "input", "swipe", "540", "500", "540", "1700", "500")
+    time.sleep(0.4)
+    # Header screenshot
     screencap(os.path.join(OUT_DIR, f"h{hid}_a.png"))
-    # Scroll
+    # Scroll DOWN to see matn
     adb("shell", "input", "swipe", "540", "1700", "540", "500", "500")
-    time.sleep(0.5)
+    time.sleep(0.4)
     screencap(os.path.join(OUT_DIR, f"h{hid}_b.png"))
-    # Scroll more
     adb("shell", "input", "swipe", "540", "1700", "540", "500", "500")
-    time.sleep(0.5)
+    time.sleep(0.4)
     screencap(os.path.join(OUT_DIR, f"h{hid}_c.png"))
 
 

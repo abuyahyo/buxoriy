@@ -88,8 +88,9 @@ class Book(FPDF):
         # Inter'да арабча глифлар йўқ — Amiri билан тўлдирамиз.
         self.add_font('amiri', '', f'{AR_FONT_DIR}/Amiri-Regular.ttf')
         self.set_fallback_fonts(['amiri'])
-        # text shaping — арабчани тўғри (RTL, уланган) кўрсатиш учун
-        self.set_text_shaping(True)
+        # Эслатма: text shaping глобал ЁҚИЛМАЙДИ — у ҳар глифни алоҳида
+        # позиция билан сақлаб, файлни жуда катта қилади. Фақат арабча
+        # учрайдиган параграфларда write_para() ичида вақтинча ёқилади.
         self.running_title = ''
 
     def footer(self):
@@ -119,10 +120,14 @@ SAGE = (74, 103, 65)
 DIM = (90, 90, 90)
 MUTED = (130, 130, 130)
 
+AR_RE = re.compile(r'[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]')
+
 
 def write_para(pdf, text, size, style='', color=(0, 0, 0), align='J',
                lh=1.55, space_after=2.0):
-    """\\n\\n параграфларни ва \\n сатр кўчишларни ҳисобга олиб ёзади."""
+    """\\n\\n параграфларни ва \\n сатр кўчишларни ҳисобга олиб ёзади.
+    Арабча учраса — шу параграф учун text shaping вақтинча ёқилади
+    (RTL/уланиш учун), бошқа ҳолда оддий (файл кичик қолади)."""
     pdf.set_font('ui', style, size)
     pdf.set_text_color(*color)
     line_h = size * lh * 0.3528  # pt → mm коэффициент
@@ -131,7 +136,12 @@ def write_para(pdf, text, size, style='', color=(0, 0, 0), align='J',
         para = para.strip('\n')
         if not para:
             continue
+        shaped = bool(AR_RE.search(para))
+        if shaped:
+            pdf.set_text_shaping(True)
         pdf.multi_cell(0, line_h, para, align=align)
+        if shaped:
+            pdf.set_text_shaping(False)
         if i < len(paras) - 1:
             pdf.ln(line_h * 0.45)
     pdf.ln(space_after)

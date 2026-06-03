@@ -818,7 +818,7 @@ const App = {
     }
     const hC=k.boblar.reduce((s,b)=>s+(b.hC ?? b.hadislar.length),0);
     bc('bcBob',[...homeBcItems(),{t:k.nomi}]);
-    document.getElementById('bcBob').innerHTML+=`<div style="margin-top:10px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--text-muted)"><span>${k.boblar.length} та боб</span><span>${hC} та ҳадис</span><a class="pdf-dl" href="${PDF_BASE}kitob-${String(k.id).padStart(2,'0')}.pdf" target="_blank" rel="noopener">📥 Бу китобни PDF</a></div>`;
+    document.getElementById('bcBob').innerHTML+=`<div style="margin-top:10px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--text-muted)"><span>${k.boblar.length} та боб</span><span>${hC} та ҳадис</span></div><a class="pdf-btn" style="margin-top:14px" href="${PDF_BASE}kitob-${String(k.id).padStart(2,'0')}.pdf" target="_blank" rel="noopener" download>📥 Бу китобни PDF юклаб олиш</a>`;
     document.getElementById('bobPageLabel').textContent='';
     document.getElementById('bobCount').textContent='';
     const g=document.getElementById('bobGrid');

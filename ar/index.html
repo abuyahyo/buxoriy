@@ -224,6 +224,7 @@ body.fabs-hidden .fab-nav{transform:translateX(-50%) translateY(90px);opacity:0;
         <button class="hadis-tb-btn" id="fontPlus" title="تكبير الخط">A+</button>
       </div>
       <button class="hadis-tb-btn" id="copyBtn">📋 نسخ</button>
+      <button class="hadis-tb-btn" id="shareBtn">⤴ مشاركة</button>
     </div>
   </div>
 </div>
@@ -707,6 +708,177 @@ document.getElementById('copyBtn').addEventListener('click', () => {
     setTimeout(() => { btn.classList.remove('copied'); btn.textContent = old; }, 1500);
   });
 });
+
+// === Share as image (RTL) ===
+async function shareHadis(){
+  if (ST.page !== 'hadis') return;
+  const k = getKfull(ST.kid), h = getH(ST.kid, ST.hid);
+  if (!k || !h) return;
+  const btn = document.getElementById('shareBtn');
+  const orig = btn.textContent;
+  btn.textContent = '⏳ جارٍ التحضير…'; btn.disabled = true;
+  try {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    const files = await buildShareImages(h, k);
+    if (navigator.canShare && navigator.canShare({ files })){
+      await navigator.share({ files, title: `حديث ${toArabicNum(h.id)}` });
+      btn.textContent = '✓ تمت المشاركة'; btn.classList.add('copied');
+    } else {
+      for (const f of files){
+        const url = URL.createObjectURL(f);
+        const a = document.createElement('a');
+        a.href = url; a.download = f.name;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+      btn.textContent = '✓ تم التنزيل'; btn.classList.add('copied');
+    }
+  } catch(e){
+    if (e && e.name === 'AbortError'){ btn.textContent = orig; }
+    else { console.error(e); btn.textContent = '✗ خطأ'; }
+  } finally {
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); btn.disabled = false; }, 1800);
+  }
+}
+
+async function buildShareImages(h, k){
+  const isLight = document.body.classList.contains('light');
+  const C = isLight ? {
+    bgFrom:'#faf3e7', bgTo:'#efe5cb', text:'#2a2218', textDim:'#5a4d3e',
+    textMuted:'#8a7d68', accent:'#a87a2c', divider:'rgba(168,122,44,.3)'
+  } : {
+    bgFrom:'#1f1a16', bgTo:'#342c26', text:'#f5ecdb', textDim:'#b8a890',
+    textMuted:'#8a7c68', accent:'#d9b870', divider:'rgba(217,184,112,.25)'
+  };
+  const W = 1080, H = 1080, PAD = 80;
+  const bodyFont = "'Amiri','Noto Naskh Arabic',serif";
+  const uiFont = "'Cairo','Noto Naskh Arabic',sans-serif";
+  const bodyFs = 40, bodyLh = Math.round(bodyFs * 1.9);
+  const maxBodyW = W - PAD * 2;
+  const ctxLabel = k ? k.nomi : '';
+  const m = document.createElement('canvas'); m.width = W; m.height = H;
+  const mctx = m.getContext('2d');
+  mctx.direction = 'rtl';
+  mctx.font = `400 ${bodyFs}px ${bodyFont}`;
+  const lines = wrapShareText(mctx, h.matn, maxBodyW);
+  const headerBottom = PAD + (ctxLabel ? 92 : 70);
+  const bodyTop = headerBottom + 20;
+  const bodyBottom = H - PAD - 70;
+  const linesPerSlide = Math.max(1, Math.floor((bodyBottom - bodyTop) / bodyLh));
+  const slides = splitShareSlides(lines, linesPerSlide);
+  if (!slides.length) slides.push(['']);
+  const total = slides.length;
+  const files = [];
+  for (let i = 0; i < total; i++){
+    const blob = await renderShareSlide({
+      lines: slides[i], idx: i + 1, total, h, ctxLabel, C, W, H, PAD,
+      bodyFont, uiFont, bodyFs, bodyLh, bodyTop
+    });
+    const suffix = total > 1 ? `-${i + 1}` : '';
+    files.push(new File([blob], `hadith-${h.id}${suffix}.png`, { type: 'image/png' }));
+  }
+  return files;
+}
+
+function splitShareSlides(lines, capacity){
+  if (lines.length <= capacity) return [lines];
+  const slides = [];
+  let i = 0;
+  while (i < lines.length){
+    const remaining = lines.length - i;
+    if (remaining <= capacity){ slides.push(lines.slice(i)); break; }
+    const minSplit = Math.max(1, Math.floor(capacity * 0.65));
+    let cut = capacity;
+    for (let j = capacity; j >= minSplit; j--){
+      if (lines[i + j] === ''){ cut = j; break; }
+    }
+    if (cut === capacity){
+      for (let j = capacity; j >= minSplit; j--){
+        const ln = lines[i + j - 1] || '';
+        if (/[.!؟،][\s)]*$/.test(ln)){ cut = j; break; }
+      }
+    }
+    slides.push(lines.slice(i, i + cut));
+    i += cut;
+    while (i < lines.length && lines[i] === '') i++;
+  }
+  return slides;
+}
+
+function wrapShareText(ctx, text, maxWidth){
+  const lines = [];
+  const segments = String(text || '').split('\n');
+  segments.forEach(seg => {
+    if (!seg.trim()){ lines.push(''); return; }
+    const words = seg.split(/\s+/);
+    let cur = '';
+    for (const w of words){
+      const test = cur ? cur + ' ' + w : w;
+      if (ctx.measureText(test).width > maxWidth && cur){
+        lines.push(cur); cur = w;
+      } else {
+        cur = test;
+      }
+    }
+    if (cur) lines.push(cur);
+  });
+  return lines;
+}
+
+function renderShareSlide(opt){
+  const { lines, idx, total, h, ctxLabel, C, W, H, PAD, bodyFont, uiFont, bodyFs, bodyLh, bodyTop } = opt;
+  return new Promise(resolve => {
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, C.bgFrom); grad.addColorStop(1, C.bgTo);
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+    // accent mark — top-right (RTL)
+    ctx.fillStyle = C.accent; ctx.fillRect(W - PAD - 50, PAD, 50, 3);
+    let headY = PAD + 16;
+    if (ctxLabel){
+      ctx.fillStyle = C.textMuted;
+      ctx.font = `500 22px ${uiFont}`;
+      ctx.direction = 'rtl'; ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+      let label = ctxLabel;
+      while (ctx.measureText(label).width > W - PAD * 2 && label.length > 4){
+        label = label.slice(0, -2);
+        if (!label.endsWith('…')) label = label.slice(0, -1) + '…';
+      }
+      ctx.fillText(label, W - PAD, headY);
+      headY = PAD + 50;
+    }
+    ctx.fillStyle = C.accent;
+    ctx.font = `700 24px ${uiFont}`;
+    ctx.direction = 'rtl'; ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+    ctx.fillText(`حديث رقم ${toArabicNum(h.id)}`, W - PAD, headY);
+    if (total > 1){
+      ctx.fillStyle = C.textMuted;
+      ctx.font = `500 18px ${uiFont}`;
+      ctx.direction = 'ltr'; ctx.textAlign = 'left';
+      ctx.fillText(`${toArabicNum(idx)} / ${toArabicNum(total)}`, PAD, headY + 2);
+    }
+    // body
+    ctx.fillStyle = C.text;
+    ctx.font = `400 ${bodyFs}px ${bodyFont}`;
+    ctx.direction = 'rtl'; ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+    const bodyBottom = H - PAD - 70;
+    const bodyAvail = bodyBottom - bodyTop;
+    const bodyUsed = lines.length * bodyLh;
+    let y = bodyTop + Math.max(0, (bodyAvail - bodyUsed) / 2);
+    for (const line of lines){
+      ctx.fillText(line, W - PAD, y);
+      y += bodyLh;
+    }
+    // footer
+    ctx.fillStyle = C.textMuted;
+    ctx.font = `700 15px ${uiFont}`;
+    ctx.direction = 'rtl'; ctx.textAlign = 'center';
+    ctx.fillText('صحيح البخاري', W / 2, H - PAD - 6);
+    cv.toBlob(b => resolve(b), 'image/png');
+  });
+}
+document.getElementById('shareBtn').addEventListener('click', shareHadis);
 
 document.getElementById('fabTheme').addEventListener('click', () => {
   th = (th === 'dark') ? 'light' : 'dark';

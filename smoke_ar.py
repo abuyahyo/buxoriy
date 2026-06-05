@@ -26,28 +26,34 @@ idx = get_json('/ar/index.json')
 assert len(idx) == 97, f'index.json has {len(idx)} kitabs, expected 97'
 assert idx[0]['nomi'] == 'كتاب بدء الوحى', f'first kitab name: {idx[0]["nomi"]}'
 assert idx[-1]['nomi'] == 'كتاب التوحيد', f'last kitab name: {idx[-1]["nomi"]}'
+assert all('bC' in k and 'hC' in k for k in idx), 'index.json missing bC/hC'
+total_b = sum(k['bC'] for k in idx)
 total_h = sum(k['hC'] for k in idx)
-print(f'OK ar/index.json: 97 kitabs, {total_h} total hadiths')
+print(f'OK ar/index.json: 97 kitabs, {total_b} bobs, {total_h} total hadiths')
 
-# 3. ar/data.json — sample first kitab
+# 3. ar/data.json — sample first kitab (kitab -> boblar -> hadislar)
 data = get_json('/ar/data.json')
 assert len(data) == 97
 k1 = data[0]
 assert k1['id'] == 1
-assert len(k1['hadislar']) == 7, f'kitab 1 has {len(k1["hadislar"])} hadiths'
-h1 = k1['hadislar'][0]
+assert 'boblar' in k1, 'kitab missing boblar'
+k1_h = sum(len(b['hadislar']) for b in k1['boblar'])
+assert k1_h == 7, f'kitab 1 has {k1_h} hadiths'
+assert [b['id'] for b in k1['boblar']] == list(range(1, len(k1['boblar']) + 1)), 'bob ids not sequential'
+assert all(b['nomi'] and b['hadislar'] for b in k1['boblar']), 'empty bob name or hadith list'
+h1 = k1['boblar'][0]['hadislar'][0]
 assert h1['id'] == 1
 import re as _re
 stripped = _re.sub(r'[ً-ٰٟـ]', '', h1['matn'])
 assert 'إنما الأعمال بالنيات' in stripped, f'hadith 1 famous phrase missing in stripped text: {stripped[:200]}'
-print(f'OK ar/data.json: hadith #1 matn starts with: {h1["matn"][:80]}...')
+print(f'OK ar/data.json: kitab 1 -> {len(k1["boblar"])} bobs; hadith #1 matn: {h1["matn"][:60]}...')
 
 # 4. main index.html: Arabic link present
 main = get_text('/')
 assert 'ar-link' in main, '.ar-link CSS class missing'
 assert 'href="ar/"' in main, 'link to ar/ missing'
-assert 'العربية' in main, 'Arabic label missing on main page'
-print('OK main /: العربية link present')
+assert 'عربي' in main, 'Arabic label missing on main page'
+print('OK main /: عربي link present')
 
 # 5. ar/sw.js + ar/manifest.json
 sw = get_text('/ar/sw.js')

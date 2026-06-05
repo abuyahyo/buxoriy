@@ -263,7 +263,7 @@ def build_books(db):
 
 # ── Арабча (arabic.json) ──────────────────────────────────────────────────────
 
-def write_ar(pdf, text, size=15.5, lh=1.85):
+def write_ar(pdf, text, size=17, lh=1.85):
     """Арабча матн — Amiri, RTL, ўнгга текислаб, text shaping билан."""
     pdf.set_font('amiri', '', size)
     pdf.set_text_color(15, 15, 15)

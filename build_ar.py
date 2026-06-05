@@ -58,7 +58,12 @@ def load_bab_map(sql_path):
             "SELECT babID, arabicBabName, hadithNumber FROM bukhari"):
         name = (babName or '').strip()
         for n in _expand_hadithnumbers(hn):
-            num2bab[n] = (float(babID), name)
+            cand = (float(babID), name)
+            prev = num2bab.get(n)
+            # A handful of hadiths are cross-listed under two consecutive bobs
+            # (e.g. 774 / 774b). Keep the primary (lowest babID) chapter.
+            if prev is None or cand[0] < prev[0]:
+                num2bab[n] = cand
     con.close()
     return num2bab
 

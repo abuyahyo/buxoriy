@@ -96,6 +96,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-ui);font-weig
 .hadis-item-preview{font-size:18px;color:var(--text);line-height:2;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-weight:400;font-family:var(--font-ar);text-align:justify}
 
 .hadis-text{padding:32px 14px 24px;margin:0 -6px 28px;line-height:2.1;color:var(--text);font-size:var(--hadis-fs,22px);font-family:var(--font-ar);font-weight:400;text-align:justify}
+.hadis-text .arab-matn{color:var(--gold);font-weight:600}
 .hadis-num-inline{display:block;text-align:center;font-weight:600;color:var(--sage-deep);margin-bottom:28px;font-family:var(--font-ui);font-size:14px;position:relative}
 .hadis-num-inline::before,.hadis-num-inline::after{content:'';position:absolute;top:50%;width:50px;height:1px;opacity:.7}
 .hadis-num-inline::before{left:50%;margin-left:60px;background:linear-gradient(270deg,transparent,var(--border))}
@@ -290,6 +291,16 @@ function escHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 function escRegex(s){ return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+// Пайғамбар ﷺ сўзлари «"..."» ичида — ажратиб (gold) кўрсатамиз, иснод оддий қолади
+function hlArabMatn(t){
+  let out='', last=0; const re=/"[^"]*"/g; let m;
+  while((m=re.exec(t))){
+    out+=escHtml(t.slice(last,m.index));
+    out+='<span class="arab-matn">'+escHtml(m[0])+'</span>';
+    last=m.index+m[0].length;
+  }
+  return out+escHtml(t.slice(last));
+}
 
 // Build a normalized string with an index map back to the original
 function normalizeWithMap(text){
@@ -472,7 +483,7 @@ async function openHadis(kid, hid){
     { label: `حديث ${toArabicNum(h.id)}` }
   ]);
   document.getElementById('hadisNumInline').textContent = `حديث رقم ${toArabicNum(h.id)}`;
-  document.getElementById('hadisText').textContent = h.matn;
+  document.getElementById('hadisText').innerHTML = hlArabMatn(h.matn);
   // Update nav buttons
   const idx = k.hadislar.findIndex(x => x.id === h.id);
   const prevBtn = document.getElementById('navPrev');

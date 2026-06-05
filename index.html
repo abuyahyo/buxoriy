@@ -1046,9 +1046,16 @@ const App = {
   },
   copyHadis(){
     const h=getH(ST.kid,ST.bid,ST.hid); if(!h) return;
-    let text=h.matn;
-    if(h.rowi) text+=`\n\nРивояти: ${h.rowi}`;
-    if(h.manba) text+=`\nМанба: ${h.manba}`;
+    const arabEl=document.getElementById('hadisArab');
+    const arActive=document.getElementById('langAr').classList.contains('active');
+    let text;
+    if(arActive && arabEl && arabEl.textContent){
+      text=arabEl.textContent;            // «Арабча» актив — арабча матн (иснод+матн ичида)
+    }else{
+      text=h.matn;
+      if(h.rowi) text+=`\n\nРивояти: ${h.rowi}`;
+      if(h.manba) text+=`\nМанба: ${h.manba}`;
+    }
     const btn=document.getElementById('copyBtn');
     const orig=btn.textContent;
     const done=()=>{btn.textContent='✓ Нусхаланди';btn.classList.add('copied');setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied');},1500);};

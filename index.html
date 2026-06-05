@@ -339,6 +339,7 @@ body.fabs-hidden .install-banner{transform:translateY(120%);opacity:0;pointer-ev
       <button type="button" id="langUz" class="active" onclick="App.setLang('uz')">Ўзбекча</button>
       <button type="button" id="langAr" onclick="App.setLang('ar')">Арабча</button>
     </div>
+    <div class="hadis-num-inline" id="hadisNum"></div>
     <div class="hadis-text" id="hadisText"></div>
     <div class="hadis-arab" id="hadisArab" lang="ar" dir="rtl" translate="no" style="display:none"></div>
     <div class="hadis-toolbar">
@@ -934,8 +935,8 @@ const App = {
     const h=getH(kid,bid,hid);
     if(!h){ App.openBob(kid,bid); return; }   // нотўғри ҳадис рақами — боб рўйхатига қайтамиз
     const _fn = splitFootnotes(h.matn);
-    let _html = `<span class="hadis-num-inline">${h.id}-ҲАДИС</span> `;
-    _html += linkifyRefs(_fn.body.replace(/\n\n/g,'<br>').replace(/\n/g,'<br>'));
+    document.getElementById('hadisNum').textContent=`${h.id}-ҲАДИС`;   // рақам — иккала тилда ҳам кўринади
+    let _html = linkifyRefs(_fn.body.replace(/\n\n/g,'<br>').replace(/\n/g,'<br>'));
     if(_fn.notes.length){
       _html+='<div class="hadis-fn">'+_fn.notes.map(n=>`<div class="hadis-fn-item"><span class="hadis-fn-star">*</span>${linkifyRefs(n.replace(/^\*\s*/,'').replace(/\n/g,' '))}</div>`).join('')+'</div>';
     }

@@ -207,6 +207,19 @@ body.fabs-hidden .fab-nav{transform:translateX(-50%) translateY(90px);opacity:0;
   </div>
   <div class="grid-wrap">
     <div class="grid-header">
+      <span class="grid-label">الأبواب</span>
+      <span class="grid-count" id="bobCount"></span>
+    </div>
+    <div class="kitob-grid" id="bobGrid"></div>
+  </div>
+</div>
+
+<div id="pgBob" class="page">
+  <div class="breadcrumb">
+    <div class="bc-trail" id="bobBc"></div>
+  </div>
+  <div class="grid-wrap">
+    <div class="grid-header">
       <span class="grid-label">الأحاديث</span>
       <span class="grid-count" id="hadisCount"></span>
     </div>
@@ -261,13 +274,13 @@ body.fabs-hidden .fab-nav{transform:translateX(-50%) translateY(90px);opacity:0;
   </div>
 </div>
 
-<script id="books-data" type="application/json">[{"id":1,"nomi":"كتاب بدء الوحى","hC":7},{"id":2,"nomi":"كتاب الإيمان","hC":51},{"id":3,"nomi":"كتاب العلم","hC":76},{"id":4,"nomi":"كتاب الوضوء","hC":113},{"id":5,"nomi":"كتاب الغسل","hC":46},{"id":6,"nomi":"كتاب الحيض","hC":40},{"id":7,"nomi":"كتاب التيمم","hC":15},{"id":8,"nomi":"كتاب الصلاة","hC":173},{"id":9,"nomi":"كتاب مواقيت الصلاة","hC":81},{"id":10,"nomi":"كتاب الأذان","hC":275},{"id":11,"nomi":"كتاب الجمعة","hC":66},{"id":12,"nomi":"كتاب صلاة الخوف","hC":6},{"id":13,"nomi":"كتاب العيدين","hC":42},{"id":14,"nomi":"كتاب الوتر","hC":15},{"id":15,"nomi":"كتاب الاستسقاء","hC":35},{"id":16,"nomi":"كتاب الكسوف","hC":27},{"id":17,"nomi":"كتاب سجود القرآن","hC":13},{"id":18,"nomi":"كتاب التقصير","hC":40},{"id":19,"nomi":"كتاب التهجد","hC":69},{"id":20,"nomi":"كتاب فضل الصلاة فى مسجد مكة والمدينة","hC":10},{"id":21,"nomi":"كتاب العمل فى الصلاة","hC":27},{"id":22,"nomi":"كتاب السهو","hC":14},{"id":23,"nomi":"كتاب الجنائز","hC":160},{"id":24,"nomi":"كتاب الزكاة","hC":118},{"id":25,"nomi":"كتاب الحج","hC":260},{"id":26,"nomi":"كتاب العمرة","hC":33},{"id":27,"nomi":"كتاب المحصر","hC":15},{"id":28,"nomi":"كتاب جزاء الصيد","hC":46},{"id":29,"nomi":"كتاب فضائل المدينة","hC":24},{"id":30,"nomi":"كتاب الصوم","hC":117},{"id":31,"nomi":"كتاب صلاة التراويح","hC":6},{"id":32,"nomi":"كتاب فضل ليلة القدر","hC":11},{"id":33,"nomi":"كتاب الاعتكاف","hC":22},{"id":34,"nomi":"كتاب البيوع","hC":193},{"id":35,"nomi":"كتاب السلم","hC":20},{"id":36,"nomi":"كتاب الشفعة","hC":3},{"id":37,"nomi":"كتاب الإجارة","hC":27},{"id":38,"nomi":"كتاب الحوالات","hC":3},{"id":39,"nomi":"كتاب الكفالة","hC":9},{"id":40,"nomi":"كتاب الوكالة","hC":21},{"id":41,"nomi":"كتاب المزارعة","hC":31},{"id":42,"nomi":"كتاب المساقاة","hC":33},{"id":43,"nomi":"كتاب فى الاستقراض","hC":25},{"id":44,"nomi":"كتاب الخصومات","hC":16},{"id":45,"nomi":"كتاب فى اللقطة","hC":15},{"id":46,"nomi":"كتاب المظالم","hC":43},{"id":47,"nomi":"كتاب الشركة","hC":25},{"id":48,"nomi":"كتاب الرهن","hC":8},{"id":49,"nomi":"كتاب العتق","hC":43},{"id":50,"nomi":"كتاب المكاتب","hC":6},{"id":51,"nomi":"كتاب الهبة وفضلها والتحريض عليها","hC":71},{"id":52,"nomi":"كتاب الشهادات","hC":53},{"id":53,"nomi":"كتاب الصلح","hC":21},{"id":54,"nomi":"كتاب الشروط","hC":26},{"id":55,"nomi":"كتاب الوصايا","hC":44},{"id":56,"nomi":"كتاب الجهاد والسير","hC":309},{"id":57,"nomi":"كتاب فرض الخمس","hC":65},{"id":58,"nomi":"كتاب الجزية والموادعة","hC":33},{"id":59,"nomi":"كتاب بدء الخلق","hC":136},{"id":60,"nomi":"كتاب أحاديث الأنبياء","hC":163},{"id":61,"nomi":"كتاب المناقب","hC":162},{"id":62,"nomi":"كتاب فضائل أصحاب النبى صلى الله عليه وسلم","hC":128},{"id":63,"nomi":"كتاب مناقب الأنصار","hC":173},{"id":64,"nomi":"كتاب المغازى","hC":526},{"id":65,"nomi":"كتاب التفسير","hC":506},{"id":66,"nomi":"كتاب فضائل القرآن","hC":87},{"id":67,"nomi":"كتاب النكاح","hC":188},{"id":68,"nomi":"كتاب الطلاق","hC":100},{"id":69,"nomi":"كتاب النفقات","hC":22},{"id":70,"nomi":"كتاب الأطعمة","hC":95},{"id":71,"nomi":"كتاب العقيقة","hC":9},{"id":72,"nomi":"كتاب الذبائح والصيد","hC":70},{"id":73,"nomi":"كتاب الأضاحي","hC":30},{"id":74,"nomi":"كتاب الأشربة","hC":65},{"id":75,"nomi":"كتاب المرضى","hC":38},{"id":76,"nomi":"كتاب الطب","hC":100},{"id":77,"nomi":"كتاب اللباس","hC":188},{"id":78,"nomi":"كتاب الأدب","hC":253},{"id":79,"nomi":"كتاب الاستئذان","hC":77},{"id":80,"nomi":"كتاب الدعوات","hC":108},{"id":81,"nomi":"كتاب الرقاق","hC":182},{"id":82,"nomi":"كتاب القدر","hC":27},{"id":83,"nomi":"كتاب الأيمان والنذور","hC":87},{"id":84,"nomi":"كتاب كفارات الأيمان","hC":15},{"id":85,"nomi":"كتاب الفرائض","hC":49},{"id":86,"nomi":"كتاب الحدود","hC":89},{"id":87,"nomi":"كتاب الديات","hC":59},{"id":88,"nomi":"كتاب استتابة المرتدين والمعاندين وقتالهم","hC":22},{"id":89,"nomi":"كتاب الإكراه","hC":13},{"id":90,"nomi":"كتاب الحيل","hC":29},{"id":91,"nomi":"كتاب التعبير","hC":66},{"id":92,"nomi":"كتاب الفتن","hC":89},{"id":93,"nomi":"كتاب الأحكام","hC":89},{"id":94,"nomi":"كتاب التمنى","hC":20},{"id":95,"nomi":"كتاب أخبار الآحاد","hC":22},{"id":96,"nomi":"كتاب الاعتصام بالكتاب والسنة","hC":103},{"id":97,"nomi":"كتاب التوحيد","hC":193}]</script>
+<script id="books-data" type="application/json">[{"id":1,"nomi":"كتاب بدء الوحى","bC":6,"hC":7},{"id":2,"nomi":"كتاب الإيمان","bC":42,"hC":51},{"id":3,"nomi":"كتاب العلم","bC":51,"hC":76},{"id":4,"nomi":"كتاب الوضوء","bC":77,"hC":113},{"id":5,"nomi":"كتاب الغسل","bC":29,"hC":46},{"id":6,"nomi":"كتاب الحيض","bC":30,"hC":40},{"id":7,"nomi":"كتاب التيمم","bC":9,"hC":15},{"id":8,"nomi":"كتاب الصلاة","bC":109,"hC":173},{"id":9,"nomi":"كتاب مواقيت الصلاة","bC":41,"hC":81},{"id":10,"nomi":"كتاب الأذان","bC":165,"hC":275},{"id":11,"nomi":"كتاب الجمعة","bC":41,"hC":66},{"id":12,"nomi":"كتاب صلاة الخوف","bC":6,"hC":6},{"id":13,"nomi":"كتاب العيدين","bC":26,"hC":42},{"id":14,"nomi":"كتاب الوتر","bC":7,"hC":15},{"id":15,"nomi":"كتاب الاستسقاء","bC":28,"hC":35},{"id":16,"nomi":"كتاب الكسوف","bC":19,"hC":27},{"id":17,"nomi":"كتاب سجود القرآن","bC":12,"hC":13},{"id":18,"nomi":"كتاب التقصير","bC":20,"hC":40},{"id":19,"nomi":"كتاب التهجد","bC":37,"hC":69},{"id":20,"nomi":"كتاب فضل الصلاة فى مسجد مكة والمدينة","bC":6,"hC":10},{"id":21,"nomi":"كتاب العمل فى الصلاة","bC":17,"hC":27},{"id":22,"nomi":"كتاب السهو","bC":9,"hC":14},{"id":23,"nomi":"كتاب الجنائز","bC":98,"hC":160},{"id":24,"nomi":"كتاب الزكاة","bC":73,"hC":118},{"id":25,"nomi":"كتاب الحج","bC":146,"hC":260},{"id":26,"nomi":"كتاب العمرة","bC":20,"hC":33},{"id":27,"nomi":"كتاب المحصر","bC":10,"hC":15},{"id":28,"nomi":"كتاب جزاء الصيد","bC":26,"hC":46},{"id":29,"nomi":"كتاب فضائل المدينة","bC":13,"hC":24},{"id":30,"nomi":"كتاب الصوم","bC":68,"hC":117},{"id":31,"nomi":"كتاب صلاة التراويح","bC":1,"hC":6},{"id":32,"nomi":"كتاب فضل ليلة القدر","bC":5,"hC":11},{"id":33,"nomi":"كتاب الاعتكاف","bC":19,"hC":22},{"id":34,"nomi":"كتاب البيوع","bC":112,"hC":193},{"id":35,"nomi":"كتاب السلم","bC":8,"hC":20},{"id":36,"nomi":"كتاب الشفعة","bC":3,"hC":3},{"id":37,"nomi":"كتاب الإجارة","bC":21,"hC":27},{"id":38,"nomi":"كتاب الحوالات","bC":3,"hC":3},{"id":39,"nomi":"كتاب الكفالة","bC":5,"hC":9},{"id":40,"nomi":"كتاب الوكالة","bC":16,"hC":21},{"id":41,"nomi":"كتاب المزارعة","bC":21,"hC":31},{"id":42,"nomi":"كتاب المساقاة","bC":17,"hC":33},{"id":43,"nomi":"كتاب فى الاستقراض","bC":19,"hC":25},{"id":44,"nomi":"كتاب الخصومات","bC":9,"hC":16},{"id":45,"nomi":"كتاب فى اللقطة","bC":12,"hC":15},{"id":46,"nomi":"كتاب المظالم","bC":32,"hC":43},{"id":47,"nomi":"كتاب الشركة","bC":16,"hC":25},{"id":48,"nomi":"كتاب الرهن","bC":6,"hC":8},{"id":49,"nomi":"كتاب العتق","bC":20,"hC":43},{"id":50,"nomi":"كتاب المكاتب","bC":5,"hC":6},{"id":51,"nomi":"كتاب الهبة وفضلها والتحريض عليها","bC":37,"hC":71},{"id":52,"nomi":"كتاب الشهادات","bC":29,"hC":53},{"id":53,"nomi":"كتاب الصلح","bC":14,"hC":21},{"id":54,"nomi":"كتاب الشروط","bC":19,"hC":26},{"id":55,"nomi":"كتاب الوصايا","bC":34,"hC":44},{"id":56,"nomi":"كتاب الجهاد والسير","bC":190,"hC":309},{"id":57,"nomi":"كتاب فرض الخمس","bC":20,"hC":65},{"id":58,"nomi":"كتاب الجزية والموادعة","bC":20,"hC":33},{"id":59,"nomi":"كتاب بدء الخلق","bC":15,"hC":136},{"id":60,"nomi":"كتاب أحاديث الأنبياء","bC":44,"hC":163},{"id":61,"nomi":"كتاب المناقب","bC":27,"hC":162},{"id":62,"nomi":"كتاب فضائل أصحاب النبى صلى الله عليه وسلم","bC":30,"hC":128},{"id":63,"nomi":"كتاب مناقب الأنصار","bC":53,"hC":173},{"id":64,"nomi":"كتاب المغازى","bC":89,"hC":526},{"id":65,"nomi":"كتاب التفسير","bC":382,"hC":506},{"id":66,"nomi":"كتاب فضائل القرآن","bC":37,"hC":87},{"id":67,"nomi":"كتاب النكاح","bC":125,"hC":188},{"id":68,"nomi":"كتاب الطلاق","bC":47,"hC":100},{"id":69,"nomi":"كتاب النفقات","bC":15,"hC":22},{"id":70,"nomi":"كتاب الأطعمة","bC":57,"hC":95},{"id":71,"nomi":"كتاب العقيقة","bC":4,"hC":9},{"id":72,"nomi":"كتاب الذبائح والصيد","bC":37,"hC":70},{"id":73,"nomi":"كتاب الأضاحي","bC":16,"hC":30},{"id":74,"nomi":"كتاب الأشربة","bC":31,"hC":65},{"id":75,"nomi":"كتاب المرضى","bC":22,"hC":38},{"id":76,"nomi":"كتاب الطب","bC":57,"hC":100},{"id":77,"nomi":"كتاب اللباس","bC":103,"hC":188},{"id":78,"nomi":"كتاب الأدب","bC":128,"hC":253},{"id":79,"nomi":"كتاب الاستئذان","bC":53,"hC":77},{"id":80,"nomi":"كتاب الدعوات","bC":69,"hC":108},{"id":81,"nomi":"كتاب الرقاق","bC":53,"hC":182},{"id":82,"nomi":"كتاب القدر","bC":16,"hC":27},{"id":83,"nomi":"كتاب الأيمان والنذور","bC":33,"hC":87},{"id":84,"nomi":"كتاب كفارات الأيمان","bC":10,"hC":15},{"id":85,"nomi":"كتاب الفرائض","bC":30,"hC":49},{"id":86,"nomi":"كتاب الحدود","bC":46,"hC":89},{"id":87,"nomi":"كتاب الديات","bC":30,"hC":59},{"id":88,"nomi":"كتاب استتابة المرتدين والمعاندين وقتالهم","bC":9,"hC":22},{"id":89,"nomi":"كتاب الإكراه","bC":8,"hC":13},{"id":90,"nomi":"كتاب الحيل","bC":15,"hC":29},{"id":91,"nomi":"كتاب التعبير","bC":45,"hC":66},{"id":92,"nomi":"كتاب الفتن","bC":28,"hC":89},{"id":93,"nomi":"كتاب الأحكام","bC":53,"hC":89},{"id":94,"nomi":"كتاب التمنى","bC":9,"hC":20},{"id":95,"nomi":"كتاب أخبار الآحاد","bC":6,"hC":22},{"id":96,"nomi":"كتاب الاعتصام بالكتاب والسنة","bC":29,"hC":103},{"id":97,"nomi":"كتاب التوحيد","bC":57,"hC":193}]</script>
 
 <script>
 // === State ===
-let BOOKS = [];   // {id, nomi, hC} from inline / index.json
-let DB = null;    // full data.json (lazy-loaded)
-let ST = { page: 'home', kid: null, hid: null };
+let BOOKS = [];   // {id, nomi, bC, hC} from inline / index.json
+let DB = null;    // full data.json (lazy-loaded) — kitab -> boblar -> hadislar
+let ST = { page: 'home', kid: null, bid: null, hid: null };
 let fs = parseInt(localStorage.getItem('ar_fs') || '22', 10);
 let th = localStorage.getItem('ar_th') || 'dark';
 let _recent = JSON.parse(localStorage.getItem('ar_recent') || '[]');
@@ -390,10 +403,28 @@ function loadDB(){
 // === Helpers ===
 function getK(kid){ return BOOKS.find(b => b.id === kid); }
 function getKfull(kid){ return DB && DB.find(b => b.id === kid); }
-function getH(kid, hid){
+function getB(kid, bid){
+  const k = getKfull(kid);
+  return k ? k.boblar.find(b => b.id === bid) : null;
+}
+function getH(kid, bid, hid){
+  const b = getB(kid, bid);
+  return b ? b.hadislar.find(h => h.id === hid) : null;
+}
+// Flat list of all hadiths in a kitab (across bobs), for prev/next navigation.
+function flatHadis(kid){
+  const k = getKfull(kid);
+  if (!k) return [];
+  const out = [];
+  for (const b of k.boblar) for (const h of b.hadislar) out.push({ bid: b.id, h });
+  return out;
+}
+// Find which bob a hadith belongs to (for old links / search results).
+function findBob(kid, hid){
   const k = getKfull(kid);
   if (!k) return null;
-  return k.hadislar.find(h => h.id === hid);
+  for (const b of k.boblar) if (b.hadislar.some(h => h.id === hid)) return b.id;
+  return null;
 }
 
 // === Rendering ===
@@ -404,6 +435,7 @@ function renderHome(){
       <div class="kitob-top">
         <span class="kitob-num">الكتاب ${toArabicNum(b.id)}</span>
         <div class="kitob-stats">
+          <span class="kitob-stat"><b>${toArabicNum(b.bC)}</b> بابًا</span>
           <span class="kitob-stat"><b>${toArabicNum(b.hC)}</b> حديثًا</span>
         </div>
       </div>
@@ -440,13 +472,14 @@ function bc(containerId, items){
       const act = el.dataset.act;
       if (act === 'home') goHome();
       else if (act === 'kitob') openKitob(ST.kid);
+      else if (act === 'bob') openBob(ST.kid, ST.bid);
       else if (act === 'search') showSearchResults(_searchState.query);
     });
   });
 }
 
 async function openKitob(kid){
-  ST = { page: 'kitob', kid, hid: null };
+  ST = { page: 'kitob', kid, bid: null, hid: null };
   history.pushState(ST, '', `#k/${kid}`);
   await loadDB();
   const k = getKfull(kid);
@@ -455,9 +488,42 @@ async function openKitob(kid){
     { label: 'الرئيسية', act: 'home' },
     { label: k.nomi }
   ]);
-  document.getElementById('hadisCount').textContent = `${toArabicNum(k.hadislar.length)} حديثًا`;
+  document.getElementById('bobCount').textContent = `${toArabicNum(k.boblar.length)} بابًا`;
+  const grid = document.getElementById('bobGrid');
+  grid.innerHTML = k.boblar.map(b => `
+    <div class="kitob-card" data-bid="${b.id}" tabindex="0" role="button">
+      <div class="kitob-top">
+        <span class="kitob-num">الباب ${toArabicNum(b.id)}</span>
+        <div class="kitob-stats">
+          <span class="kitob-stat"><b>${toArabicNum(b.hadislar.length)}</b> حديثًا</span>
+        </div>
+      </div>
+      <div class="kitob-name">${escHtml(b.nomi)}</div>
+    </div>
+  `).join('');
+  grid.querySelectorAll('.kitob-card').forEach(el => {
+    const bid = parseInt(el.dataset.bid, 10);
+    el.addEventListener('click', () => openBob(kid, bid));
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openBob(kid, bid); } });
+  });
+  showPage('pgKitob');
+}
+
+async function openBob(kid, bid){
+  ST = { page: 'bob', kid, bid, hid: null };
+  history.pushState(ST, '', `#k/${kid}/b/${bid}`);
+  await loadDB();
+  const k = getKfull(kid);
+  const b = getB(kid, bid);
+  if (!k || !b) return goHome();
+  bc('bobBc', [
+    { label: 'الرئيسية', act: 'home' },
+    { label: k.nomi, act: 'kitob' },
+    { label: b.nomi }
+  ]);
+  document.getElementById('hadisCount').textContent = `${toArabicNum(b.hadislar.length)} حديثًا`;
   const list = document.getElementById('hadisList');
-  list.innerHTML = k.hadislar.map(h => `
+  list.innerHTML = b.hadislar.map(h => `
     <div class="hadis-item" data-hid="${h.id}" tabindex="0" role="button">
       <div class="hadis-item-num">حديث رقم ${toArabicNum(h.id)}</div>
       <div class="hadis-item-preview">${escHtml(h.matn.slice(0, 280))}${h.matn.length > 280 ? '…' : ''}</div>
@@ -465,39 +531,43 @@ async function openKitob(kid){
   `).join('');
   list.querySelectorAll('.hadis-item').forEach(el => {
     const hid = parseFloat(el.dataset.hid);
-    const id = Number.isInteger(hid) ? hid : hid;
-    el.addEventListener('click', () => openHadis(kid, id));
-    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openHadis(kid, id); } });
+    el.addEventListener('click', () => openHadis(kid, bid, hid));
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openHadis(kid, bid, hid); } });
   });
-  showPage('pgKitob');
+  showPage('pgBob');
 }
 
-async function openHadis(kid, hid){
-  ST = { page: 'hadis', kid, hid };
-  history.pushState(ST, '', `#k/${kid}/h/${hid}`);
+async function openHadis(kid, bid, hid){
   await loadDB();
+  if (bid == null) bid = findBob(kid, hid);
+  ST = { page: 'hadis', kid, bid, hid };
+  const bidPart = bid != null ? `/b/${bid}` : '';
+  history.pushState(ST, '', `#k/${kid}${bidPart}/h/${hid}`);
   const k = getKfull(kid);
-  const h = getH(kid, hid);
+  const h = getH(kid, bid, hid);
   if (!k || !h) return goHome();
+  const b = getB(kid, bid);
   bc('hadisBc', [
     { label: 'الرئيسية', act: 'home' },
     { label: k.nomi, act: 'kitob' },
+    { label: b ? b.nomi : 'باب', act: 'bob' },
     { label: `حديث ${toArabicNum(h.id)}` }
   ]);
   document.getElementById('hadisNumInline').textContent = `حديث رقم ${toArabicNum(h.id)}`;
   document.getElementById('hadisText').innerHTML = hlArabMatn(h.matn);
-  // Update nav buttons
-  const idx = k.hadislar.findIndex(x => x.id === h.id);
+  // Update nav buttons — prev/next flow across the whole kitab (across bobs)
+  const flat = flatHadis(kid);
+  const idx = flat.findIndex(x => x.h.id === h.id);
   const prevBtn = document.getElementById('navPrev');
   const nextBtn = document.getElementById('navNext');
   // In RTL fab-nav we keep visual order LTR (set on .fab-nav direction:ltr) so prev (=‹) goes back in RTL meaning previous = older = idx-1
   prevBtn.classList.toggle('disabled', idx <= 0);
-  nextBtn.classList.toggle('disabled', idx >= k.hadislar.length - 1);
+  nextBtn.classList.toggle('disabled', idx < 0 || idx >= flat.length - 1);
   showPage('pgHadis');
 }
 
 function goHome(){
-  ST = { page: 'home', kid: null, hid: null };
+  ST = { page: 'home', kid: null, bid: null, hid: null };
   history.pushState(ST, '', '#');
   showPage('pgHome');
 }
@@ -543,9 +613,11 @@ function showSearchResults(q){
   let exactHadis = null;
   if (numMatch){
     const wantId = parseInt(numMatch[1], 10);
-    for (const k of DB || []){
-      const h = k.hadislar.find(hh => hh.id === wantId);
-      if (h){ exactHadis = { k, h }; break; }
+    outer: for (const k of DB || []){
+      for (const b of k.boblar){
+        const h = b.hadislar.find(hh => hh.id === wantId);
+        if (h){ exactHadis = { k, h }; break outer; }
+      }
     }
   }
   if (!normQ && !exactHadis) return goHome();
@@ -554,14 +626,15 @@ function showSearchResults(q){
   // Search hadiths
   const hadisResults = [];
   if (normQ){
-    for (const k of DB){
-      for (const h of k.hadislar){
-        if (normalize(h.matn).includes(normQ)){
-          hadisResults.push({ k, h });
-          if (hadisResults.length >= 500) break;
+    outer: for (const k of DB){
+      for (const b of k.boblar){
+        for (const h of b.hadislar){
+          if (normalize(h.matn).includes(normQ)){
+            hadisResults.push({ k, h });
+            if (hadisResults.length >= 500) break outer;
+          }
         }
       }
-      if (hadisResults.length >= 500) break;
     }
   }
   // If exact hadis matched, surface it first (de-duplicated against text results)
@@ -626,7 +699,7 @@ function renderSearchResults(){
       if (act === 'k') openKitob(kid);
       else {
         const hid = parseFloat(el.dataset.hid);
-        openHadis(kid, hid);
+        openHadis(kid, null, hid);
       }
     });
   });
@@ -668,10 +741,13 @@ function applyHash(){
     doSearch(q);
     return;
   }
-  const m = h.match(/^#k\/(\d+)(?:\/h\/(\d+(?:\.\d+)?))?/);
+  const m = h.match(/^#k\/(\d+)(?:\/b\/(\d+))?(?:\/h\/(\d+(?:\.\d+)?))?/);
   if (m){
     const kid = parseInt(m[1], 10);
-    if (m[2]) openHadis(kid, parseFloat(m[2]));
+    const bid = m[2] ? parseInt(m[2], 10) : null;
+    const hid = m[3] ? parseFloat(m[3]) : null;
+    if (hid != null) openHadis(kid, bid, hid);
+    else if (bid != null) openBob(kid, bid);
     else openKitob(kid);
     return;
   }
@@ -725,7 +801,7 @@ document.getElementById('copyBtn').addEventListener('click', () => {
 // === Share as image (RTL) ===
 async function shareHadis(){
   if (ST.page !== 'hadis') return;
-  const k = getKfull(ST.kid), h = getH(ST.kid, ST.hid);
+  const k = getKfull(ST.kid), h = getH(ST.kid, ST.bid, ST.hid);
   if (!k || !h) return;
   const btn = document.getElementById('shareBtn');
   const orig = btn.textContent;
@@ -904,17 +980,15 @@ document.getElementById('fabTheme').textContent = (th === 'dark') ? '☾' : '☀
 document.getElementById('navHome').addEventListener('click', goHome);
 document.getElementById('navPrev').addEventListener('click', () => {
   if (ST.page !== 'hadis') return;
-  const k = getKfull(ST.kid);
-  if (!k) return;
-  const idx = k.hadislar.findIndex(x => x.id === ST.hid);
-  if (idx > 0) openHadis(ST.kid, k.hadislar[idx - 1].id);
+  const flat = flatHadis(ST.kid);
+  const idx = flat.findIndex(x => x.h.id === ST.hid);
+  if (idx > 0){ const t = flat[idx - 1]; openHadis(ST.kid, t.bid, t.h.id); }
 });
 document.getElementById('navNext').addEventListener('click', () => {
   if (ST.page !== 'hadis') return;
-  const k = getKfull(ST.kid);
-  if (!k) return;
-  const idx = k.hadislar.findIndex(x => x.id === ST.hid);
-  if (idx >= 0 && idx < k.hadislar.length - 1) openHadis(ST.kid, k.hadislar[idx + 1].id);
+  const flat = flatHadis(ST.kid);
+  const idx = flat.findIndex(x => x.h.id === ST.hid);
+  if (idx >= 0 && idx < flat.length - 1){ const t = flat[idx + 1]; openHadis(ST.kid, t.bid, t.h.id); }
 });
 
 // Scroll-top + fabs auto-hide

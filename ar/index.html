@@ -147,6 +147,15 @@ body.fabs-hidden .fab-nav{transform:translateX(-50%) translateY(90px);opacity:0;
 .page{display:none;opacity:0;transition:opacity .35s var(--ease);background:var(--bg);height:100vh;overflow-y:auto;position:fixed;top:0;left:0;right:0;bottom:0;overscroll-behavior:contain}
 .page.active{display:block;opacity:1}
 
+.pdf-download{margin-top:28px;padding-top:24px;border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.pdf-btn{display:inline-flex;align-items:center;gap:8px;background:var(--sage-glow);border:1px solid var(--sage);color:var(--sage-deep);padding:12px 22px;border-radius:99px;text-decoration:none;font-family:var(--font-ui);font-size:14px;font-weight:500;-webkit-tap-highlight-color:transparent;transition:all .2s}
+.pdf-btn:hover,.pdf-btn:active{background:var(--sage);color:#fff}
+.pdf-note{font-size:11px;color:var(--text-muted);font-family:var(--font-ui)}
+.pdf-dl{color:var(--sage-deep);text-decoration:none;font-weight:500;font-family:var(--font-ui);font-size:13px;-webkit-tap-highlight-color:transparent;cursor:pointer}
+.pdf-dl:hover,.pdf-dl:active{text-decoration:underline}
+.yuk-intro{font-size:12px;color:var(--text-muted);margin:-2px 0 16px;line-height:1.5;font-family:var(--font-ui)}
+.yuk-card{text-decoration:none;display:block;color:inherit}
+.yuk-dl{margin-top:12px;font-size:12.5px;color:var(--sage-deep);font-weight:600;position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px;font-family:var(--font-ui)}
 .site-foot{margin-top:28px;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:center}
 .uz-link{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);padding:9px 18px;border-radius:99px;font-family:var(--font-ui);font-size:14px;font-weight:500;text-decoration:none;transition:all .2s;-webkit-tap-highlight-color:transparent;direction:ltr}
 .uz-link:hover,.uz-link:active{border-color:var(--sage);color:var(--sage-deep);background:var(--sage-glow)}
@@ -195,9 +204,28 @@ body.fabs-hidden .fab-nav{transform:translateX(-50%) translateY(90px);opacity:0;
       <span class="grid-count" id="kitobCount">— كتابًا</span>
     </div>
     <div class="kitob-grid" id="kitobGrid"></div>
+    <div class="pdf-download">
+      <a class="pdf-btn" href="https://github.com/abuyahyo/buxoriy/releases/download/pdf/buxoriy-arab-toliq.pdf" target="_blank" rel="noopener" download>📥 تحميل الكتاب كاملًا PDF</a>
+      <span class="pdf-note">جميع الكتب في ملف واحد · النص العربي</span>
+      <a class="pdf-dl" id="yukLink" href="#yuklab" style="margin-top:6px">📚 أو تحميل الكتب منفصلة</a>
+    </div>
     <div class="site-foot">
       <a href="../" class="uz-link" title="O'zbekcha versiya">Ўзбекча ↗</a>
     </div>
+  </div>
+</div>
+
+<div id="pgYuk" class="page">
+  <div class="breadcrumb">
+    <div class="bc-trail" id="yukBc"></div>
+  </div>
+  <div class="grid-wrap">
+    <div class="grid-header">
+      <span class="grid-label">تحميل الكتب منفصلة</span>
+      <span class="grid-count" id="yukCount"></span>
+    </div>
+    <p class="yuk-intro">حمّل كل كتاب كملف PDF منفصل · النص العربي</p>
+    <div class="kitob-grid" id="yukGrid"></div>
   </div>
 </div>
 
@@ -272,6 +300,7 @@ let fs = parseInt(localStorage.getItem('ar_fs') || '22', 10);
 let th = localStorage.getItem('ar_th') || 'dark';
 let _recent = JSON.parse(localStorage.getItem('ar_recent') || '[]');
 let _searchState = { query: '', kitabResults: [], hadisResults: [], hadisShown: 0 };
+const PDF_BASE = 'https://github.com/abuyahyo/buxoriy/releases/download/pdf/';
 
 document.documentElement.style.setProperty('--hadis-fs', fs + 'px');
 if (th === 'light') document.body.classList.add('light');
@@ -502,6 +531,27 @@ function goHome(){
   showPage('pgHome');
 }
 
+// === Per-book PDF download page ===
+function openYuklab(){
+  ST = { page: 'yuklab', kid: null, hid: null };
+  history.pushState(ST, '', '#yuklab');
+  bc('yukBc', [{ label: 'الرئيسية', act: 'home' }, { label: 'تحميل' }]);
+  document.getElementById('yukCount').textContent = `${toArabicNum(BOOKS.length)} كتابًا`;
+  const g = document.getElementById('yukGrid');
+  g.innerHTML = BOOKS.map(b => `
+    <a class="kitob-card yuk-card" href="${PDF_BASE}kitob-${String(b.id).padStart(2, '0')}-ar.pdf" target="_blank" rel="noopener" download>
+      <div class="kitob-top">
+        <span class="kitob-num">الكتاب ${toArabicNum(b.id)}</span>
+        <div class="kitob-stats"><span class="kitob-stat"><b>${toArabicNum(b.hC)}</b> حديثًا</span></div>
+      </div>
+      <div class="kitob-name">${escHtml(b.nomi)}</div>
+      <div class="yuk-dl">📥 تحميل PDF</div>
+    </a>
+  `).join('');
+  showPage('pgYuk');
+}
+document.getElementById('yukLink').addEventListener('click', e => { e.preventDefault(); openYuklab(); });
+
 // === Search ===
 function doSearch(q, replaceHistory){
   q = (q || '').trim();
@@ -662,6 +712,7 @@ document.getElementById('recentClear').addEventListener('click', () => {
 // === Hash routing ===
 function applyHash(){
   const h = location.hash;
+  if (h === '#yuklab'){ openYuklab(); return; }
   if (h.startsWith('#q=')){
     const q = decodeURIComponent(h.slice(3));
     document.getElementById('homeSearch').value = q;

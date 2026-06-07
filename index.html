@@ -740,6 +740,10 @@ function applyHash(){
 
 function escHtml(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 // Арабча матнда Пайғамбар ﷺ сўзлари «"..."» ичида — уларни ажратиб (gold) кўрсатамиз, иснод оддий қолади
+function toArabicNum(n){
+  return String(n).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[+d]);
+}
+
 function hlArabMatn(t){
   let out='', last=0; const re=/"[^"]*"/g; let m;
   while((m=re.exec(t))){
@@ -1089,12 +1093,16 @@ const App = {
   async shareHadis(){
     const h=getH(ST.kid,ST.bid,ST.hid); if(!h) return;
     const k=getK(ST.kid); const b=getB(ST.kid,ST.bid);
+    const arEl=document.getElementById('hadisArab');
+    const arActive=document.getElementById('langAr').classList.contains('active');
+    const arabText=(arActive && arEl && arEl.textContent) ? arEl.textContent : ((arActive && ARAB && ARAB[h.id]) || '');
     const btn=document.getElementById('shareBtn');
     const orig=btn.textContent;
     btn.textContent='⏳ Тайёрланмоқда…'; btn.disabled=true;
     try{
+      if(arabText) await this._ensureArabicFont();
       if(document.fonts&&document.fonts.ready) await document.fonts.ready;
-      const files=await this._buildShareImages(h,k,b);
+      const files=await this._buildShareImages(h,k,b,arabText);
       if(navigator.canShare&&navigator.canShare({files})){
         await navigator.share({files,title:`${h.id}-ҳадис`});
         btn.textContent='✓ Юборилди'; btn.classList.add('copied');
@@ -1115,7 +1123,27 @@ const App = {
       setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied');btn.disabled=false;},1800);
     }
   },
-  async _buildShareImages(h,k,b){
+  async _ensureArabicFont(){
+    if(this._arFontReady) return;
+    if(!document.getElementById('arShareFont')){
+      const l=document.createElement('link');
+      l.id='arShareFont'; l.rel='stylesheet';
+      l.href='https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700&display=swap';
+      document.head.appendChild(l);
+    }
+    const sample='نص عربي ٠١٢٣٤٥٦٧٨٩';
+    try{
+      await Promise.all([
+        document.fonts.load("400 40px 'Amiri'",sample),
+        document.fonts.load("700 40px 'Amiri'",sample),
+        document.fonts.load("700 24px 'Cairo'",sample),
+        document.fonts.load("400 22px 'Cairo'",sample)
+      ]);
+    }catch(e){/* шрифт юкланмаса — система шрифтига қайтади */}
+    this._arFontReady=true;
+  },
+  async _buildShareImages(h,k,b,arabText){
+    const isArab=!!arabText;
     const isLight=document.documentElement.classList.contains('light');
     const C=isLight?{
       bgFrom:'#faf3e7',bgTo:'#efe5cb',
@@ -1127,17 +1155,20 @@ const App = {
       accent:'#d9b870',divider:'rgba(217,184,112,.25)'
     };
     const W=1080,H=1080,PAD=80;
-    const bodyFont="-apple-system, system-ui, sans-serif";
+    const bodyFont=isArab?"'Amiri','Noto Naskh Arabic','Geeza Pro',serif":"-apple-system, system-ui, sans-serif";
     const uiFont="-apple-system, system-ui, sans-serif";
-    const bodyFs=34, bodyLh=Math.round(bodyFs*1.7);
+    const arFont="'Cairo','Noto Naskh Arabic',-apple-system,system-ui,sans-serif";
+    const bodyFs=isArab?40:34, bodyLh=Math.round(bodyFs*(isArab?1.9:1.7));
+    const bodyWeight=isArab?'400':'300';
     const maxBodyW=W-PAD*2;
     const ctxLabel=k&&b?`${k.nomi} · ${b.id}-боб`:'';
     const m=document.createElement('canvas'); m.width=W; m.height=H;
     const mctx=m.getContext('2d');
-    mctx.font=`300 ${bodyFs}px ${bodyFont}`;
-    const lines=this._wrapShareText(mctx,h.matn,maxBodyW);
+    mctx.font=`${bodyWeight} ${bodyFs}px ${bodyFont}`;
+    if(isArab) mctx.direction='rtl';
+    const lines=this._wrapShareText(mctx,isArab?arabText:h.matn,maxBodyW);
     const headerBottom=PAD+(ctxLabel?92:70);
-    const footerHeight=h.rowi?180:70;
+    const footerHeight=(!isArab&&h.rowi)?180:70;
     const bodyTop=headerBottom+20;
     const bodyBottom=H-PAD-footerHeight;
     const linesPerSlide=Math.max(1,Math.floor((bodyBottom-bodyTop)/bodyLh));
@@ -1148,10 +1179,10 @@ const App = {
     for(let i=0;i<total;i++){
       const blob=await this._renderShareSlide({
         lines:slides[i],idx:i+1,total,h,ctxLabel,C,W,H,PAD,
-        bodyFont,uiFont,bodyFs,bodyLh,bodyTop
+        bodyFont,uiFont,arFont,bodyFs,bodyLh,bodyTop,isArab,bodyWeight
       });
       const suffix=total>1?`-${i+1}`:'';
-      files.push(new File([blob],`hadis-${h.id}${suffix}.png`,{type:'image/png'}));
+      files.push(new File([blob],`hadis-${h.id}${isArab?'-ar':''}${suffix}.png`,{type:'image/png'}));
     }
     return files;
   },
@@ -1199,7 +1230,7 @@ const App = {
     return lines;
   },
   _renderShareSlide(opt){
-    const {lines,idx,total,h,ctxLabel,C,W,H,PAD,bodyFont,uiFont,bodyFs,bodyLh,bodyTop}=opt;
+    const {lines,idx,total,h,ctxLabel,C,W,H,PAD,bodyFont,uiFont,arFont,bodyFs,bodyLh,bodyTop,isArab,bodyWeight}=opt;
     const self=this;
     return new Promise(resolve=>{
       const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
@@ -1207,42 +1238,46 @@ const App = {
       const grad=ctx.createLinearGradient(0,0,0,H);
       grad.addColorStop(0,C.bgFrom); grad.addColorStop(1,C.bgTo);
       ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
-      ctx.fillStyle=C.accent; ctx.fillRect(PAD,PAD,50,3);
+      ctx.fillStyle=C.accent; ctx.fillRect(isArab?W-PAD-50:PAD,PAD,50,3);
+      const headX=isArab?W-PAD:PAD;
+      const headAlign=isArab?'right':'left';
       let headY=PAD+16;
       if(ctxLabel){
         ctx.fillStyle=C.textMuted;
-        ctx.font=`500 15px ${uiFont}`;
-        ctx.textAlign='left'; ctx.textBaseline='top';
+        ctx.font=`500 ${isArab?18:15}px ${uiFont}`;
+        ctx.direction='ltr'; ctx.textAlign=headAlign; ctx.textBaseline='top';
         let label=ctxLabel;
         while(ctx.measureText(label).width>W-PAD*2&&label.length>4){
           label=label.slice(0,-2);
           if(!label.endsWith('…')) label=label.slice(0,-1)+'…';
         }
-        ctx.fillText(label,PAD,headY);
-        headY=PAD+42;
+        ctx.fillText(label,headX,headY);
+        headY=isArab?PAD+48:PAD+42;
       }
       ctx.fillStyle=C.accent;
-      ctx.font=`600 22px ${uiFont}`;
-      ctx.textAlign='left'; ctx.textBaseline='top';
-      ctx.fillText(`${h.id}-ҲАДИС`,PAD,headY);
+      ctx.font=isArab?`700 24px ${arFont}`:`600 22px ${uiFont}`;
+      ctx.direction=isArab?'rtl':'ltr'; ctx.textAlign=headAlign; ctx.textBaseline='top';
+      ctx.fillText(isArab?`حديث رقم ${toArabicNum(h.id)}`:`${h.id}-ҲАДИС`,headX,headY);
       if(total>1){
         ctx.fillStyle=C.textMuted;
-        ctx.font=`500 18px ${uiFont}`;
-        ctx.textAlign='right';
-        ctx.fillText(`${idx} / ${total}`,W-PAD,headY+2);
+        ctx.font=`500 18px ${isArab?arFont:uiFont}`;
+        ctx.direction='ltr'; ctx.textAlign=isArab?'left':'right';
+        ctx.fillText(isArab?`${toArabicNum(idx)} / ${toArabicNum(total)}`:`${idx} / ${total}`,isArab?PAD:W-PAD,headY+2);
       }
       ctx.fillStyle=C.text;
-      ctx.font=`300 ${bodyFs}px ${bodyFont}`;
-      ctx.textAlign='left'; ctx.textBaseline='top';
-      const bodyBottom=H-PAD-(h.rowi?180:70);
+      ctx.font=`${bodyWeight} ${bodyFs}px ${bodyFont}`;
+      ctx.direction=isArab?'rtl':'ltr';
+      ctx.textAlign=isArab?'right':'left'; ctx.textBaseline='top';
+      const bodyX=isArab?W-PAD:PAD;
+      const bodyBottom=H-PAD-((!isArab&&h.rowi)?180:70);
       const bodyAvail=bodyBottom-bodyTop;
       const bodyUsed=lines.length*bodyLh;
       let y=bodyTop+Math.max(0,(bodyAvail-bodyUsed)/2);
       for(const line of lines){
-        ctx.fillText(line,PAD,y);
+        ctx.fillText(line,bodyX,y);
         y+=bodyLh;
       }
-      if(h.rowi){
+      if(!isArab && h.rowi){
         const fy=H-PAD-160;
         ctx.fillStyle=C.divider;
         ctx.fillRect(PAD,fy,60,1);
@@ -1251,7 +1286,7 @@ const App = {
         ctx.textAlign='left';
         ctx.fillText('РИВОЯТИ',PAD,fy+14);
         ctx.fillStyle=C.textDim;
-        ctx.font=`italic 300 22px ${bodyFont}`;
+        ctx.font=`italic 300 22px ${uiFont}`;
         const rowiLines=self._wrapShareText(ctx,h.rowi,W-PAD*2);
         const maxRowiLines=3;
         const show=rowiLines.slice(0,maxRowiLines);
@@ -1262,9 +1297,9 @@ const App = {
         for(const rl of show){ ctx.fillText(rl,PAD,ry); ry+=32; }
       }
       ctx.fillStyle=C.textMuted;
-      ctx.font=`600 13px ${uiFont}`;
-      ctx.textAlign='center';
-      ctx.fillText('САҲИҲ БУХОРИЙ',W/2,H-PAD-6);
+      ctx.font=isArab?`700 15px ${arFont}`:`600 13px ${uiFont}`;
+      ctx.direction=isArab?'rtl':'ltr'; ctx.textAlign='center';
+      ctx.fillText(isArab?'صحيح البخاري':'САҲИҲ БУХОРИЙ',W/2,H-PAD-6);
       cv.toBlob(b=>resolve(b),'image/png');
     });
   },

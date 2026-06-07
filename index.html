@@ -1176,10 +1176,13 @@ const App = {
     if(!slides.length) slides.push(['']);
     const total=slides.length;
     const files=[];
+    let quoteAcc=0;
     for(let i=0;i<total;i++){
+      const quoteStart=isArab&&(quoteAcc%2===1);
+      if(isArab) slides[i].forEach(ln=>{ quoteAcc+=(ln.match(/"/g)||[]).length; });
       const blob=await this._renderShareSlide({
         lines:slides[i],idx:i+1,total,h,ctxLabel,C,W,H,PAD,
-        bodyFont,uiFont,arFont,bodyFs,bodyLh,bodyTop,isArab,bodyWeight
+        bodyFont,uiFont,arFont,bodyFs,bodyLh,bodyTop,isArab,bodyWeight,quoteStart
       });
       const suffix=total>1?`-${i+1}`:'';
       files.push(new File([blob],`hadis-${h.id}${isArab?'-ar':''}${suffix}.png`,{type:'image/png'}));
@@ -1273,9 +1276,17 @@ const App = {
       const bodyAvail=bodyBottom-bodyTop;
       const bodyUsed=lines.length*bodyLh;
       let y=bodyTop+Math.max(0,(bodyAvail-bodyUsed)/2);
-      for(const line of lines){
-        ctx.fillText(line,bodyX,y);
-        y+=bodyLh;
+      if(isArab){
+        let inQuote=!!opt.quoteStart;
+        for(const line of lines){
+          inQuote=self._drawArabLine(ctx,line,bodyX,y,C,inQuote);
+          y+=bodyLh;
+        }
+      }else{
+        for(const line of lines){
+          ctx.fillText(line,bodyX,y);
+          y+=bodyLh;
+        }
       }
       if(!isArab && h.rowi){
         const fy=H-PAD-160;
@@ -1302,6 +1313,26 @@ const App = {
       ctx.fillText(isArab?'صحيح البخاري':'САҲИҲ БУХОРИЙ',W/2,H-PAD-6);
       cv.toBlob(b=>resolve(b),'image/png');
     });
+  },
+  // Бир арабча қаторни «"..."» (Пайғамбар ﷺ сўзлари) бўйича ажратиб, олтин/оддий
+  // рангда RTL чизади. Очиқ қўштирноқ ҳолатини кейинги қаторга узатади.
+  _drawArabLine(ctx,line,xRight,y,C,inQuote){
+    const segs=[]; let buf='', cur=inQuote;
+    for(const ch of line){
+      if(ch==='"'){
+        if(!cur){ if(buf){ segs.push({t:buf,gold:false}); buf=''; } cur=true; buf+=ch; }
+        else{ buf+=ch; segs.push({t:buf,gold:true}); buf=''; cur=false; }
+      }else buf+=ch;
+    }
+    if(buf) segs.push({t:buf,gold:cur});
+    ctx.direction='rtl'; ctx.textAlign='right';
+    let x=xRight;
+    for(const s of segs){
+      ctx.fillStyle=s.gold?C.accent:C.text;
+      ctx.fillText(s.t,x,y);
+      x-=ctx.measureText(s.t).width;
+    }
+    return cur;
   },
   doSearch(v, fromHash){
     const trimmed = v.trim();

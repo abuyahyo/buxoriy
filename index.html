@@ -740,6 +740,10 @@ function applyHash(){
 
 function escHtml(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 // Арабча матнда Пайғамбар ﷺ сўзлари «"..."» ичида — уларни ажратиб (gold) кўрсатамиз, иснод оддий қолади
+function toArabicNum(n){
+  return String(n).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[+d]);
+}
+
 function hlArabMatn(t){
   let out='', last=0; const re=/"[^"]*"/g; let m;
   while((m=re.exec(t))){
@@ -1096,6 +1100,7 @@ const App = {
     const orig=btn.textContent;
     btn.textContent='⏳ Тайёрланмоқда…'; btn.disabled=true;
     try{
+      if(arabText) await this._ensureArabicFont();
       if(document.fonts&&document.fonts.ready) await document.fonts.ready;
       const files=await this._buildShareImages(h,k,b,arabText);
       if(navigator.canShare&&navigator.canShare({files})){
@@ -1118,6 +1123,25 @@ const App = {
       setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied');btn.disabled=false;},1800);
     }
   },
+  async _ensureArabicFont(){
+    if(this._arFontReady) return;
+    if(!document.getElementById('arShareFont')){
+      const l=document.createElement('link');
+      l.id='arShareFont'; l.rel='stylesheet';
+      l.href='https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700&display=swap';
+      document.head.appendChild(l);
+    }
+    const sample='نص عربي ٠١٢٣٤٥٦٧٨٩';
+    try{
+      await Promise.all([
+        document.fonts.load("400 40px 'Amiri'",sample),
+        document.fonts.load("700 40px 'Amiri'",sample),
+        document.fonts.load("700 24px 'Cairo'",sample),
+        document.fonts.load("400 22px 'Cairo'",sample)
+      ]);
+    }catch(e){/* шрифт юкланмаса — система шрифтига қайтади */}
+    this._arFontReady=true;
+  },
   async _buildShareImages(h,k,b,arabText){
     const isArab=!!arabText;
     const isLight=document.documentElement.classList.contains('light');
@@ -1131,9 +1155,10 @@ const App = {
       accent:'#d9b870',divider:'rgba(217,184,112,.25)'
     };
     const W=1080,H=1080,PAD=80;
-    const bodyFont=isArab?"'Geeza Pro','Amiri','Noto Naskh Arabic',system-ui,serif":"-apple-system, system-ui, sans-serif";
+    const bodyFont=isArab?"'Amiri','Noto Naskh Arabic','Geeza Pro',serif":"-apple-system, system-ui, sans-serif";
     const uiFont="-apple-system, system-ui, sans-serif";
-    const bodyFs=isArab?40:34, bodyLh=Math.round(bodyFs*(isArab?2.0:1.7));
+    const arFont="'Cairo','Noto Naskh Arabic',-apple-system,system-ui,sans-serif";
+    const bodyFs=isArab?40:34, bodyLh=Math.round(bodyFs*(isArab?1.9:1.7));
     const bodyWeight=isArab?'400':'300';
     const maxBodyW=W-PAD*2;
     const ctxLabel=k&&b?`${k.nomi} · ${b.id}-боб`:'';
@@ -1154,7 +1179,7 @@ const App = {
     for(let i=0;i<total;i++){
       const blob=await this._renderShareSlide({
         lines:slides[i],idx:i+1,total,h,ctxLabel,C,W,H,PAD,
-        bodyFont,uiFont,bodyFs,bodyLh,bodyTop,isArab,bodyWeight
+        bodyFont,uiFont,arFont,bodyFs,bodyLh,bodyTop,isArab,bodyWeight
       });
       const suffix=total>1?`-${i+1}`:'';
       files.push(new File([blob],`hadis-${h.id}${isArab?'-ar':''}${suffix}.png`,{type:'image/png'}));
@@ -1205,7 +1230,7 @@ const App = {
     return lines;
   },
   _renderShareSlide(opt){
-    const {lines,idx,total,h,ctxLabel,C,W,H,PAD,bodyFont,uiFont,bodyFs,bodyLh,bodyTop,isArab,bodyWeight}=opt;
+    const {lines,idx,total,h,ctxLabel,C,W,H,PAD,bodyFont,uiFont,arFont,bodyFs,bodyLh,bodyTop,isArab,bodyWeight}=opt;
     const self=this;
     return new Promise(resolve=>{
       const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
@@ -1219,7 +1244,7 @@ const App = {
       let headY=PAD+16;
       if(ctxLabel){
         ctx.fillStyle=C.textMuted;
-        ctx.font=`500 15px ${uiFont}`;
+        ctx.font=`500 ${isArab?18:15}px ${uiFont}`;
         ctx.direction='ltr'; ctx.textAlign=headAlign; ctx.textBaseline='top';
         let label=ctxLabel;
         while(ctx.measureText(label).width>W-PAD*2&&label.length>4){
@@ -1227,17 +1252,17 @@ const App = {
           if(!label.endsWith('…')) label=label.slice(0,-1)+'…';
         }
         ctx.fillText(label,headX,headY);
-        headY=PAD+42;
+        headY=isArab?PAD+48:PAD+42;
       }
       ctx.fillStyle=C.accent;
-      ctx.font=`600 22px ${uiFont}`;
-      ctx.direction='ltr'; ctx.textAlign=headAlign; ctx.textBaseline='top';
-      ctx.fillText(`${h.id}-ҲАДИС`,headX,headY);
+      ctx.font=isArab?`700 24px ${arFont}`:`600 22px ${uiFont}`;
+      ctx.direction=isArab?'rtl':'ltr'; ctx.textAlign=headAlign; ctx.textBaseline='top';
+      ctx.fillText(isArab?`حديث رقم ${toArabicNum(h.id)}`:`${h.id}-ҲАДИС`,headX,headY);
       if(total>1){
         ctx.fillStyle=C.textMuted;
-        ctx.font=`500 18px ${uiFont}`;
-        ctx.textAlign=isArab?'left':'right';
-        ctx.fillText(`${idx} / ${total}`,isArab?PAD:W-PAD,headY+2);
+        ctx.font=`500 18px ${isArab?arFont:uiFont}`;
+        ctx.direction='ltr'; ctx.textAlign=isArab?'left':'right';
+        ctx.fillText(isArab?`${toArabicNum(idx)} / ${toArabicNum(total)}`:`${idx} / ${total}`,isArab?PAD:W-PAD,headY+2);
       }
       ctx.fillStyle=C.text;
       ctx.font=`${bodyWeight} ${bodyFs}px ${bodyFont}`;
@@ -1272,9 +1297,9 @@ const App = {
         for(const rl of show){ ctx.fillText(rl,PAD,ry); ry+=32; }
       }
       ctx.fillStyle=C.textMuted;
-      ctx.font=`600 13px ${uiFont}`;
-      ctx.direction='ltr'; ctx.textAlign='center';
-      ctx.fillText('САҲИҲ БУХОРИЙ',W/2,H-PAD-6);
+      ctx.font=isArab?`700 15px ${arFont}`:`600 13px ${uiFont}`;
+      ctx.direction=isArab?'rtl':'ltr'; ctx.textAlign='center';
+      ctx.fillText(isArab?'صحيح البخاري':'САҲИҲ БУХОРИЙ',W/2,H-PAD-6);
       cv.toBlob(b=>resolve(b),'image/png');
     });
   },

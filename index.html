@@ -106,8 +106,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .hadis-item-narrator{font-size:11px;color:var(--text-muted);margin-top:10px;font-style:italic;font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif}
 /* Hadis full page */
 .hadis-text{padding:32px 14px 24px;margin:0 -6px 28px;line-height:1.95;color:var(--text);font-size:var(--hadis-fs,17px);font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;font-weight:300;letter-spacing:.005em}
-/* Highlight Prophet's direct speech */
-.prophet-quote{color:var(--gold);font-weight:600;background:linear-gradient(90deg, rgba(217,184,112,0.06), rgba(217,184,112,0.02));padding:0 4px;border-radius:4px;}
 .hadis-izoh{padding:0 12px;line-height:1.85;color:var(--text-dim);font-size:calc(var(--hadis-fs,17px) - 1px);font-family:-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;font-weight:300;margin-top:18px}
 .hadis-arab{direction:rtl;text-align:right;font-family:system-ui,'Geeza Pro',sans-serif;font-size:calc(var(--hadis-fs,17px) + 8px);line-height:2.1;color:var(--text);padding:22px 18px;margin:4px -6px 24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .hadis-arab .arab-matn{color:var(--gold);font-weight:600}
@@ -614,97 +612,6 @@ function splitFootnotes(matn){
   return { body: body.join('\n\n'), notes };
 }
 
-// Ҳадис матни ичидаги Расулуллоҳ соллаллоҳу алайҳи ва салламнинг билинган тўғридан-тўғри сўзларини белгилаш
-function highlightProphetQuotes(container, hid){
-  if(!container) return;
-  try{
-    // Walk text nodes and wrap only matched text fragments to avoid breaking HTML structure
-    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
-      acceptNode(node){
-        if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
-        const pn = node.parentNode;
-        if(pn && pn.closest && pn.closest('.prophet-quote')) return NodeFilter.FILTER_REJECT;
-        if(pn && ['A','SCRIPT','STYLE','CODE','PRE'].includes(pn.nodeName)) return NodeFilter.FILTER_REJECT;
-        return NodeFilter.FILTER_ACCEPT;
-      }
-    }, false);
-    // Matches guillemets, curly quotes, or long straight-quoted spans
-    const re = /«[^»]+»|“[^”]+”|"[^"\n]{20,300}"/g;
-    // Keywords indicating the text likely contains Prophet speech (Cyrillic variants)
-    const prophetRe = /расулуллоҳ|расул|набий|солла/i;
-    // Words that indicate the quoted block is actually narrator intro/report
-    const narratorRe = /эштим|эштдим|эшитдим|деган(лар|ини)?|ривоят|ашў/iu;
-
-    // If Arabic text for this hadith exists, use its quoted-segment count to guide which Uzbek quoted segments to highlight
-    let forcedSet = null;
-    try{
-      if(typeof ARAB !== 'undefined' && ARAB && hid && ARAB[hid]){
-        const arabText = ARAB[hid];
-        const arabMatches = (arabText.match(/"[^"]+"/g) || []);
-        // Count Uzbek quoted segments in entire container text
-        const wholeText = container.textContent || '';
-        const uzMatches = (wholeText.match(re) || []);
-        const n = Math.min(arabMatches.length, uzMatches.length);
-        forcedSet = new Set();
-        for(let i=0;i<n;i++) forcedSet.add(i);
-      }
-    }catch(_e){ forcedSet = null; }
-
-    const textNodes = [];
-    while(walker.nextNode()) textNodes.push(walker.currentNode);
-    // Global match index across all text nodes to line up with forcedSet
-    let globalMatchIndex = 0;
-    textNodes.forEach(tnode => {
-      const text = tnode.nodeValue;
-      re.lastIndex = 0;
-      let match, lastIndex = 0; let found = false;
-      const frag = document.createDocumentFragment();
-      while((match = re.exec(text))){
-        found = true;
-        const idx = match.index;
-        if(idx > lastIndex) frag.appendChild(document.createTextNode(text.slice(lastIndex, idx)));
-        const raw = match[0];
-        const inner = raw.replace(/^([«“\"])/, '').replace(/([»”\"])$/, '');
-        const innerLower = inner.toLowerCase();
-
-        const forceThis = forcedSet && forcedSet.has(globalMatchIndex);
-        globalMatchIndex++;
-
-        if(forceThis){
-          const span = document.createElement('span');
-          span.className = 'prophet-quote';
-          span.textContent = raw;
-          frag.appendChild(span);
-        } else if(narratorRe.test(innerLower)){
-          frag.appendChild(document.createTextNode(raw));
-        } else if(prophetRe.test(innerLower)){
-          const m = innerLower.match(prophetRe);
-          const start = m ? innerLower.indexOf(m[0]) : -1;
-          if(start > 0){
-            frag.appendChild(document.createTextNode(raw[0] + inner.slice(0, start)));
-            const span = document.createElement('span');
-            span.className = 'prophet-quote';
-            span.textContent = raw[0] + inner.slice(start) + raw.charAt(raw.length-1);
-            frag.appendChild(span);
-          } else {
-            const span = document.createElement('span');
-            span.className = 'prophet-quote';
-            span.textContent = raw;
-            frag.appendChild(span);
-          }
-        } else {
-          frag.appendChild(document.createTextNode(raw));
-        }
-        lastIndex = idx + raw.length;
-      }
-      if(!found) return;
-      if(lastIndex < text.length) frag.appendChild(document.createTextNode(text.slice(lastIndex)));
-      tnode.parentNode.insertBefore(frag, tnode);
-      tnode.parentNode.removeChild(tnode);
-    });
-  }catch(e){ console.error('highlightProphetQuotes', e); }
-}
-
 function showPage(id, scrollToId){
   const cur = document.querySelector('.page.visible');
   if(cur) scrollPos[lastHash] = cur.scrollTop;
@@ -1055,7 +962,6 @@ const App = {
       _html+='<div class="hadis-fn">'+_fn.notes.map(n=>`<div class="hadis-fn-item"><span class="hadis-fn-star">*</span>${linkifyRefs(n.replace(/^\*\s*/,'').replace(/\n/g,' '))}</div>`).join('')+'</div>';
     }
     document.getElementById('hadisText').innerHTML=_html;
-    try{ highlightProphetQuotes(document.getElementById('hadisText')); }catch(e){ console.error(e); }
     // арабча матн блокини ресет қилиш (тугма доим кўринади)
     // тил режимини «Ўзбекча»га қайтариш
     const arabEl=document.getElementById('hadisArab');

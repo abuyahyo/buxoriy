@@ -628,7 +628,13 @@ function highlightProphetQuotes(container){
         return NodeFilter.FILTER_ACCEPT;
       }
     }, false);
+    // Matches guillemets, curly quotes, or long straight-quoted spans
     const re = /«[^»]+»|“[^”]+”|"[^"\n]{20,300}"/g;
+    // Keywords indicating the text likely contains Prophet speech (Cyrillic variants)
+    const prophetRe = /расулуллоҳ|расул|набий|солла/i;
+    // Words that indicate the quoted block is actually narrator intro/report
+    const narratorRe = /эштим|эштдим|эшитдим|деган(лар|ини)?|ривоят|ашў/iu;
+
     const textNodes = [];
     while(walker.nextNode()) textNodes.push(walker.currentNode);
     textNodes.forEach(tnode => {
@@ -640,11 +646,37 @@ function highlightProphetQuotes(container){
         found = true;
         const idx = match.index;
         if(idx > lastIndex) frag.appendChild(document.createTextNode(text.slice(lastIndex, idx)));
-        const span = document.createElement('span');
-        span.className = 'prophet-quote';
-        span.textContent = match[0];
-        frag.appendChild(span);
-        lastIndex = idx + match[0].length;
+        const raw = match[0];
+        // extract inner without surrounding quotes
+        const inner = raw.replace(/^([«“\"])/, '').replace(/([»”\"])$/, '');
+        const innerLower = inner.toLowerCase();
+        // If inner looks like narrator report (contains "эштим/деган"), skip highlighting
+        if(narratorRe.test(innerLower)){
+          // append the raw text unchanged
+          frag.appendChild(document.createTextNode(raw));
+        } else if(prophetRe.test(innerLower)){
+          // find where prophet keywords start and only highlight from there
+          const m = innerLower.match(prophetRe);
+          const start = m ? innerLower.indexOf(m[0]) : -1;
+          if(start > 0){
+            // text before prophet words: leave as plain text (often narrator intro)
+            frag.appendChild(document.createTextNode(raw[0] + inner.slice(0, start)));
+            const span = document.createElement('span');
+            span.className = 'prophet-quote';
+            span.textContent = raw[0] + inner.slice(start) + raw.charAt(raw.length-1);
+            frag.appendChild(span);
+          } else {
+            // prophet keyword at start — highlight whole quoted block
+            const span = document.createElement('span');
+            span.className = 'prophet-quote';
+            span.textContent = raw;
+            frag.appendChild(span);
+          }
+        } else {
+          // fallback: don't highlight ambiguous short quotes
+          frag.appendChild(document.createTextNode(raw));
+        }
+        lastIndex = idx + raw.length;
       }
       if(!found) return;
       if(lastIndex < text.length) frag.appendChild(document.createTextNode(text.slice(lastIndex)));

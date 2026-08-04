@@ -615,7 +615,7 @@ function splitFootnotes(matn){
 }
 
 // Ҳадис матни ичидаги Расулуллоҳ соллаллоҳу алайҳи ва салламнинг билинган тўғридан-тўғри сўзларини белгилаш
-function highlightProphetQuotes(container, hid){
+function highlightProphetQuotes(container){
   if(!container) return;
   try{
     // Walk text nodes and wrap only matched text fragments to avoid breaking HTML structure
@@ -635,25 +635,8 @@ function highlightProphetQuotes(container, hid){
     // Words that indicate the quoted block is actually narrator intro/report
     const narratorRe = /эштим|эштдим|эшитдим|деган(лар|ини)?|ривоят|ашў/iu;
 
-    // If Arabic text for this hadith exists, use its quoted-segment count to guide which Uzbek quoted segments to highlight
-    let forcedSet = null;
-    try{
-      if(typeof ARAB !== 'undefined' && ARAB && hid && ARAB[hid]){
-        const arabText = ARAB[hid];
-        const arabMatches = (arabText.match(/"[^"]+"/g) || []);
-        // Count Uzbek quoted segments in entire container text
-        const wholeText = container.textContent || '';
-        const uzMatches = (wholeText.match(re) || []);
-        const n = Math.min(arabMatches.length, uzMatches.length);
-        forcedSet = new Set();
-        for(let i=0;i<n;i++) forcedSet.add(i);
-      }
-    }catch(_e){ forcedSet = null; }
-
     const textNodes = [];
     while(walker.nextNode()) textNodes.push(walker.currentNode);
-    // Global match index across all text nodes to line up with forcedSet
-    let globalMatchIndex = 0;
     textNodes.forEach(tnode => {
       const text = tnode.nodeValue;
       re.lastIndex = 0;
@@ -664,35 +647,33 @@ function highlightProphetQuotes(container, hid){
         const idx = match.index;
         if(idx > lastIndex) frag.appendChild(document.createTextNode(text.slice(lastIndex, idx)));
         const raw = match[0];
+        // extract inner without surrounding quotes
         const inner = raw.replace(/^([«“\"])/, '').replace(/([»”\"])$/, '');
         const innerLower = inner.toLowerCase();
-
-        const forceThis = forcedSet && forcedSet.has(globalMatchIndex);
-        globalMatchIndex++;
-
-        if(forceThis){
-          const span = document.createElement('span');
-          span.className = 'prophet-quote';
-          span.textContent = raw;
-          frag.appendChild(span);
-        } else if(narratorRe.test(innerLower)){
+        // If inner looks like narrator report (contains "эштим/деган"), skip highlighting
+        if(narratorRe.test(innerLower)){
+          // append the raw text unchanged
           frag.appendChild(document.createTextNode(raw));
         } else if(prophetRe.test(innerLower)){
+          // find where prophet keywords start and only highlight from there
           const m = innerLower.match(prophetRe);
           const start = m ? innerLower.indexOf(m[0]) : -1;
           if(start > 0){
+            // text before prophet words: leave as plain text (often narrator intro)
             frag.appendChild(document.createTextNode(raw[0] + inner.slice(0, start)));
             const span = document.createElement('span');
             span.className = 'prophet-quote';
             span.textContent = raw[0] + inner.slice(start) + raw.charAt(raw.length-1);
             frag.appendChild(span);
           } else {
+            // prophet keyword at start — highlight whole quoted block
             const span = document.createElement('span');
             span.className = 'prophet-quote';
             span.textContent = raw;
             frag.appendChild(span);
           }
         } else {
+          // fallback: don't highlight ambiguous short quotes
           frag.appendChild(document.createTextNode(raw));
         }
         lastIndex = idx + raw.length;

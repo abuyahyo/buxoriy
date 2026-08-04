@@ -618,13 +618,39 @@ function splitFootnotes(matn){
 function highlightProphetQuotes(container){
   if(!container) return;
   try{
-    let html = container.innerHTML;
-    // Guillemets «...» and curly quotes “...” are primary indicators
-    html = html.replace(/«([^»]+)»/g, '<span class="prophet-quote">«$1»</span>');
-    html = html.replace(/“([^”]+)”/g, '<span class="prophet-quote">“$1”</span>');
-    // As a secondary heuristic, wrap longer straight-quoted segments
-    html = html.replace(/"([^"]{20,300}?)"/g, '<span class="prophet-quote">"$1"</span>');
-    container.innerHTML = html;
+    // Walk text nodes and wrap only matched text fragments to avoid breaking HTML structure
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+      acceptNode(node){
+        if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        const pn = node.parentNode;
+        if(pn && pn.closest && pn.closest('.prophet-quote')) return NodeFilter.FILTER_REJECT;
+        if(pn && ['A','SCRIPT','STYLE','CODE','PRE'].includes(pn.nodeName)) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    }, false);
+    const re = /«[^»]+»|“[^”]+”|"[^"\n]{20,300}"/g;
+    const textNodes = [];
+    while(walker.nextNode()) textNodes.push(walker.currentNode);
+    textNodes.forEach(tnode => {
+      const text = tnode.nodeValue;
+      re.lastIndex = 0;
+      let match, lastIndex = 0; let found = false;
+      const frag = document.createDocumentFragment();
+      while((match = re.exec(text))){
+        found = true;
+        const idx = match.index;
+        if(idx > lastIndex) frag.appendChild(document.createTextNode(text.slice(lastIndex, idx)));
+        const span = document.createElement('span');
+        span.className = 'prophet-quote';
+        span.textContent = match[0];
+        frag.appendChild(span);
+        lastIndex = idx + match[0].length;
+      }
+      if(!found) return;
+      if(lastIndex < text.length) frag.appendChild(document.createTextNode(text.slice(lastIndex)));
+      tnode.parentNode.insertBefore(frag, tnode);
+      tnode.parentNode.removeChild(tnode);
+    });
   }catch(e){ console.error('highlightProphetQuotes', e); }
 }
 
